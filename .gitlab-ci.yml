@@ -1,0 +1,64 @@
+image: "hseeberger/scala-sbt:11.0.4_1.3.3_2.13.1"
+
+variables:
+  SBT_OPTS: "-Dsbt.global.base=sbt-cache/.sbtboot -Dsbt.boot.directory=sbt-cache/.boot -Dsbt.ivy.home=sbt-cache/.ivy -Dsbt.coursier.home=sbt-cache/.coursier"
+
+cache:
+  key: "$CI_BUILD_REF_NAME" # contains either the branch or the tag, so it's caching per branch
+  untracked: true
+  paths:
+    - "sbt-cache/.ivy.cache"
+    - "sbt-cache/.boot"
+    - "sbt-cache/.sbtboot"
+    - "sbt-cache/target"
+    - "sbt-cache/.coursier"
+
+#before_script:
+#  # Log the sbt version
+#  - sbt sbtVersion
+
+unit_test:
+  stage: test
+  script:
+  - sbt clean coverage test coverageReport
+  artifacts:
+    paths:
+    - target/scala-2.13/scoverage-report/
+
+scapegoat_analysis:
+  stage: test
+  script:
+    - sbt scapegoat
+  artifacts:
+    paths:
+      - target/scala-2.13/scapegoat-report/
+
+check_format:
+  stage: test
+  script:
+  - sbt scalafmtCheck
+  - sbt scalafmtSbtCheck
+  allow_failure: true
+
+check_dependency_update:
+  stage: test
+  script:
+  - sbt "set dependencyUpdatesFailBuild := true" dependencyUpdates
+  allow_failure: true
+
+pages:
+  stage: deploy
+  dependencies:
+    - unit_test
+    - scapegoat_analysis
+  script:
+    - rm -rf public/coverage public/scapegoat
+    - mkdir -p public/coverage public/scapegoat
+    - mv target/scala-2.13/scoverage-report/* public/coverage/
+    - mv target/scala-2.13/scapegoat-report/scapegoat.html public/scapegoat/index.html
+  artifacts:
+    paths:
+      - public
+    expire_in: 30 days
+  only:
+    - master
