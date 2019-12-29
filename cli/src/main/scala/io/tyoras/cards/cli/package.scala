@@ -32,7 +32,7 @@ package object cli {
     displaySplit(deck)
   }
 
-  def displayCardChoice[F[_] : Monad : Console](playableCards: Hand): F[Unit] = {
+  def displayCardChoice[F[_] : Console](playableCards: Hand): F[Unit] = {
     val choices = playableCards.zipWithIndex.map {
       case (c: Card, i: Int) => s"\t${i + 1}: $c"
     }

@@ -5,10 +5,12 @@ lazy val commonSettings = Seq(
   organization := "io.tyoras",
   scalaVersion := "2.13.1",
   version := "0.1.0-SNAPSHOT",
-  betterFor
+  betterFor,
+  scalacOptions in Scapegoat += "-P:scapegoat:overrideLevels:UnsafeTraversableMethods=Warning"
 )
 
 ThisBuild / scapegoatVersion := "1.4.1"
+ThisBuild / scapegoatDisabledInspections := Seq("IncorrectlyNamedExceptions")
 ThisBuild / coverageMinimum := 75
 ThisBuild / coverageFailOnMinimum := false
 

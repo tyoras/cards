@@ -12,7 +12,7 @@ The project is designed around a set of modules :
 ## Finished games
 None yet.
 
-## Work in progress
+## Work in progress
 ### Schnapsen
 [Schnapsen](https://en.wikipedia.org/wiki/Schnapsen) is an austrian game, it is the first game I have decided to implement because of its medium complexity which is a good first challenge.
 

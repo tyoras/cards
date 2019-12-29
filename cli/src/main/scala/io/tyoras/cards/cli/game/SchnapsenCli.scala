@@ -85,7 +85,7 @@ object SchnapsenCli {
             })
       })
 
-  private def parseInput[F[_]](state: GameState, rawInput: String)(implicit F: Sync[F], console: Console[F]): F[Input] = {
+  private def parseInput[F[_]](state: GameState, rawInput: String)(implicit F: Sync[F]): F[Input] = {
     rawInput match {
       case "\\q" => F.pure(End(state.game.forehand.id))
       case "\\r" => F.pure(Restart(state.game.forehand.id))
@@ -94,13 +94,13 @@ object SchnapsenCli {
           case _: Init => F.pure(Start(state.game.forehand.id))
           case s: EarlyGameForehandTurn => parseCardChoice[F](s, rawInput)
           case s: EarlyGameDealerTurn => parseCardChoice[F](s, rawInput)
-          case s: LateGameForehandTurn => F.pure(End(state.game.forehand.id))
-          case s: LateGameForehandTurn => F.pure(End(state.game.forehand.id))
+          case _: LateGameForehandTurn => F.pure(End(state.game.forehand.id))
+          case _: LateGameForehandTurn => F.pure(End(state.game.forehand.id))
         }
     }
   }
 
-  private def parseCardChoice[F[_] : Sync : Console](state: PlayerTurn, rawInput: String): F[Input] = {
+  private def parseCardChoice[F[_] : Sync](state: PlayerTurn, rawInput: String): F[Input] = {
     val player = state.currentPlayer
     val playableCards = state.playableCards
     for {

@@ -9,9 +9,9 @@ object War {
   def divide(cards: Deck): (Hand, Hand) = cards.splitAt(cards.length / 2)
 
   sealed trait BattleResult
-  sealed case class Player1Wins(cards: List[Card]) extends BattleResult
-  sealed case class Player2Wins(cards: List[Card]) extends BattleResult
-  sealed case class War(cards: List[Card]) extends BattleResult
+  case class Player1Wins(cards: List[Card]) extends BattleResult
+  case class Player2Wins(cards: List[Card]) extends BattleResult
+  case class War(cards: List[Card]) extends BattleResult
 
   def score(player1Card: Card, player2Card: Card, previousTurnCards: List[Card] = List()): BattleResult =
     player1Card.rank.value - player2Card.rank.value match {
