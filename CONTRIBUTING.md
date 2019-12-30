@@ -1,3 +1,3 @@
-  - format code using `sbt scalafmt`
-  - format test using `sbt test:scalafmt`
-  - format sbt using `sbt sbt:scalafmt`
+- format code using `sbt scalafmt`
+- format test using `sbt test:scalafmt`
+- format sbt using `sbt sbt:scalafmt`
