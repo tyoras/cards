@@ -20,7 +20,7 @@ cache:
 unit_test:
   stage: test
   script:
-  - sbt clean coverage test coverageReport
+  - sbt clean coverage test coverageReport coverageAggregate
   artifacts:
     paths:
     - target/scala-2.13/scoverage-report/
@@ -31,7 +31,9 @@ scapegoat_analysis:
     - sbt scapegoat
   artifacts:
     paths:
-      - target/scala-2.13/scapegoat-report/
+      - core/target/scala-2.13/scapegoat-report/
+      - games/target/scala-2.13/scapegoat-report/
+      - cli/target/scala-2.13/scapegoat-report/
 
 check_format:
   stage: test
@@ -55,7 +57,9 @@ pages:
     - rm -rf public/coverage public/scapegoat
     - mkdir -p public/coverage public/scapegoat
     - mv target/scala-2.13/scoverage-report/* public/coverage/
-    - mv target/scala-2.13/scapegoat-report/scapegoat.html public/scapegoat/index.html
+    - mv core/target/scala-2.13/scapegoat-report/scapegoat.html public/scapegoat/core/index.html
+    - mv games/target/scala-2.13/scapegoat-report/scapegoat.html public/scapegoat/games/index.html
+    - mv cli/target/scala-2.13/scapegoat-report/scapegoat.html public/scapegoat/cli/index.html
   artifacts:
     paths:
       - public
