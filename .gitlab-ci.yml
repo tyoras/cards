@@ -55,7 +55,7 @@ pages:
     - scapegoat_analysis
   script:
     - rm -rf public/coverage public/scapegoat
-    - mkdir -p public/coverage public/scapegoat
+    - mkdir -p public/coverage public/scapegoat/core public/scapegoat/games public/scapegoat/cli
     - mv target/scala-2.13/scoverage-report/* public/coverage/
     - mv core/target/scala-2.13/scapegoat-report/scapegoat.html public/scapegoat/core/index.html
     - mv games/target/scala-2.13/scapegoat-report/scapegoat.html public/scapegoat/games/index.html
