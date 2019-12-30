@@ -1,4 +1,4 @@
-# Card Games
+# Card Games [![Pipeline](https://gitlab.com/tyoras/cards/badges/master/pipeline.svg)](https://gitlab.com/tyoras/cards/commits/master) [![Coverage](https://gitlab.com/tyoras/cards/badges/master/coverage.svg)](https://tyoras.gitlab.io/cards/coverage/) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/002331c5738f4eb099d2272292b789bc)](https://www.codacy.com/manual/tyoras/cards?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tyoras/cards&amp;utm_campaign=Badge_Grade)
 Card game implementations using advanced [FP](https://en.wikipedia.org/wiki/Functional_programming) techniques in [Scala](https://www.scala-lang.org/).
 
 The goal is to both have fun implementing these games and experimenting functional programming techniques.  
