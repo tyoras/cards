@@ -4,7 +4,7 @@ import java.util.UUID
 
 import cats.Applicative
 import cats.data.StateT
-import io.tyoras.cards.{allSuits, createDeck, Ace, Card, Deck, GameError, Hand, Jack, King, Queen, Ten}
+import io.tyoras.cards._
 
 package object schnapsen {
 
