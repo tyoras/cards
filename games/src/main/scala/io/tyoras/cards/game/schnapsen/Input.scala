@@ -18,6 +18,10 @@ case class PlayCard(playerId: UUID, card: Card) extends Input {
   val name: String = s"Play card $card"
 }
 
+case class ExchangeTrumpJack(playerId: UUID) extends Input {
+  val name: String = "Exchange trump jack"
+}
+
 case class Restart(playerId: UUID) extends Input {
   val name: String = "Restart game"
 }

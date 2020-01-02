@@ -8,7 +8,7 @@ import cats.effect.Sync
 import cats.implicits._
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import io.chrisdavenport.log4cats.{Logger, SelfAwareStructuredLogger}
-import io.tyoras.cards._
+import io.tyoras.cards.{drawFirstCard, _}
 
 object Schnapsen {
 
@@ -17,8 +17,8 @@ object Schnapsen {
   def initGame[F[_] : Sync](p1: Player, p2: Player): F[GameState] = for {
     _                  <- Logger[F].debug("Starting new Schnapsen game")
     (dealer, forehand) <- decideFirstDealer[F](p1, p2)
-    initialState = dealing(dealer, forehand, baseDeck)
-    _ <- Logger[F].debug(s"Initial state : $initialState")
+    initialState       <- Sync[F].fromEither(dealing(dealer, forehand, baseDeck))
+    _                  <- Logger[F].debug(s"Initial state : $initialState")
   } yield Init(initialState)
 
   def submitInput[F[_] : Sync](state: GameState, input: Input): F[GameState] =
@@ -51,21 +51,21 @@ object Schnapsen {
     } yield decision
   }
 
-  private def dealing(dealer: Player, forehand: Player, deck: Deck): Game = {
+  private def dealing(dealer: Player, forehand: Player, deck: Deck): Either[DeckError, Game] = {
     def deal(n: Int, talon: Deck): (Hand, Hand, Deck) = {
-      val (fhDraw, t) = takeNCard(n, talon)
-      val (dlDraw, remainingTalon) = takeNCard(n, t)
+      val (fhDraw, t) = drawNCard(n, talon)
+      val (dlDraw, remainingTalon) = drawNCard(n, t)
       (fhDraw, dlDraw, remainingTalon)
     }
 
     val t0 = shuffle(deck)
     val (fhFirstDraw, dlFirstDraw, t1) = deal(3, t0)
-    val (trumpCard, t2) = takeFirstCard(t1)
+    val (trumpCard, t2) = drawFirstCard(t1)
     val (fhSndDraw, dlSecondDraw, talon) = deal(2, t2)
 
     val d = dealer.copy(hand = dlFirstDraw ++ dlSecondDraw)
     val f = forehand.copy(hand = fhFirstDraw ++ fhSndDraw)
-    Game(d, f, talon, trumpCard)
+    trumpCard.toRight(DeckError("Not enough card left in the deck to draw.")).map(Game(d, f, talon, _))
   }
 
   private def game[F[_] : Sync]: PartialFunction[(GameState, Input), F[GameState]] = {
@@ -74,6 +74,7 @@ object Schnapsen {
       earlyGameForehandTurn(s, i).handleErrorWith {
         case se: SchnapsenError => Logger[F].warn(se)(s"Error during early game turn, ignoring input $i") *> Sync[F].pure(s)
       }
+    case (s: EarlyGameForehandTurn, i: ExchangeTrumpJack) => exchangeTrumpJack(s, i)
     case (s: EarlyGameDealerTurn, i: PlayCard) =>
       earlyGameDealerTurn(s, i).handleErrorWith {
         case se: SchnapsenError => Logger[F].warn(se)(s"Error during early game turn, ignoring input $i") *> Sync[F].pure(s)
@@ -89,6 +90,19 @@ object Schnapsen {
     } yield EarlyGameDealerTurn(updatedGame, card)
   }
 
+  private def exchangeTrumpJack[F[_]](state: EarlyGameForehandTurn, input: ExchangeTrumpJack)(implicit F: Sync[F]): F[GameState] = {
+    val forehand = state.currentPlayer
+    val trumpCard = state.game.trumpCard
+    for {
+      _ <- checkPlayer[F](forehand, input.playerId)
+      _ <- if (state.canExchangeTrumpJack) F.unit else F.raiseError[Unit](WrongPlayer)
+      remainingHand = pickCard(state.trumpJack, forehand.hand)._2
+      updatedForehand = forehand.copy(hand = remainingHand :+ trumpCard)
+      updatedGame = state.game.copy(trumpCard = state.trumpJack, forehand = updatedForehand)
+      _ <- Logger[F].debug(s"Player ${forehand.name} has echange the trump jack ${state.trumpJack} with the trump card $trumpCard")
+    } yield EarlyGameForehandTurn(updatedGame)
+  }
+
   private def earlyGameDealerTurn[F[_] : Sync](state: EarlyGameDealerTurn, input: PlayCard): F[GameState] = {
 
     def resolveTurn(fhCard: Card, dlCard: Card): InternalGameState[F, Unit] = for {
@@ -101,16 +115,14 @@ object Schnapsen {
 
     def nextTurn(game: Game): F[GameState] = Sync[F].pure { EarlyGameForehandTurn(game) }
 
-    def finishEarlyGame(game: Game): F[GameState] = {
-      val (lastCard, updatedDeck) = takeFirstCard(game.talon)
-      val updatedForehand = game.forehand.copy(hand = game.forehand.hand :+ lastCard)
-      val updatedDealer = game.dealer.copy(hand = game.dealer.hand :+ game.trumpCard)
-      val lateGame = game.copy(talon = updatedDeck, forehand = updatedForehand, dealer = updatedDealer)
-      for {
-        _ <- Logger[F].debug(s"Player ${updatedForehand.name} has drawn last card $lastCard")
-        _ <- Logger[F].debug(s"Player ${updatedDealer.name} has drawn the trump card ${game.trumpCard}")
-      } yield LateGameForehandTurn(lateGame) //TODO Select right player for forehand
-    }
+    def finishEarlyGame(game: Game): F[GameState] = for {
+      (lastCard, updatedDeck) <- drawFirstCardF[F](game.talon)
+      updatedForehand = game.forehand.copy(hand = game.forehand.hand :+ lastCard)
+      updatedDealer = game.dealer.copy(hand = game.dealer.hand :+ game.trumpCard)
+      lateGame = game.copy(talon = updatedDeck, forehand = updatedForehand, dealer = updatedDealer)
+      _ <- Logger[F].debug(s"Player ${updatedForehand.name} has drawn last card $lastCard")
+      _ <- Logger[F].debug(s"Player ${updatedDealer.name} has drawn the trump card ${game.trumpCard}")
+    } yield LateGameForehandTurn(lateGame) //TODO Select right player for forehand
 
     for {
       _           <- checkPlayer[F](state.currentPlayer, input.playerId)
@@ -123,10 +135,14 @@ object Schnapsen {
     } yield nextState
   }
 
-  private def playCard[F[_] : Sync](player: Player, playedCard: Card): InternalGameState[F, Card] = StateT { state =>
-    val remainingHand = pickCard(playedCard, player.hand)
-    val updatedPlayer = player.copy(hand = remainingHand)
-    (state.updatePlayer(updatedPlayer), playedCard).pure[F]
+  private def playCard[F[_] : Sync](player: Player, card: Card): InternalGameState[F, Card] = StateT { state =>
+    val (playedCard, remainingHand) = pickCard(card, player.hand)
+    playedCard match {
+      case None => Sync[F].raiseError(InvalidCard(s"Player ${player.name} has tried to play the card $card that he does not own."))
+      case Some(c) =>
+        val updatedPlayer = player.copy(hand = remainingHand)
+        (state.updatePlayer(updatedPlayer), c).pure[F]
+    }
   }
 
   private def findWinner[F[_] : Applicative](fhCard: Card, dlCard: Card): InternalGameState[F, Player] = StateT { state =>
@@ -148,11 +164,11 @@ object Schnapsen {
   }
 
   private def drawCard[F[_] : Sync](player: Player): InternalGameState[F, Card] = StateT { state =>
-    val (card, updatedDeck) = takeFirstCard(state.talon)
-    val updatedPlayer = player.copy(hand = player.hand :+ card)
-    val updatedState = state.updatePlayer(updatedPlayer).copy(talon = updatedDeck)
     for {
-      _ <- Logger[F].debug(s"Player ${player.name} has drawn $card")
+      (card, updatedDeck) <- drawFirstCardF[F](state.talon)
+      _                   <- Logger[F].debug(s"Player ${player.name} has drawn $card")
+      updatedPlayer = player.copy(hand = player.hand :+ card)
+      updatedState = state.updatePlayer(updatedPlayer).copy(talon = updatedDeck)
     } yield (updatedState, card)
   }
 
@@ -160,6 +176,6 @@ object Schnapsen {
     if (expectedPlayer.id == playerId) F.unit else F.raiseError(WrongPlayer)
 
   private def checkPlayedCard[F[_]](card: Card, playableRule: Card => Boolean)(implicit F: ApplicativeError[F, Throwable]): F[Card] =
-    if (playableRule.apply(card)) card.pure[F] else F.raiseError(InvalidCard)
+    if (playableRule.apply(card)) card.pure[F] else F.raiseError(InvalidCard())
 
 }

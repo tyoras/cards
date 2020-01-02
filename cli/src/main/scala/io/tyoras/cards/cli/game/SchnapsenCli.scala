@@ -73,10 +73,13 @@ object SchnapsenCli {
         case pt: PlayerTurn =>
           val player = pt.currentPlayer
           console.putStrLn(s"${player.name} it is your turn, your hand : ${player.hand.mkString(" ")}") >>
+            console.putStrLn("You can do one of the following actions :") >>
             (pt match {
               case s: EarlyGameForehandTurn =>
-                console.putStrLn("You can play one of the following card(s) from your hand :") >>
-                  displayCardChoice[F](s.playableCards)
+                displayCardChoice[F](s.playableCards) >>
+                  Applicative[F].whenA(s.canExchangeTrumpJack) {
+                    console.putStrLn(s"\tJ : Exchange the trump jack ${s.trumpJack} form your hand with the trump card ${s.game.trumpCard}")
+                  }
               case s: EarlyGameDealerTurn =>
                 console.putStrLn(s"${s.game.forehand.name} has played : ${s.forehandCard}") >>
                   console.putStrLn("You can play one of the following card(s) from your hand :") >>
@@ -92,13 +95,19 @@ object SchnapsenCli {
       case _ =>
         state match {
           case _: Init => F.pure(Start(state.game.forehand.id))
-          case s: EarlyGameForehandTurn => parseCardChoice[F](s, rawInput)
+          case s: EarlyGameForehandTurn => parseEarlyGameForehandTurnChoice[F](s, rawInput)
           case s: EarlyGameDealerTurn => parseCardChoice[F](s, rawInput)
           case _: LateGameForehandTurn => F.pure(End(state.game.forehand.id))
           case _: LateGameForehandTurn => F.pure(End(state.game.forehand.id))
         }
     }
   }
+
+  private def parseEarlyGameForehandTurnChoice[F[_]](state: EarlyGameForehandTurn, rawInput: String)(implicit F: Sync[F]): F[Input] =
+    rawInput.toLowerCase match {
+      case "j" if (state.canExchangeTrumpJack) => F.pure(ExchangeTrumpJack(state.currentPlayer.id))
+      case _ => parseCardChoice[F](state, rawInput)
+    }
 
   private def parseCardChoice[F[_] : Sync](state: PlayerTurn, rawInput: String): F[Input] = {
     val player = state.currentPlayer

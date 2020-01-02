@@ -1,6 +1,6 @@
 package io.tyoras.cards.game.schnapsen
 
-import io.tyoras.cards.{Card, Hand}
+import io.tyoras.cards.{Card, Hand, Jack}
 
 sealed trait GameState {
   def name: String
@@ -24,6 +24,8 @@ sealed abstract class EarlyGame(game: Game, currentRole: Role) extends PlayerTur
 
 case class EarlyGameForehandTurn(game: Game) extends EarlyGame(game, Forehand) {
   override val name: String = "Early game - forehand turn"
+  lazy val trumpJack = Card(game.trumpCard.suit, Jack(2))
+  val canExchangeTrumpJack: Boolean = currentPlayer.hand.contains(trumpJack)
 }
 
 case class EarlyGameDealerTurn(game: Game, forehandCard: Card) extends EarlyGame(game, Dealer) {
