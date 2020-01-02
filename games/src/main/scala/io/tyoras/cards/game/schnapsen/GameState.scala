@@ -24,7 +24,7 @@ sealed abstract class EarlyGame(game: Game, currentRole: Role) extends PlayerTur
 
 case class EarlyGameForehandTurn(game: Game) extends EarlyGame(game, Forehand) {
   override val name: String = "Early game - forehand turn"
-  lazy val trumpJack = Card(game.trumpCard.suit, Jack(2))
+  lazy val trumpJack: Card = Card(game.trumpCard.suit, Jack(2))
   val canExchangeTrumpJack: Boolean = currentPlayer.hand.contains(trumpJack)
 }
 

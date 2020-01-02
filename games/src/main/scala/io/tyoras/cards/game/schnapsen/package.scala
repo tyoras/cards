@@ -9,7 +9,7 @@ import io.tyoras.cards._
 
 package object schnapsen {
 
-  val baseDeck: Deck = createDeck(allSuits, List(Ace(11), Ten(), King(4), Queen(3), Jack(2)))
+  lazy val baseDeck: Deck = createDeck(allSuits, List(Ace(11), Ten(), King(4), Queen(3), Jack(2)))
 
   sealed trait Role
   case object Forehand extends Role
