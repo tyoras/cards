@@ -1,0 +1,1 @@
+**Please propose your pull request to https://gitlab.com/tyoras/cards/merge_requests**
