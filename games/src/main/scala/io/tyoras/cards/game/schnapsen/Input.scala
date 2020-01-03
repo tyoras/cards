@@ -1,31 +1,36 @@
 package io.tyoras.cards.game.schnapsen
 
-import java.util.UUID
 
 import io.tyoras.cards.Card
 
 sealed trait Input {
   def name: String
-  def playerId: UUID
+
+  def playerId: PlayerId
+
   override def toString = s"$name"
 }
 
-case class Start(playerId: UUID) extends Input {
+case class Start(playerId: PlayerId) extends Input {
   val name: String = "Start game"
 }
 
-case class PlayCard(playerId: UUID, card: Card) extends Input {
+case class PlayCard(playerId: PlayerId, card: Card) extends Input {
   val name: String = s"Play card $card"
 }
 
-case class ExchangeTrumpJack(playerId: UUID) extends Input {
+case class ExchangeTrumpJack(playerId: PlayerId) extends Input {
   val name: String = "Exchange trump jack"
 }
 
-case class Restart(playerId: UUID) extends Input {
+case class CloseTalon(playerId: PlayerId) extends Input {
+  val name: String = "Close the talon"
+}
+
+case class Restart(playerId: PlayerId) extends Input {
   val name: String = "Restart game"
 }
 
-case class End(playerId: UUID) extends Input {
+case class End(playerId: PlayerId) extends Input {
   val name: String = "Quit game"
 }

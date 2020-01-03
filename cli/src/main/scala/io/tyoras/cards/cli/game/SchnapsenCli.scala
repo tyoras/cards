@@ -7,7 +7,7 @@ import cats.effect.{Console, ExitCode, Sync}
 import cats.implicits._
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import io.chrisdavenport.log4cats.{Logger, SelfAwareStructuredLogger}
-import io.tyoras.cards.cli.{displayCardChoice, displayDeck, lineSeparator, InvalidInput}
+import io.tyoras.cards.cli.{InvalidInput, displayCardChoice, displayDeck, lineSeparator}
 import io.tyoras.cards.game.schnapsen.Schnapsen.{initGame, submitInput}
 import io.tyoras.cards.game.schnapsen._
 
@@ -79,7 +79,8 @@ object SchnapsenCli {
                 displayCardChoice[F](s.playableCards) >>
                   Applicative[F].whenA(s.canExchangeTrumpJack) {
                     console.putStrLn(s"\tJ : Exchange the trump jack ${s.trumpJack} form your hand with the trump card ${s.game.trumpCard}")
-                  }
+                  } >>
+                  console.putStrLn(s"\tC : Close the talon")
               case s: EarlyGameDealerTurn =>
                 console.putStrLn(s"${s.game.forehand.name} has played : ${s.forehandCard}") >>
                   console.putStrLn("You can play one of the following card(s) from your hand :") >>
@@ -105,7 +106,8 @@ object SchnapsenCli {
 
   private def parseEarlyGameForehandTurnChoice[F[_]](state: EarlyGameForehandTurn, rawInput: String)(implicit F: Sync[F]): F[Input] =
     rawInput.toLowerCase match {
-      case "j" if (state.canExchangeTrumpJack) => F.pure(ExchangeTrumpJack(state.currentPlayer.id))
+      case "c" => F.pure(CloseTalon(state.currentPlayer.id))
+      case "j" if state.canExchangeTrumpJack => F.pure(ExchangeTrumpJack(state.currentPlayer.id))
       case _ => parseCardChoice[F](state, rawInput)
     }
 
