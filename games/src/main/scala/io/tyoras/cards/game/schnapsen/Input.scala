@@ -1,6 +1,5 @@
 package io.tyoras.cards.game.schnapsen
 
-
 import io.tyoras.cards.Card
 
 sealed trait Input {

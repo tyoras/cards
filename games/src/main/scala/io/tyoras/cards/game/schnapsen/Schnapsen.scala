@@ -114,11 +114,11 @@ object Schnapsen {
   private def earlyGameDealerTurn[F[_] : Sync](state: EarlyGameDealerTurn, input: PlayCard): F[GameState] = {
 
     def resolveTurn(fhCard: Card, dlCard: Card): InternalGameState[F, Unit] = for {
-      _ <- playCard[F](state.currentPlayer, dlCard)
+      _      <- playCard[F](state.currentPlayer, dlCard)
       winner <- findWinner[F](fhCard, dlCard)
-      _ <- winTurn[F](winner, fhCard, dlCard)
-      _ <- forehand[F] >>= drawCard[F]
-      _ <- dealer[F] >>= drawCard[F]
+      _      <- winTurn[F](winner, fhCard, dlCard)
+      _      <- forehand[F] >>= drawCard[F]
+      _      <- dealer[F] >>= drawCard[F]
     } yield ()
 
     def nextTurn(game: Game): F[GameState] = Sync[F].pure { EarlyGameForehandTurn(game) }

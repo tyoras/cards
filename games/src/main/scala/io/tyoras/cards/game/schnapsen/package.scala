@@ -1,10 +1,9 @@
 package io.tyoras.cards.game
 
-import java.util.UUID
-
 import cats.data.StateT
 import cats.syntax.functor._
 import cats.{Applicative, ApplicativeError}
+import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards._
 
 package object schnapsen {
@@ -17,7 +16,7 @@ package object schnapsen {
 
   case object Dealer extends Role
 
-  type PlayerId = UUID
+  type PlayerId = FUUID
 
   case class Player(id: PlayerId, name: String, hand: Hand = Nil, score: Int = 0, wonCards: Hand = Nil) {
     override def toString = s"name = $name ($id) \t| score = $score \t| hand = ${hand.mkString(" ")}"

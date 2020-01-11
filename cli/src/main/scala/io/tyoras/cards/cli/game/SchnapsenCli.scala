@@ -1,13 +1,12 @@
 package io.tyoras.cards.cli.game
 
-import java.util.UUID
-
 import cats._
 import cats.effect.{Console, ExitCode, Sync}
 import cats.implicits._
+import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import io.chrisdavenport.log4cats.{Logger, SelfAwareStructuredLogger}
-import io.tyoras.cards.cli.{InvalidInput, displayCardChoice, displayDeck, lineSeparator}
+import io.tyoras.cards.cli.{displayCardChoice, displayDeck, lineSeparator, InvalidInput}
 import io.tyoras.cards.game.schnapsen.Schnapsen.{initGame, submitInput}
 import io.tyoras.cards.game.schnapsen._
 
@@ -62,8 +61,8 @@ object SchnapsenCli {
       console.putStrLn("At any moment you can use \\q to quit the game or \\r to restart it.") >>
       console.putStrLn("")
 
-  private def initPlayer[F[_] : Sync](name: String): F[Player] = Sync[F].delay {
-    Player(UUID.randomUUID(), name)
+  private def initPlayer[F[_] : Sync](name: String): F[Player] = FUUID.randomFUUID[F] map {
+    Player(_, name)
   }
 
   private def renderGameState[F[_] : Sync](state: GameState)(implicit console: Console[F]): F[Unit] =
