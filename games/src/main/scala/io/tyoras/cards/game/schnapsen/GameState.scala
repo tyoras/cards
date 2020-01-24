@@ -1,5 +1,6 @@
 package io.tyoras.cards.game.schnapsen
 
+import io.tyoras.cards.game.schnapsen.model._
 import io.tyoras.cards.{Card, Hand, Jack}
 
 sealed trait GameState {
@@ -19,18 +20,21 @@ case class Init(game: Game) extends GameState {
 
 sealed abstract class EarlyGame(game: Game, currentRole: Role) extends PlayerTurn {
   val currentPlayer: Player = game.roles(currentRole)
-  override val playableCards: Hand = currentPlayer.hand
+  def playableCards: Hand
 }
 
-case class EarlyGameForehandTurn(game: Game) extends EarlyGame(game, Forehand) {
+case class EarlyGameForehandTurn(game: Game, ongoingMarriage: Option[Marriage] = None) extends EarlyGame(game, Forehand) {
   override val name: String = "Early game - forehand turn"
-  lazy val trumpJack: Card = Card(game.trumpCard.suit, Jack(2))
-  val canExchangeTrumpJack: Boolean = currentPlayer.hand.contains(trumpJack)
+  lazy val trumpJack: Card = Card(game.trumpSuit, Jack(2))
+  lazy val canExchangeTrumpJack: Boolean = currentPlayer.hand.contains(trumpJack)
+  lazy val possibleMarriages: List[Marriage] = findPossibleMarriages(currentPlayer.hand, game.trumpSuit)
+  override val playableCards: Hand = ongoingMarriage.fold(currentPlayer.hand)(m => List(m.king, m.queen))
 }
 
 case class EarlyGameDealerTurn(game: Game, forehandCard: Card) extends EarlyGame(game, Dealer) {
   override val name: String = "Early game - dealer turn"
   override def toString = s"${super.toString}\n\tForehand card\t$forehandCard"
+  override val playableCards: Hand = currentPlayer.hand
 }
 
 sealed abstract class LateGame(game: Game, currentRole: Role) extends PlayerTurn {
@@ -40,6 +44,7 @@ sealed abstract class LateGame(game: Game, currentRole: Role) extends PlayerTurn
 case class LateGameForehandTurn(game: Game) extends LateGame(game, Forehand) {
   override val name: String = "Late game - forehand turn"
   override val playableCards: Hand = currentPlayer.hand
+  lazy val possibleMarriages: List[Marriage] = findPossibleMarriages(currentPlayer.hand, game.trumpSuit)
 }
 
 case class LateGameDealerTurn(game: Game, forehandCard: Card) extends LateGame(game, Dealer) {

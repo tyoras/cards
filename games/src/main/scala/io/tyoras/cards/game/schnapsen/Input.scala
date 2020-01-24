@@ -1,6 +1,6 @@
 package io.tyoras.cards.game.schnapsen
 
-import io.tyoras.cards.Card
+import io.tyoras.cards.{Card, Suit}
 
 sealed trait Input {
   def name: String
@@ -24,6 +24,10 @@ case class ExchangeTrumpJack(playerId: PlayerId) extends Input {
 
 case class CloseTalon(playerId: PlayerId) extends Input {
   val name: String = "Close the talon"
+}
+
+case class Meld(playerId: PlayerId, suit: Suit) extends Input {
+  val name: String = s"Meld $suit King and $suit Queen"
 }
 
 case class Restart(playerId: PlayerId) extends Input {

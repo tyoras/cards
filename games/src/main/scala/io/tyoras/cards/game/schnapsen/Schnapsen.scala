@@ -6,6 +6,8 @@ import cats.effect.Sync
 import cats.implicits._
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import io.chrisdavenport.log4cats.{Logger, SelfAwareStructuredLogger}
+import io.tyoras.cards.game.schnapsen.model.Marriage.Status
+import io.tyoras.cards.game.schnapsen.model._
 import io.tyoras.cards.{drawFirstCard, _}
 
 object Schnapsen {
@@ -74,6 +76,7 @@ object Schnapsen {
       }
     case (s: EarlyGameForehandTurn, i: ExchangeTrumpJack) => exchangeTrumpJack(s, i)
     case (s: EarlyGameForehandTurn, i: CloseTalon) => closeTalon(s, i)
+    case (s: EarlyGameForehandTurn, i: Meld) => marriage(s, i)
     case (s: EarlyGameDealerTurn, i: PlayCard) =>
       earlyGameDealerTurn(s, i).handleErrorWith {
         case se: SchnapsenError => Logger[F].warn(se)(s"Error during early game turn, ignoring input $i") *> Sync[F].pure(s)
@@ -106,9 +109,22 @@ object Schnapsen {
     val forehand = state.currentPlayer
     for {
       _ <- checkPlayer[F](forehand, input.playerId)
+      _ <- F.whenA(state.ongoingMarriage.isDefined)(F.raiseError[Unit](InvalidAction()))
       lateGame = state.game.copy(talonClosedBy = forehand.id.some)
       _ <- Logger[F].debug(s"Player ${forehand.name} has closed the talon.")
     } yield LateGameForehandTurn(lateGame)
+  }
+
+  private def marriage[F[_] : Sync](state: EarlyGameForehandTurn, input: Meld): F[GameState] = {
+    val forehand = state.currentPlayer
+    for {
+      _ <- checkPlayer[F](forehand, input.playerId)
+      marriage = Marriage(input.suit, Status.of(state.game.trumpSuit, input.suit))
+      wonPoints = if (forehand.wonCards.isEmpty) 0 else marriage.status.score
+      updatedForehand = forehand.copy(score = forehand.score + wonPoints, marriages = forehand.marriages :+ marriage)
+      updatedGame = state.game.copy(forehand = updatedForehand)
+      _ <- Logger[F].debug(s"Player ${forehand.name} has meld : $marriage.")
+    } yield EarlyGameForehandTurn(updatedGame, ongoingMarriage = marriage.some)
   }
 
   private def earlyGameDealerTurn[F[_] : Sync](state: EarlyGameDealerTurn, input: PlayCard): F[GameState] = {
@@ -154,13 +170,12 @@ object Schnapsen {
   }
 
   private def findWinner[F[_] : Applicative](fhCard: Card, dlCard: Card): InternalGameState[F, Player] = StateT { state =>
-    val trumpSuit = state.trumpCard.suit
-    val winner = if ((dlCard.suit == fhCard.suit && dlCard.rank > fhCard.rank) || (dlCard.suit == trumpSuit)) state.dealer else state.forehand
+    val winner = if ((dlCard.suit == fhCard.suit && dlCard.rank > fhCard.rank) || (dlCard.suit == state.trumpSuit)) state.dealer else state.forehand
     (state, winner).pure[F]
   }
 
   private def winTurn[F[_] : Applicative](winner: Player, c1: Card, c2: Card): InternalGameState[F, Unit] = StateT { state =>
-    val updatedScore = winner.score + c1.rank.value + c2.rank.value
+    val updatedScore = winner.score + c1.rank.value + c2.rank.value + winner.potentialMarriagePoints
     val updatedWonCards = winner.wonCards ++ List(c1, c2)
     val updatedWinner = winner.copy(wonCards = updatedWonCards, score = updatedScore)
     val updatedState = if (winner == state.forehand) {
