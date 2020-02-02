@@ -15,7 +15,14 @@ case class Player(id: PlayerId, name: String, hand: Hand = Nil, score: Int = 0, 
   lazy val hasFailedMarriage: Boolean = wonCards.isEmpty && marriages.nonEmpty
 }
 
-case class Game(dealer: Player, forehand: Player, talon: Deck, trumpCard: Card, talonClosedBy: Option[PlayerId] = None) {
+case class Game(
+  dealer: Player,
+  forehand: Player,
+  talon: Deck,
+  trumpCard: Card,
+  talonClosedBy: Option[PlayerId] = None,
+  lastHandWonBy: Option[PlayerId] = None
+) {
   override def toString: String =
     s"""
        |\tDealer\t\t$dealer

@@ -8,9 +8,6 @@ package object cli {
 
   val lineSeparator: String = "----------------------------------------------------------"
 
-  sealed abstract class SchnapsenCliError(code: String, msg: String) extends GameError(code, msg)
-  case object InvalidInput extends SchnapsenCliError("invalid_input", "The input is not valid according to the current game state.")
-
   def displayDeck[F[_] : Monad : Console](deck: Deck): F[Unit] = {
     val nbCards = deck.length / 4
 

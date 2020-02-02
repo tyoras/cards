@@ -2,8 +2,6 @@ package io.tyoras
 
 package object cards {
 
-  abstract class GameError(val code: String, msg: String) extends Exception(msg)
-
   lazy val allSuits: List[Suit] = List(Heart, Diamond, Club, Spade)
   lazy val blackSuits: List[Suit] = allSuits.filter(_.color == Black)
   lazy val redSuits: List[Suit] = allSuits.filter(_.color == Red)

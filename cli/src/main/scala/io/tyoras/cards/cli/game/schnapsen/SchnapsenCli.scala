@@ -1,4 +1,4 @@
-package io.tyoras.cards.cli.game
+package io.tyoras.cards.cli.game.schnapsen
 
 import cats._
 import cats.effect.{Console, ExitCode, Sync}
@@ -6,8 +6,7 @@ import cats.implicits._
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import io.chrisdavenport.log4cats.{Logger, SelfAwareStructuredLogger}
-import io.tyoras.cards.cli.{displayCardChoice, displayDeck, lineSeparator, InvalidInput}
-import io.tyoras.cards.game.schnapsen.Schnapsen.{initGame, submitInput}
+import io.tyoras.cards.cli.{displayCardChoice, displayDeck, lineSeparator}
 import io.tyoras.cards.game.schnapsen._
 import io.tyoras.cards.game.schnapsen.model._
 
@@ -29,13 +28,14 @@ object SchnapsenCli {
   implicit def unsafeLogger[F[_] : Sync]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
 
   def run[F[_] : Sync](implicit console: Console[F]): F[ExitCode] = {
+    val schnapsen = Schnapsen[F]
 
     def transition(state: GameState): F[GameState] = {
       (for {
         _                <- renderGameState[F](state)
         rawInput         <- console.readLn
         gameInput        <- parseInput[F](state, rawInput)
-        updatedGameState <- submitInput[F](state, gameInput)
+        updatedGameState <- schnapsen.submitInput(state, gameInput)
       } yield updatedGameState).handleErrorWith {
         case InvalidInput => console.putStrLn("Your last input is invalid, try again.") >> state.pure[F]
       }.tailRecM(_.map {
@@ -48,7 +48,7 @@ object SchnapsenCli {
       _     <- displayIntro[F]
       human <- initPlayer("Human")
       ia    <- initPlayer("IA")
-      init  <- initGame(human, ia)
+      init  <- schnapsen.initGame(human, ia)
       _     <- transition(init)
     } yield ExitCode.Success
   }
@@ -80,24 +80,31 @@ object SchnapsenCli {
                   Applicative[F].whenA(s.canExchangeTrumpJack) {
                     console.putStrLn(s"\tJ : Exchange the trump jack ${s.trumpJack} form your hand with the trump card ${s.game.trumpCard}")
                   } >>
-                  console.putStrLn(s"\tC : Close the talon") >>
-                  s.ongoingMarriage.fold(displayMarriageChoice[F](s))(m =>
+                  s.ongoingMarriage.fold(console.putStrLn(s"\tC : Close the talon") >> displayMarriageChoice[F](s))(m =>
                     console.putStrLn(s"You have just meld this two card ${m.king} and ${m.queen}, you must play one of them.")
                   )
-              case s: EarlyGameDealerTurn =>
+              case s: DealerTurn =>
                 console.putStrLn(s"${s.game.forehand.name} has played : ${s.forehandCard}") >>
                   console.putStrLn("You can play one of the following card(s) from your hand :") >>
                   displayCardChoice[F](s.playableCards)
-              case _: LateGameForehandTurn => console.putStrLn(s"Congrats, you have reached late game!")
+              case s: LateGameForehandTurn =>
+                displayCardChoice[F](s.playableCards) >>
+                  s.ongoingMarriage.fold(displayMarriageChoice[F](s))(m =>
+                    console.putStrLn(s"You have just meld this two card ${m.king} and ${m.queen}, you must play one of them.")
+                  )
             })
+        case s: Finish =>
+          console.putStrLn("End of the game.") >>
+            console.putStrLn(s"And the winner is : ${s.winner.name} !") >>
+            console.putStrLn(s"You can use \\q to quit the game or \\r to restart a new game.")
       })
 
-  private def displayMarriageChoice[F[_] : Monad](state: EarlyGameForehandTurn)(implicit console: Console[F]): F[Unit] = state.possibleMarriages match {
+  private def displayMarriageChoice[F[_] : Monad](state: ForehandTurn)(implicit console: Console[F]): F[Unit] = state.possibleMarriages match {
     case Nil => ().pure[F]
-    case m :: Nil => console.putStrLn(s"\tm : Meld ${m.king} and ${m.queen} for ${m.status.score} points")
+    case m :: Nil => console.putStrLn(s"\tM : Meld ${m.king} and ${m.queen} for ${m.status.score} points")
     case couples =>
       val choices = couples.zipWithIndex.map {
-        case (m, i) => s"\tm${i + 1} : Meld ${m.king} and ${m.queen} for ${m.status.score} points"
+        case (m, i) => s"\tM${i + 1} : Meld ${m.king} and ${m.queen} for ${m.status.score} points"
       }
       console.putStrLn(s"${choices.mkString("\n")}")
   }
@@ -110,9 +117,9 @@ object SchnapsenCli {
         state match {
           case _: Init => F.pure(Start(state.game.forehand.id))
           case s: EarlyGameForehandTurn => parseEarlyGameForehandTurnChoice[F](s, rawInput)
-          case s: EarlyGameDealerTurn => parseCardChoice[F](s, rawInput)
-          case _: LateGameForehandTurn => F.pure(End(state.game.forehand.id))
-          case _: LateGameForehandTurn => F.pure(End(state.game.forehand.id))
+          case s: DealerTurn => parseCardChoice[F](s, rawInput)
+          case s: LateGameForehandTurn => parseLateGameForehandTurnChoice[F](s, rawInput)
+          case _: Finish => F.pure(End(state.game.forehand.id))
         }
     }
   }
@@ -121,12 +128,13 @@ object SchnapsenCli {
     rawInput.toLowerCase match {
       case "c" => F.pure(CloseTalon(state.currentPlayer.id))
       case "j" if state.canExchangeTrumpJack => F.pure(ExchangeTrumpJack(state.currentPlayer.id))
-      case i if i.startsWith("m") =>
-        i.toCharArray match {
-          case Array('m') => parseMarriageChoice(state, none)
-          case Array('m', n) => parseMarriageChoice(state, n.some)
-          case _ => F.raiseError[Input](InvalidInput)
-        }
+      case i if i.startsWith("m") => parseMarriage(state, i)
+      case _ => parseCardChoice[F](state, rawInput)
+    }
+
+  private def parseLateGameForehandTurnChoice[F[_]](state: LateGameForehandTurn, rawInput: String)(implicit F: Sync[F]): F[Input] =
+    rawInput.toLowerCase match {
+      case i if i.startsWith("m") => parseMarriage(state, i)
       case _ => parseCardChoice[F](state, rawInput)
     }
 
@@ -146,11 +154,18 @@ object SchnapsenCli {
     } yield c
   }
 
-  private def parseMarriageChoice[F[_]](state: EarlyGameForehandTurn, rawInput: Option[Char])(implicit F: Sync[F]): F[Input] = {
+  private def parseMarriage[F[_]](state: ForehandTurn, rawInput: String)(implicit F: Sync[F]): F[Input] =
+    rawInput.toCharArray match {
+      case Array('m') => parseMarriageChoice(state, none)
+      case Array('m', n) => parseMarriageChoice(state, n.some)
+      case _ => F.raiseError[Input](InvalidInput)
+    }
+
+  private def parseMarriageChoice[F[_]](state: ForehandTurn, rawInput: Option[Char])(implicit F: Sync[F]): F[Input] = {
     val player = state.currentPlayer
     val validMarriages = state.possibleMarriages
     for {
-      choice <- F.fromTry(Try { rawInput.map(_.toInt).getOrElse(1) }).adaptError { case _ => InvalidInput }
+      choice <- F.fromTry(Try { rawInput.map(_.asDigit).getOrElse(1) }).adaptError { case _ => InvalidInput }
       validChoice = choice > 0 && choice <= validMarriages.length
       c <- if (validChoice) {
         val m = validMarriages(choice - 1)

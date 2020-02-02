@@ -3,7 +3,7 @@ package io.tyoras.cards.cli
 import cats.effect.Console.implicits._
 import cats.effect.Console.io._
 import cats.effect.{ExitCode, IO, IOApp}
-import io.tyoras.cards.cli.game.SchnapsenCli
+import io.tyoras.cards.cli.game.schnapsen.SchnapsenCli
 
 object Launcher extends IOApp {
 
