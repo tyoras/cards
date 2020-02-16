@@ -20,10 +20,19 @@ cache:
 unit_test:
   stage: test
   script:
-  - sbt clean coverage test coverageReport coverageAggregate codacyCoverage
+  - sbt clean coverage test coverageReport coverageAggregate
   artifacts:
     paths:
     - target/scala-2.13/scoverage-report/
+  
+codacy_coverage:
+  stage: test
+  dependencies:
+    - unit_test
+  script:
+  - sbt codacyCoverage
+  only:
+    - master
 
 scapegoat_analysis:
   stage: test
