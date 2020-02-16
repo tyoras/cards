@@ -25,15 +25,6 @@ unit_test:
     paths:
     - target/scala-2.13/scoverage-report/
   
-codacy_coverage:
-  stage: test
-  dependencies:
-    - unit_test
-  script:
-  - sbt codacyCoverage
-  only:
-    - master
-
 scapegoat_analysis:
   stage: test
   script:
@@ -75,3 +66,13 @@ pages:
     expire_in: 30 days
   only:
     - master
+    
+codacy_coverage:
+  stage: deploy
+  dependencies:
+    - unit_test
+  script:
+  - sbt codacyCoverage
+  only:
+    - master    
+    
