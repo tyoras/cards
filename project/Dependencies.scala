@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  lazy val cats = "org.typelevel" %% "cats-core"              % "2.1.0"
+  lazy val cats = "org.typelevel" %% "cats-core"              % "2.1.1"
   lazy val catEffect = "org.typelevel" %% "cats-effect"       % "2.1.0"
   lazy val console4cats = "dev.profunktor" %% "console4cats"  % "0.8.1"
   lazy val fuuid = "io.chrisdavenport" %% "fuuid"             % "0.3.0-RC2"
