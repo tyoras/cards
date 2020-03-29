@@ -21,7 +21,8 @@ case class Game(
   talon: Deck,
   trumpCard: Card,
   talonClosedBy: Option[PlayerId] = None,
-  lastHandWonBy: Option[PlayerId] = None
+  lastHandWonBy: Option[PlayerId] = None,
+  victoryClaimedByForehand: Boolean = false
 ) {
   override def toString: String =
     s"""

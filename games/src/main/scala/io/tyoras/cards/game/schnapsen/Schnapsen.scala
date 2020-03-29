@@ -79,6 +79,7 @@ object Schnapsen {
         forehandTurn(s, i).handleErrorWith {
           case se: SchnapsenError => Logger[F].warn(se)(s"Error during turn, ignoring input $i") *> Sync[F].pure(s)
         }
+      case (s: ForehandTurn, i: ClaimVictory) => claimVictory(s, i)
       case (s: EarlyGameForehandTurn, i: ExchangeTrumpJack) => exchangeTrumpJack(s, i)
       case (s: EarlyGameForehandTurn, i: CloseTalon) => closeTalon(s, i)
       case (s: EarlyGameForehandTurn, i: Meld) => marriage(s, i)
@@ -230,10 +231,17 @@ object Schnapsen {
 
     private def finishLateGame(game: Game): F[GameState] = for {
       _ <- Logger[F].debug("Last hand played with both player hands exhausted.")
-      winner = game.forehand
+      winner = game.forehand // forehand is the winner of the last trick
       updatedGame = game.copy(lastHandWonBy = winner.id.some)
-      _ <- Logger[F].debug(s"The game winner is the winner of the last trick : ${winner.name}")
     } yield Finish(updatedGame)
-  }
 
+    private def claimVictory(state: ForehandTurn, input: ClaimVictory): F[GameState] = {
+      val forehand = state.currentPlayer
+      for {
+        _ <- checkPlayer(forehand, input.playerId)
+        _ <- Logger[F].debug(s"Player ${forehand.name} has claimed victory")
+        updatedGame = state.game.copy(victoryClaimedByForehand = true)
+      } yield Finish(updatedGame)
+    }
+  }
 }

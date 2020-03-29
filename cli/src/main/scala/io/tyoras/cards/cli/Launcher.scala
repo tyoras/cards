@@ -21,6 +21,6 @@ object Launcher extends IOApp {
     _ <- putStrLn(banner)
     _ <- putStrLn(lineSeparator)
     //  WarCli.game()
-    exitCode <- SchnapsenCli.run[IO]
+    exitCode <- SchnapsenCli[IO].run
   } yield exitCode
 }

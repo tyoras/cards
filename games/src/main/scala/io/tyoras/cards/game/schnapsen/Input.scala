@@ -30,6 +30,10 @@ case class Meld(playerId: PlayerId, suit: Suit) extends Input {
   val name: String = s"Meld $suit King and $suit Queen"
 }
 
+case class ClaimVictory(playerId: PlayerId) extends Input {
+  override def name: String = "Claim victory"
+}
+
 case class Restart(playerId: PlayerId) extends Input {
   val name: String = "Restart game"
 }

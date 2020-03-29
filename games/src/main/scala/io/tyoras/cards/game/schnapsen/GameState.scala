@@ -73,10 +73,14 @@ case class LateGameDealerTurn(game: Game, forehandCard: Card) extends LateGame(g
 
 case class Finish(game: Game) extends GameState {
   override val name: String = "Finish"
-  //TODO complete win conditions
-  lazy val winner: Player = game.lastHandWonBy.map(game.playersById).getOrElse {
-    if (game.forehand.score > game.dealer.score) game.forehand else game.dealer
-  }
+  lazy val winner: Player =
+    if (game.victoryClaimedByForehand) {
+      if (game.forehand.score >= 66) game.forehand else game.dealer
+    } else {
+      game.lastHandWonBy.map(game.playersById).getOrElse {
+        if (game.forehand.score > game.dealer.score) game.forehand else game.dealer
+      }
+    }
 }
 
 case class Exit(game: Game) extends GameState {
