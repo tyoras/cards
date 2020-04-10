@@ -1,9 +1,12 @@
 import sbt._
 
 object Dependencies {
-  lazy val cats = "org.typelevel" %% "cats-core"              % "2.1.1"
-  lazy val catEffect = "org.typelevel" %% "cats-effect"       % "2.1.2"
-  lazy val console4cats = "dev.profunktor" %% "console4cats"  % "0.8.1"
+  lazy val cats = "org.typelevel" %% "cats-core"             % "2.1.1"
+  lazy val catEffect = "org.typelevel" %% "cats-effect"      % "2.1.2"
+  lazy val console4cats = "dev.profunktor" %% "console4cats" % "0.8.1"
+  val declineVersion = "1.2.0"
+  lazy val decline = "com.monovore" %% "decline"              % declineVersion
+  lazy val declineEffect = "com.monovore" %% "decline-effect" % declineVersion
   lazy val fuuid = "io.chrisdavenport" %% "fuuid"             % "0.3.0"
   lazy val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % "1.0.1"
   lazy val logback = "ch.qos.logback"                         % "logback-classic" % "1.2.3"
@@ -30,6 +33,8 @@ object Dependencies {
     cats,
     catEffect,
     console4cats,
+    decline,
+    declineEffect,
     log4cats,
     logback,
     scalaTest  % Test,

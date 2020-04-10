@@ -1,26 +1,36 @@
 package io.tyoras.cards.cli
 
 import cats.effect.Console.implicits._
-import cats.effect.Console.io._
-import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.{ExitCode, IO}
+import cats.implicits._
+import com.monovore.decline._
+import com.monovore.decline.effect._
+import io.tyoras.cards.BuildInfo
+import io.tyoras.cards.cli.game.WarCli
 import io.tyoras.cards.cli.game.schnapsen.SchnapsenCli
 
-object Launcher extends IOApp {
+object Launcher
+  extends CommandIOApp(name = "card-games", header = banner, version = s"card-games version ${BuildInfo.version} built at ${BuildInfo.builtAtString}") {
 
-  val banner: String =
-    """ _____               _
-      |/  __ \             | |
-      || /  \/ __ _ _ __ __| |    __ _  __ _ _ __ ___   ___  ___
-      || |    / _` | '__/ _` |   / _` |/ _` | '_ ` _ \ / _ \/ __|
-      || \__/\ (_| | | | (_| |  | (_| | (_| | | | | | |  __/\__ \
-      | \____/\__,_|_|  \__,_|   \__, |\__,_|_| |_| |_|\___||___/
-      |                           __/ |
-      |                          |___/                           """.stripMargin
+  case object SchnapsenCommand
+  val schnapsenCommandOpts: Opts[SchnapsenCommand.type] =
+    Opts.subcommand("schnapsen", "Play a game of Schnapsen") {
+      Opts(SchnapsenCommand)
+    }
 
-  override def run(args: List[String]): IO[ExitCode] = for {
-    _ <- putStrLn(banner)
-    _ <- putStrLn(lineSeparator)
-    //  WarCli.game()
-    exitCode <- SchnapsenCli[IO].run
-  } yield exitCode
+  case object WarCommand
+  val warCommandOpts: Opts[WarCommand.type] =
+    Opts.subcommand("war", "Play a game of War") {
+      Opts(WarCommand)
+    }
+
+  override def main: Opts[IO[ExitCode]] = {
+    (schnapsenCommandOpts orElse warCommandOpts).map {
+      case SchnapsenCommand => SchnapsenCli[IO].run
+      case WarCommand => WarCli[IO].run
+    }.map {
+      displayBanner[IO] >> _
+    }
+  }
+
 }

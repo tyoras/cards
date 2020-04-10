@@ -19,7 +19,15 @@ lazy val root = (project in file("."))
   .aggregate(core, games, cli)
 
 lazy val core = (project in file("core"))
-  .settings(commonSettings, scalaOpts, libraryDependencies ++= coreDeps)
+  .settings(
+    commonSettings,
+    scalaOpts,
+    libraryDependencies ++= coreDeps,
+    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoPackage := "io.tyoras.cards",
+    buildInfoOptions += BuildInfoOption.BuildTime
+  )
+  .enablePlugins(BuildInfoPlugin)
 
 lazy val games = (project in file("games"))
   .settings(commonSettings, scalaOpts, libraryDependencies ++= gamesDeps)
