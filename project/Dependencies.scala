@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   lazy val cats = "org.typelevel" %% "cats-core"             % "2.1.1"
-  lazy val catEffect = "org.typelevel" %% "cats-effect"      % "2.1.2"
+  lazy val catEffect = "org.typelevel" %% "cats-effect"      % "2.1.3"
   lazy val console4cats = "dev.profunktor" %% "console4cats" % "0.8.1"
   val declineVersion = "1.2.0"
   lazy val decline = "com.monovore" %% "decline"              % declineVersion
