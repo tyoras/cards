@@ -19,7 +19,7 @@ class CardsSpec extends AnyFlatSpec with Matchers {
     allSuits should contain theSameElementsAs expectedSuits
   }
 
-  val expectedInternational52DeckSize: Int = 52
+  val expectedInternational52DeckSize: Long = 52
 
   "international52Deck" should "contain 52 cards" in {
     international52Deck should have size expectedInternational52DeckSize
@@ -33,19 +33,19 @@ class CardsSpec extends AnyFlatSpec with Matchers {
     val suits = redSuits
     val ranks = defaultRanks
     val expectedDeckLength = suits.size * ranks.size
-    createDeck(suits, ranks) should have size expectedDeckLength
+    createDeck(suits, ranks) should have size expectedDeckLength.toLong
   }
 
   it should "create a deck containing only unique cards" in {
     val suits = redSuits
     val ranks = defaultRanks
     val expectedDeckLength = suits.size * ranks.size
-    createDeck(suits, ranks).toSet should have size expectedDeckLength
+    createDeck(suits, ranks).toSet should have size expectedDeckLength.toLong
   }
 
   "shuffle" should "preserve the deck size" in {
     val baseDeck = international52Deck
-    val expectedDeckSize = baseDeck.size
+    val expectedDeckSize = baseDeck.size.toLong
     shuffle(baseDeck) should have size expectedDeckSize
   }
 
@@ -68,7 +68,7 @@ class CardsSpec extends AnyFlatSpec with Matchers {
 
   "pickCard by index" should "return None with an empty hand" in {
     val hand = Nil
-    pickCard(0, hand) should be (None, hand)
+    pickCard(0, hand) should be ((None, hand))
   }
 
   it should "return the card and the remaining hand when the hand contain cards" in {
@@ -81,23 +81,23 @@ class CardsSpec extends AnyFlatSpec with Matchers {
 
   it should "return None when the index is lower than 0" in {
     val hand = List(Card(Diamond, Jack()), Card(Heart, Queen()))
-    pickCard(-1, hand) should be (None, hand)
+    pickCard(-1, hand) should be ((None, hand))
   }
 
   it should "return None when the index is equal to the hand size" in {
     val hand = List(Card(Diamond, Jack()), Card(Heart, Queen()))
-    pickCard(2, hand) should be (None, hand)
+    pickCard(2, hand) should be ((None, hand))
   }
 
   it should "return None when the index is greater than the hand size" in {
     val hand = List(Card(Diamond, Jack()), Card(Heart, Queen()))
-    pickCard(10, hand) should be (None, hand)
+    pickCard(10, hand) should be ((None, hand))
   }
 
   "pickCard by card" should "return None with an empty hand" in {
     val card = Card(Spade, Ace())
     val hand = Nil
-    pickCard(card, hand) should be (None, hand)
+    pickCard(card, hand) should be ((None, hand))
   }
 
   it should "return the card and the remaining hand when the hand contain cards" in {
@@ -112,7 +112,7 @@ class CardsSpec extends AnyFlatSpec with Matchers {
   it should "return None when the card is not present in the hand" in {
     val card = Card(Spade, Ace())
     val hand = List(Card(Diamond, Jack()), Card(Heart, Queen()))
-    pickCard(card, hand) should be (None, hand)
+    pickCard(card, hand) should be ((None, hand))
   }
 
   it should "return only the first matching card when the card has several occurrences in the hand" in {

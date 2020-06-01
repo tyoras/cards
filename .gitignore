@@ -17,3 +17,4 @@ logs
 
 # Intellij
 .idea/
+project/metals.sbt

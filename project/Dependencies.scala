@@ -8,7 +8,7 @@ object Dependencies {
   lazy val decline = "com.monovore" %% "decline"              % declineVersion
   lazy val declineEffect = "com.monovore" %% "decline-effect" % declineVersion
   lazy val fuuid = "io.chrisdavenport" %% "fuuid"             % "0.3.0"
-  lazy val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % "1.0.1"
+  lazy val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % "1.1.1"
   lazy val logback = "ch.qos.logback"                         % "logback-classic" % "1.2.3"
   lazy val scalaTest = "org.scalatest" %% "scalatest"         % "3.1.2"
   lazy val scalaCheck = "org.scalacheck" %% "scalacheck"      % "1.14.3"

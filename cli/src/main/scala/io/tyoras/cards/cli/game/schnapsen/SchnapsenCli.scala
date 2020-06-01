@@ -151,19 +151,20 @@ object SchnapsenCli {
       val player = state.currentPlayer
       val playableCards = state.playableCards
       for {
-        choice <- F
-          .fromTry(Try {
-            rawInput.toInt
-          })
-          .adaptError { case _ => InvalidInput }
+        choice <-
+          F.fromTry(Try {
+              rawInput.toInt
+            })
+            .adaptError { case _ => InvalidInput }
         validChoice = choice > 0 && choice <= playableCards.length
-        c <- if (validChoice) {
-          val card = playableCards(choice - 1)
-          Logger[F].debug(s"Player ${player.name} has played $card") >>
-            PlayCard(player.id, card).pure[F]
-        } else {
-          F.raiseError[Input](InvalidInput)
-        }
+        c <-
+          if (validChoice) {
+            val card = playableCards(choice - 1)
+            Logger[F].debug(s"Player ${player.name} has played $card") >>
+              PlayCard(player.id, card).pure[F]
+          } else {
+            F.raiseError[Input](InvalidInput)
+          }
       } yield c
     }
 
@@ -178,19 +179,20 @@ object SchnapsenCli {
       val player = state.currentPlayer
       val validMarriages = state.possibleMarriages
       for {
-        choice <- F
-          .fromTry(Try {
-            rawInput.map(_.asDigit).getOrElse(1)
-          })
-          .adaptError { case _ => InvalidInput }
+        choice <-
+          F.fromTry(Try {
+              rawInput.map(_.asDigit).getOrElse(1)
+            })
+            .adaptError { case _ => InvalidInput }
         validChoice = choice > 0 && choice <= validMarriages.length
-        c <- if (validChoice) {
-          val m = validMarriages(choice - 1)
-          Logger[F].debug(s"Player ${player.name} has meld ${m.king} and ${m.queen} for ${m.status.score} points") >>
-            Meld(player.id, m.king.suit).pure[F]
-        } else {
-          F.raiseError[Input](InvalidInput)
-        }
+        c <-
+          if (validChoice) {
+            val m = validMarriages(choice - 1)
+            Logger[F].debug(s"Player ${player.name} has meld ${m.king} and ${m.queen} for ${m.status.score} points") >>
+              Meld(player.id, m.king.suit).pure[F]
+          } else {
+            F.raiseError[Input](InvalidInput)
+          }
       } yield c
     }
   }
