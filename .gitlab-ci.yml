@@ -72,7 +72,7 @@ codacy_coverage:
   dependencies:
     - unit_test
   script:
-  - sbt codacyCoverage
+  - bash <(curl -Ls https://coverage.codacy.com/get.sh)
   only:
-    - master    
+    - master
     
