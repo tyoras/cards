@@ -30,6 +30,7 @@ unit_test:
   artifacts:
     paths:
     - target/scala-2.13/scoverage-report/
+    - target/scala-2.13/coverage-report/
   
 scapegoat_analysis:
   stage: test
@@ -78,7 +79,7 @@ codacy_coverage:
   dependencies:
     - unit_test
   script:
-  - bash <(curl -Ls https://coverage.codacy.com/get.sh)
+  - bash <(curl -Ls https://coverage.codacy.com/get.sh) -r /builds/tyoras/cards/target/scala-2.13/coverage-report/cobertura.xml
   only:
     - master
 
