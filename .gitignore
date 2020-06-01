@@ -10,11 +10,13 @@ project/plugins/project/
 .history
 .cache
 .lib/
-.bloop
-.metals
 logs
 *.swp
 
 # Intellij
 .idea/
+
+# Metals
+.metals/
+.bloop/
 project/metals.sbt

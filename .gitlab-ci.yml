@@ -1,5 +1,11 @@
 image: "hseeberger/scala-sbt:11.0.7_1.3.12_2.13.2"
 
+stages:
+  - test
+  - docker_build
+  - docker_push
+  - deploy
+
 variables:
   SBT_OPTS: "-Dsbt.global.base=sbt-cache/.sbtboot -Dsbt.boot.directory=sbt-cache/.boot -Dsbt.ivy.home=sbt-cache/.ivy -Dsbt.coursier.home=sbt-cache/.coursier"
 
@@ -75,4 +81,57 @@ codacy_coverage:
   - bash <(curl -Ls https://coverage.codacy.com/get.sh)
   only:
     - master
-    
+
+Build:
+  image: docker:latest
+  services:
+    - docker:dind
+  stage: docker_build
+  script:
+    - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - >
+      docker build
+      --pull
+      --build-arg VCS_REF=$CI_COMMIT_SHA
+      --build-arg VCS_URL=$CI_PROJECT_URL
+      --cache-from $CI_REGISTRY_IMAGE:latest
+      --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+      .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+Push latest:
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    GIT_STRATEGY: none
+  stage: docker_push
+  only:
+    - master
+  script:
+    - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:latest
+    - echo -n $DOCKER_HUB_PASSWORD | docker login -u tyoras --password-stdin
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA tyoras/cards:latest
+    - docker push tyoras/cards:latest
+
+Push tag:
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    GIT_STRATEGY: none
+  stage: docker_push
+  only:
+    - tags
+  script:
+    - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+    - echo -n $DOCKER_HUB_PASSWORD | docker login -u tyoras --password-stdin
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA tyoras/cards:$CI_COMMIT_REF_NAME
+    - docker push tyoras/cards:$CI_COMMIT_REF_NAME

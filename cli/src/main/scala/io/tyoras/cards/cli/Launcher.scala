@@ -9,8 +9,7 @@ import io.tyoras.cards.BuildInfo
 import io.tyoras.cards.cli.game.WarCli
 import io.tyoras.cards.cli.game.schnapsen.SchnapsenCli
 
-object Launcher
-  extends CommandIOApp(name = "card-games", header = banner, version = s"card-games version ${BuildInfo.version} built at ${BuildInfo.builtAtString}") {
+object Launcher extends CommandIOApp(name = "cards", header = banner, version = s"cards version ${BuildInfo.version} built at ${BuildInfo.builtAtString}") {
 
   case object SchnapsenCommand
   val schnapsenCommandOpts: Opts[SchnapsenCommand.type] =
