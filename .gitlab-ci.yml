@@ -2,9 +2,9 @@ image: "hseeberger/scala-sbt:11.0.7_1.3.12_2.13.2"
 
 stages:
   - test
+  - deploy
   - docker_build
   - docker_push
-  - deploy
 
 variables:
   SBT_OPTS: "-Dsbt.global.base=sbt-cache/.sbtboot -Dsbt.boot.directory=sbt-cache/.boot -Dsbt.ivy.home=sbt-cache/.ivy -Dsbt.coursier.home=sbt-cache/.coursier"
@@ -73,13 +73,17 @@ pages:
     expire_in: 30 days
   only:
     - master
-    
+
 codacy_coverage:
   stage: deploy
   dependencies:
     - unit_test
   script:
-  - bash <(curl -Ls https://coverage.codacy.com/get.sh) -r /builds/tyoras/cards/target/scala-2.13/coverage-report/cobertura.xml
+  - apt install -y jq
+  - LATEST_VERSION="$(curl -Ls https://api.bintray.com/packages/codacy/Binaries/codacy-coverage-reporter/versions/_latest | jq -r .name)"
+  - curl -Ls -o codacy-coverage-reporter "https://dl.bintray.com/codacy/Binaries/${LATEST_VERSION}/codacy-coverage-reporter-linux"
+  - chmod +x codacy-coverage-reporter
+  - ./codacy-coverage-reporter report -l scala -r /builds/tyoras/cards/target/scala-2.13/coverage-report/cobertura.xml
   only:
     - master
 
@@ -88,6 +92,9 @@ Build:
   services:
     - docker:dind
   stage: docker_build
+  only:
+    - master
+    - tags
   script:
     - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE:latest || true

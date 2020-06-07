@@ -26,7 +26,8 @@ lazy val core = (project in file("core"))
     libraryDependencies ++= coreDeps,
     buildInfoKeys := Seq[BuildInfoKey](version),
     buildInfoPackage := "io.tyoras.cards",
-    buildInfoOptions += BuildInfoOption.BuildTime
+    buildInfoOptions += BuildInfoOption.BuildTime,
+    coverageExcludedPackages := ".*BuildInfo.scala"
   )
   .enablePlugins(BuildInfoPlugin)
 

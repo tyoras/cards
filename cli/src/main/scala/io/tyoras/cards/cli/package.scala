@@ -16,7 +16,7 @@ package object cli {
       |                           __/ |
       |                          |___/                           """.stripMargin
 
-  val lineSeparator: String = "----------------------------------------------------------"
+  val lineSeparator: String = "-" * 58
 
   def displayBanner[F[_] : Monad : Console]: F[Unit] = for {
     _ <- Console[F].putStrLn(banner)
@@ -34,9 +34,9 @@ package object cli {
     def displaySplit(deck: Deck): F[Unit] = Monad[F].tailRecM(deck) {
       case Nil => ().asRight[Deck].pure[F]
       case d =>
-        val (splitted, rest) = d.splitAt(nbCards)
+        val (split, rest) = d.splitAt(nbCards)
         for {
-          _ <- splitted.traverse_(displayCard)
+          _ <- split.traverse_(displayCard)
           _ <- Console[F].putStrLn("")
         } yield rest.asLeft
     }
