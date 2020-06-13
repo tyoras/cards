@@ -11,3 +11,5 @@ case object WrongPlayer extends SchnapsenError("wrong_player", "Another player t
 case class InvalidAction(msg: String = "The player has tried to play an invalid action.") extends SchnapsenError("invalid_action", msg)
 
 case class InvalidCard(msg: String = "The player has tried to play an invalid card.") extends SchnapsenError("invalid_card", msg)
+
+case class InvalidPlayer(msg: String) extends SchnapsenError("invalid_player", msg)

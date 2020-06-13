@@ -1,7 +1,7 @@
 package io.tyoras.cards.cli.game.schnapsen
 
 import cats._
-import cats.effect.{Console, ExitCode, Sync}
+import cats.effect.{Clock, Console, ExitCode, Sync}
 import cats.implicits._
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
@@ -10,6 +10,7 @@ import io.tyoras.cards.cli.{displayCardChoice, displayDeck, lineSeparator}
 import io.tyoras.cards.game.schnapsen._
 import io.tyoras.cards.game.schnapsen.model._
 
+import io.chrisdavenport.cats.effect.time.implicits._
 import scala.util.Try
 
 trait SchnapsenCli[F[_]] {
@@ -29,7 +30,7 @@ object SchnapsenCli {
       |                             | |
       |                             |_|                   """.stripMargin
 
-  def apply[F[_]](implicit F: Sync[F], console: Console[F]): SchnapsenCli[F] = new SchnapsenCli[F] {
+  def apply[F[_] : Clock](implicit F: Sync[F], console: Console[F]): SchnapsenCli[F] = new SchnapsenCli[F] {
     implicit val unsafeLogger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
 
     private val displayIntro: F[Unit] =
@@ -40,6 +41,18 @@ object SchnapsenCli {
         displayDeck[F](baseDeck) >>
         console.putStrLn("At any moment you can use \\q to quit the game or \\r to restart it.") >>
         console.putStrLn("")
+
+    private val initGameContext: F[GameContext] = {
+      def initPlayer(name: String): F[PlayerInfo] = FUUID.randomFUUID[F] map {
+        PlayerInfo(_, name)
+      }
+
+      for {
+        human     <- initPlayer("Human")
+        ia        <- initPlayer("IA")
+        startedAt <- Clock[F].getZonedDateTimeUTC
+      } yield GameContext(human, ia, startedAt)
+    }
 
     override val run: F[ExitCode] = {
       val schnapsen = Schnapsen[F]
@@ -59,16 +72,11 @@ object SchnapsenCli {
       }
 
       for {
-        _     <- displayIntro
-        human <- initPlayer("Human")
-        ia    <- initPlayer("IA")
-        init  <- schnapsen.initGame(human, ia)
-        _     <- transition(init)
+        _           <- displayIntro
+        gameContext <- initGameContext
+        init        <- schnapsen.initGameRound(gameContext)
+        _           <- transition(init)
       } yield ExitCode.Success
-    }
-
-    private def initPlayer(name: String): F[Player] = FUUID.randomFUUID[F] map {
-      Player(_, name)
     }
 
     private def renderGameState(state: GameState): F[Unit] =
@@ -84,13 +92,13 @@ object SchnapsenCli {
                   displayCardChoice[F](s.playableCards) >>
                     console.putStrLn(s"\tV : Claim victory") >>
                     Applicative[F].whenA(s.canExchangeTrumpJack) {
-                      console.putStrLn(s"\tJ : Exchange the trump jack ${s.trumpJack} form your hand with the trump card ${s.game.trumpCard}")
+                      console.putStrLn(s"\tJ : Exchange the trump jack ${s.trumpJack} form your hand with the trump card ${s.round.trumpCard}")
                     } >>
                     s.ongoingMarriage.fold(console.putStrLn(s"\tC : Close the talon") >> displayMarriageChoice(s))(m =>
                       console.putStrLn(s"You have just meld this two card ${m.king} and ${m.queen}, you must play one of them.")
                     )
                 case s: DealerTurn =>
-                  console.putStrLn(s"${s.game.forehand.name} has played : ${s.forehandCard}") >>
+                  console.putStrLn(s"${s.round.forehand.name} has played : ${s.forehandCard}") >>
                     console.putStrLn("You can play one of the following card(s) from your hand :") >>
                     displayCardChoice[F](s.playableCards)
                 case s: LateGameForehandTurn =>
@@ -101,9 +109,30 @@ object SchnapsenCli {
                     )
               })
           case s: Finish =>
-            console.putStrLn("End of the game.") >>
-              console.putStrLn(s"And the winner is : ${s.winner.name} !") >>
-              console.putStrLn(s"You can use \\q to quit the game or \\r to restart a new game.")
+            for {
+              _      <- console.putStrLn("End of the round.")
+              winner <- F.fromEither(s.player(s.outcome.winner))
+              loser  <- F.fromEither(s.player(s.outcome.loser))
+              _ <-
+                console.putStrLn(s"The round winner is : ${winner.name} !") >>
+                  (s.outcome match {
+                    case _: TalonExhausted =>
+                      console.putStrLn(s"${winner.name} has scored 1 game point by winning the last turn after the talon was exhausted.")
+                    case vc: VictoryClaimed =>
+                      console.putStrLn(
+                        s"${winner.name} has scored ${vc.reward} game point(s) ${if (vc.successful) "by successfully" else "because the opponent failed at"} claiming victory."
+                      )
+                  })
+              _ <-
+                if (winner.score <= 0)
+                  console.putStrLn("End of the game!") >>
+                    console.putStrLn(
+                      s"${winner.name} has won by reaching a final score of ${winner.score} game point while its opponent ${loser.name} had a final score of ${winner.score} game points."
+                    ) >>
+                    console.putStrLn(s"You can use \\q to quit the game or \\r to restart a new game.")
+                else console.putStrLn(s"Press 'Enter' when you are ready to start the next round.")
+            } yield ()
+          case _: Exit => F.raiseError(InvalidState) // Exit state is handled exclusively by the main game loop
         })
 
     private def displayMarriageChoice(state: ForehandTurn): F[Unit] = state.possibleMarriages match {
@@ -118,15 +147,17 @@ object SchnapsenCli {
 
     private def parseInput(state: GameState, rawInput: String): F[Input] = {
       rawInput match {
-        case "\\q" => F.pure(End(state.game.forehand.id))
-        case "\\r" => F.pure(Restart(state.game.forehand.id))
+        case "\\q" => F.pure(End(state.round.forehand.id))
+        case "\\r" => F.pure(Restart(state.round.forehand.id))
         case _ =>
           state match {
-            case _: Init => F.pure(Start(state.game.forehand.id))
+            case _: Init => F.pure(Start(state.round.forehand.id))
             case s: EarlyGameForehandTurn => parseEarlyGameForehandTurnChoice(s, rawInput)
             case s: DealerTurn => parseCardChoice(s, rawInput)
             case s: LateGameForehandTurn => parseLateGameForehandTurnChoice(s, rawInput)
-            case _: Finish => F.pure(End(state.game.forehand.id))
+            case s: Finish =>
+              F.fromEither(s.player(s.outcome.winner)).map(_.score <= 0).ifM(F.pure(End(state.round.forehand.id)), F.pure(Start(state.round.forehand.id)))
+            case _: Exit => F.raiseError(InvalidState) // Exit state is handled exclusively by the main game loop
           }
       }
     }

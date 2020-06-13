@@ -1,9 +1,10 @@
 import sbt._
 
 object Dependencies {
-  lazy val cats = "org.typelevel" %% "cats-core"             % "2.1.1"
-  lazy val catEffect = "org.typelevel" %% "cats-effect"      % "2.1.3"
-  lazy val console4cats = "dev.profunktor" %% "console4cats" % "0.8.1"
+  lazy val cats = "org.typelevel" %% "cats-core"                      % "2.1.1"
+  lazy val catsEffect = "org.typelevel" %% "cats-effect"              % "2.1.3"
+  lazy val catsEffectTime = "io.chrisdavenport" %% "cats-effect-time" % "0.1.2"
+  lazy val console4cats = "dev.profunktor" %% "console4cats"          % "0.8.1"
   val declineVersion = "1.2.0"
   lazy val decline = "com.monovore" %% "decline"              % declineVersion
   lazy val declineEffect = "com.monovore" %% "decline-effect" % declineVersion
@@ -22,7 +23,8 @@ object Dependencies {
 
   lazy val gamesDeps = Seq(
     cats,
-    catEffect,
+    catsEffect,
+    catsEffectTime,
     fuuid,
     log4cats,
     scalaTest  % Test,
@@ -31,7 +33,8 @@ object Dependencies {
 
   lazy val cliDeps = Seq(
     cats,
-    catEffect,
+    catsEffect,
+    catsEffectTime,
     console4cats,
     decline,
     declineEffect,

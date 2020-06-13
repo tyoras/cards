@@ -6,7 +6,7 @@ import io.tyoras.cards.game.schnapsen.model.DeckError
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class GameSpec extends AnyFlatSpec with Matchers {
+class GameRoundSpec extends AnyFlatSpec with Matchers {
 
   "baseDeck" should "be the good one for Schnapsen" in {
     val expectedSchnapsenDeck = List(

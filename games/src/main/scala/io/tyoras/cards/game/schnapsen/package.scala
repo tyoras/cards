@@ -6,7 +6,7 @@ import cats.{Applicative, ApplicativeError}
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards._
 import io.tyoras.cards.game.schnapsen.model.Marriage.Status
-import io.tyoras.cards.game.schnapsen.model.{DeckError, Game, Marriage, Player}
+import io.tyoras.cards.game.schnapsen.model.{DeckError, GameRound, Marriage, Player}
 
 package object schnapsen {
 
@@ -14,7 +14,7 @@ package object schnapsen {
 
   type PlayerId = FUUID
 
-  private[schnapsen] type InternalGameState[F[_], A] = StateT[F, Game, A]
+  private[schnapsen] type InternalGameState[F[_], A] = StateT[F, GameRound, A]
 
   private[schnapsen] def forehand[F[_] : Applicative]: InternalGameState[F, Player] = StateT.inspect { _.forehand }
 
