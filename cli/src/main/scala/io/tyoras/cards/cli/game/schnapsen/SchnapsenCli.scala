@@ -153,9 +153,8 @@ object SchnapsenCli {
       for {
         choice <-
           F.fromTry(Try {
-              rawInput.toInt
-            })
-            .adaptError { case _ => InvalidInput }
+            rawInput.toInt
+          }).adaptError { case _ => InvalidInput }
         validChoice = choice > 0 && choice <= playableCards.length
         c <-
           if (validChoice) {
@@ -181,9 +180,8 @@ object SchnapsenCli {
       for {
         choice <-
           F.fromTry(Try {
-              rawInput.map(_.asDigit).getOrElse(1)
-            })
-            .adaptError { case _ => InvalidInput }
+            rawInput.map(_.asDigit).getOrElse(1)
+          }).adaptError { case _ => InvalidInput }
         validChoice = choice > 0 && choice <= validMarriages.length
         c <-
           if (validChoice) {
