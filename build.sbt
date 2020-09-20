@@ -3,14 +3,14 @@ import scoverage.ScoverageKeys.coverageMinimum
 
 lazy val commonSettings = Seq(
   organization := "io.tyoras",
-  scalaVersion := "2.13.2",
+  scalaVersion := "2.13.3",
   version := "0.1.0-SNAPSHOT",
   betterFor,
   scalacOptions in Scapegoat += "-P:scapegoat:overrideLevels:UnsafeTraversableMethods=Warning",
   test in assembly := {}
 )
 
-ThisBuild / scapegoatVersion := "1.4.4"
+ThisBuild / scapegoatVersion := "1.4.5"
 ThisBuild / scapegoatDisabledInspections := Seq("IncorrectlyNamedExceptions")
 ThisBuild / coverageMinimum := 75
 ThisBuild / coverageFailOnMinimum := false

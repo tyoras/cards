@@ -35,10 +35,12 @@ object Schnapsen {
 
     override def submitInput(state: GameState, input: Input): F[GameState] =
       Logger[F].debug(s"Submitting input $input on current state : $state") >>
-        (menu orElse game applyOrElse (
-          (state, input),
-          (_: (GameState, Input)) => Logger[F].debug(s"Ignoring wrong input : $input") *> state.pure[F]
-        ))
+        menu
+          .orElse(game)
+          .applyOrElse(
+            state -> input,
+            (_: (GameState, Input)) => Logger[F].debug(s"Ignoring wrong input : $input") *> state.pure[F]
+          )
 
     private def menu: PartialFunction[(GameState, Input), F[GameState]] = {
       case (s, _: Restart) =>
