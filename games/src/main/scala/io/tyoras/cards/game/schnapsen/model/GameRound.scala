@@ -8,8 +8,8 @@ case object Forehand extends Role
 case object Dealer extends Role
 
 case class Player(id: PlayerId, name: String, hand: Hand = Nil, score: Int = 0, wonCards: Hand = Nil, marriages: List[Marriage] = Nil) {
-  override def toString = s"name = $name ($id) \t| score = $score \t| hand = ${hand.mkString(" ")}"
-  lazy val potentialMarriagePoints: Int = if (wonCards.isEmpty) marriages.foldRight(0)(_.status.score + _) else 0
+  override def toString = s"name = $name ($id) \t| score = $score \t| hand = ${hand.mkString(" ")}"
+  lazy val potentialMarriagePoints: Int = if (wonCards.nonEmpty) marriages.foldRight(0)(_.status.score + _) else 0
   lazy val hasFailedMarriage: Boolean = wonCards.isEmpty && marriages.nonEmpty
 }
 

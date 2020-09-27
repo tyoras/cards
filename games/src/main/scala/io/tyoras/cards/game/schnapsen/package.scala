@@ -9,8 +9,10 @@ import io.tyoras.cards.game.schnapsen.model.Marriage.Status
 import io.tyoras.cards.game.schnapsen.model.{DeckError, GameRound, Marriage, Player}
 
 package object schnapsen {
+  private[schnapsen] val schnapsenRanks: Set[Rank] = Set(Ace(11), Ten(), King(4), Queen(3), Jack(2))
+  private[schnapsen] val schnapsenSuits: Set[Suit] = allSuits
 
-  lazy val baseDeck: Deck = createDeck(allSuits, List(Ace(11), Ten(), King(4), Queen(3), Jack(2)))
+  lazy val baseDeck: Deck = createDeck(schnapsenSuits, schnapsenRanks)
 
   type PlayerId = FUUID
 

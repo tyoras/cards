@@ -2,21 +2,21 @@ package io.tyoras
 
 package object cards {
 
-  lazy val allSuits: List[Suit] = List(Heart, Diamond, Club, Spade)
-  lazy val blackSuits: List[Suit] = allSuits.filter(_.color == Black)
-  lazy val redSuits: List[Suit] = allSuits.filter(_.color == Red)
+  lazy val allSuits: Set[Suit] = Set(Heart, Diamond, Club, Spade)
+  lazy val blackSuits: Set[Suit] = allSuits.filter(_.color == Black)
+  lazy val redSuits: Set[Suit] = allSuits.filter(_.color == Red)
 
-  lazy val defaultRanks: List[Rank] = List(Ace(), King(), Queen(), Jack(), Ten(), Nine(), Eight(), Seven(), Six(), Five(), Four(), Three(), Two())
+  lazy val defaultRanks: Set[Rank] = Set(Ace(), King(), Queen(), Jack(), Ten(), Nine(), Eight(), Seven(), Six(), Five(), Four(), Three(), Two())
 
   type Deck = List[Card]
   type Hand = List[Card]
 
   lazy val international52Deck: Deck = createDeck(allSuits, defaultRanks)
 
-  def createDeck(suits: List[Suit], ranks: List[Rank]): Deck = for {
+  def createDeck(suits: Set[Suit], ranks: Set[Rank]): Deck = (for {
     s <- suits
     r <- ranks
-  } yield Card(s, r)
+  } yield Card(s, r)).toList
 
   def shuffle(cards: Deck): Deck = util.Random.shuffle(cards)
 

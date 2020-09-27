@@ -14,20 +14,23 @@ case object Red extends Color {
 
 sealed trait Suit {
   def color: Color
+  def symbol: String
+
+  override lazy val toString: String = color.colorize(symbol)
 }
 case object Heart extends Suit {
   override val color: Color = Red
-  override val toString: String = color.colorize("♥")
+  override val symbol: String = "♥"
 }
 case object Diamond extends Suit {
   override val color: Color = Red
-  override val toString: String = color.colorize("♦")
+  override val symbol: String = "♦"
 }
 case object Club extends Suit {
   override val color: Color = Black
-  override val toString: String = color.colorize("♣")
+  override val symbol: String = "♣"
 }
 case object Spade extends Suit {
   override val color: Color = Black
-  override val toString: String = color.colorize("♠")
+  override val symbol: String = "♠"
 }

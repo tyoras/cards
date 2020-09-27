@@ -4,10 +4,8 @@ import java.time.ZonedDateTime
 
 import io.tyoras.cards.game.schnapsen.PlayerId
 
-case class PlayerInfo(id: PlayerId, name: String, score: Int = 7)
-object PlayerInfo {
-  def reset(player: PlayerInfo): PlayerInfo =
-    PlayerInfo(id = player.id, name = player.name)
+case class PlayerInfo(id: PlayerId, name: String, score: Int = 7) {
+  lazy val reset: PlayerInfo = copy(score = 7)
 }
 
 case class GameContext(
@@ -23,5 +21,5 @@ case class GameContext(
 }
 object GameContext {
   def reset(context: GameContext, startAt: ZonedDateTime): GameContext =
-    GameContext(PlayerInfo.reset(context.player1), PlayerInfo.reset(context.player2), startAt)
+    GameContext(context.player1.reset, context.player2.reset, startAt)
 }

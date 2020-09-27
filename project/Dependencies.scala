@@ -6,19 +6,21 @@ object Dependencies {
   lazy val catsEffectTime = "io.chrisdavenport" %% "cats-effect-time" % "0.1.2"
   lazy val console4cats = "dev.profunktor" %% "console4cats"          % "0.8.1"
   val declineVersion = "1.3.0"
-  lazy val decline = "com.monovore" %% "decline"              % declineVersion
-  lazy val declineEffect = "com.monovore" %% "decline-effect" % declineVersion
-  lazy val fuuid = "io.chrisdavenport" %% "fuuid"             % "0.4.0"
-  lazy val log4cats = "io.chrisdavenport" %% "log4cats-slf4j" % "1.1.1"
-  lazy val logback = "ch.qos.logback"                         % "logback-classic" % "1.2.3"
-  lazy val scalaTest = "org.scalatest" %% "scalatest"         % "3.2.2"
-  lazy val scalaCheck = "org.scalacheck" %% "scalacheck"      % "1.14.3"
+  lazy val decline = "com.monovore" %% "decline"                            % declineVersion
+  lazy val declineEffect = "com.monovore" %% "decline-effect"               % declineVersion
+  lazy val fuuid = "io.chrisdavenport" %% "fuuid"                           % "0.4.0"
+  lazy val log4cats = "io.chrisdavenport" %% "log4cats-slf4j"               % "1.1.1"
+  lazy val logback = "ch.qos.logback"                                       % "logback-classic" % "1.2.3"
+  lazy val scalaTest = "org.scalatest" %% "scalatest"                       % "3.2.2"
+  lazy val scalaCheckIntegration = "org.scalatestplus" %% "scalacheck-1-14" % "3.2.0.0"
+  lazy val scalaCheck = "org.scalacheck" %% "scalacheck"                    % "1.14.3"
 
   lazy val betterFor = addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 
   lazy val coreDeps = Seq(
-    scalaTest  % Test,
-    scalaCheck % Test
+    scalaTest             % Test,
+    scalaCheckIntegration % Test,
+    scalaCheck            % Test
   )
 
   lazy val gamesDeps = Seq(
@@ -27,8 +29,9 @@ object Dependencies {
     catsEffectTime,
     fuuid,
     log4cats,
-    scalaTest  % Test,
-    scalaCheck % Test
+    scalaTest             % Test,
+    scalaCheckIntegration % Test,
+    scalaCheck            % Test
   )
 
   lazy val cliDeps = Seq(

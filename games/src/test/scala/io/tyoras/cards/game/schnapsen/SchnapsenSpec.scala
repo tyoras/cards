@@ -3,13 +3,15 @@ package io.tyoras.cards.game.schnapsen
 import cats.effect.IO
 import io.tyoras.cards._
 import io.tyoras.cards.game.schnapsen.model.DeckError
+import io.tyoras.cards.game.schnapsen.tests.deckGen
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class GameRoundSpec extends AnyFlatSpec with Matchers {
+class SchnapsenSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
   "baseDeck" should "be the good one for Schnapsen" in {
-    val expectedSchnapsenDeck = List(
+    val expectedSchnapsenDeck = Set(
       Card(Heart, Ace(11)),
       Card(Heart, Ten()),
       Card(Heart, King(4)),
@@ -35,12 +37,16 @@ class GameRoundSpec extends AnyFlatSpec with Matchers {
   }
 
   "drawFirstCardF" should "return the first card and the remaining deck" in {
-    val expectedCard = Card(Spade, Ace())
-    val deck = List(expectedCard, Card(Heart, Queen()), Card(Heart, Three()))
-    val program = drawFirstCardF[IO](deck)
-    val (card, remainingDeck) = program.unsafeRunSync()
-    card should be(expectedCard)
-    remainingDeck should be(deck.tail)
+    forAll(deckGen -> "deck") { deck =>
+      whenever(deck.nonEmpty) {
+        val expectedCard = deck.head
+        val program = drawFirstCardF[IO](deck)
+        val (card, remainingDeck) = program.unsafeRunSync()
+        card should be(expectedCard)
+        remainingDeck should be(deck.tail)
+      }
+
+    }
   }
 
   it should "return a DeckError when the deck is empty" in {
