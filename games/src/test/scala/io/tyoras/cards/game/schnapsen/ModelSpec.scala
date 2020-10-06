@@ -77,13 +77,13 @@ class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCh
 
   it should "return player1 when the id match its one" in {
     forAll(gameContextGen -> "gameContext") { gameContext =>
-        gameContext.player(gameContext.player1.id).right.value shouldBe gameContext.player1
+        gameContext.player(gameContext.player1.id).getOrElse(fail("Either was left")) shouldBe gameContext.player1
     }
   }
 
   it should "return player2 when the id match its one" in {
     forAll(gameContextGen -> "gameContext") { gameContext =>
-      gameContext.player(gameContext.player2.id).right.value shouldBe gameContext.player2
+      gameContext.player(gameContext.player2.id).getOrElse(fail("Either was left")) shouldBe gameContext.player2
     }
   }
 
