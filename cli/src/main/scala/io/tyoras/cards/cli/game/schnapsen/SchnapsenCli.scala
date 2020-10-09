@@ -63,8 +63,8 @@ object SchnapsenCli {
           rawInput         <- console.readLn
           gameInput        <- parseInput(state, rawInput)
           updatedGameState <- schnapsen.submitInput(state, gameInput)
-        } yield updatedGameState).handleErrorWith {
-          case InvalidInput => console.putStrLn("Your last input is invalid, try again.") >> state.pure[F]
+        } yield updatedGameState).handleErrorWith { case InvalidInput =>
+          console.putStrLn("Your last input is invalid, try again.") >> state.pure[F]
         }.tailRecM(_.map {
           case s: Exit => Right(s)
           case s => Left(transition(s))
@@ -139,8 +139,8 @@ object SchnapsenCli {
       case Nil => ().pure[F]
       case m :: Nil => console.putStrLn(s"\tM : Meld ${m.king} and ${m.queen} for ${m.status.score} points")
       case couples =>
-        val choices = couples.zipWithIndex.map {
-          case (m, i) => s"\tM${i + 1} : Meld ${m.king} and ${m.queen} for ${m.status.score} points"
+        val choices = couples.zipWithIndex.map { case (m, i) =>
+          s"\tM${i + 1} : Meld ${m.king} and ${m.queen} for ${m.status.score} points"
         }
         console.putStrLn(s"${choices.mkString("\n")}")
     }

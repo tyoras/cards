@@ -94,16 +94,16 @@ object Schnapsen {
     private def game: PartialFunction[(GameState, Input), F[GameState]] = {
       case (Init(g), _: Start) => Sync[F].pure(EarlyGameForehandTurn(g))
       case (s: ForehandTurn, i: PlayCard) =>
-        forehandTurn(s, i).handleErrorWith {
-          case se: SchnapsenError => Logger[F].warn(se)(s"Error during turn, ignoring input $i") *> Sync[F].pure(s)
+        forehandTurn(s, i).handleErrorWith { case se: SchnapsenError =>
+          Logger[F].warn(se)(s"Error during turn, ignoring input $i") *> Sync[F].pure(s)
         }
       case (s: ForehandTurn, i: ClaimVictory) => claimVictory(s, i)
       case (s: EarlyGameForehandTurn, i: ExchangeTrumpJack) => exchangeTrumpJack(s, i)
       case (s: EarlyGameForehandTurn, i: CloseTalon) => closeTalon(s, i)
       case (s: EarlyGameForehandTurn, i: Meld) => marriage(s, i)
       case (s: DealerTurn, i: PlayCard) =>
-        dealerTurn(s, i).handleErrorWith {
-          case se: SchnapsenError => Logger[F].warn(se)(s"Error during dealer turn, ignoring input $i") *> Sync[F].pure(s)
+        dealerTurn(s, i).handleErrorWith { case se: SchnapsenError =>
+          Logger[F].warn(se)(s"Error during dealer turn, ignoring input $i") *> Sync[F].pure(s)
         }
       case (s: LateGameForehandTurn, i: Meld) => marriage(s, i)
       case (Finish(r, _), _: Start) => initGameRound(r.context).map(gs => EarlyGameForehandTurn(gs.round))

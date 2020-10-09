@@ -45,8 +45,8 @@ package object cli {
   }
 
   def displayCardChoice[F[_] : Console](playableCards: Hand): F[Unit] = {
-    val choices = playableCards.zipWithIndex.map {
-      case (c: Card, i: Int) => s"\t${i + 1} : Play $c"
+    val choices = playableCards.zipWithIndex.map { case (c: Card, i: Int) =>
+      s"\t${i + 1} : Play $c"
     }
     Console[F].putStrLn(s"${choices.mkString("\n")}")
   }
