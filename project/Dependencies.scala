@@ -13,7 +13,7 @@ object Dependencies {
   lazy val logback = "ch.qos.logback"                                       % "logback-classic" % "1.2.3"
   lazy val scalaTest = "org.scalatest" %% "scalatest"                       % "3.2.2"
   lazy val scalaCheckIntegration = "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0"
-  lazy val scalaCheck = "org.scalacheck" %% "scalacheck"                    % "1.14.3"
+  lazy val scalaCheck = "org.scalacheck" %% "scalacheck"                    % "1.15.0"
 
   lazy val betterFor = addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 
