@@ -7,11 +7,11 @@ class RankSpec extends AnyFlatSpec with Matchers {
 
   "Ranks default values" should "respect the usual order" in {
     val ranksInOrder = List(Two(), Three(), Four(), Five(), Six(), Seven(), Eight(), Nine(), Ten(), Jack(), Queen(), King(), Ace())
-    ranksInOrder.sorted should be (ranksInOrder)
+    ranksInOrder.sorted should be(ranksInOrder)
   }
 
   "Two ranks with the same value" should "be considered equivalent by comparison" in {
-    Ten().compareTo(Nine(10)) should be (0)
+    Ten().compareTo(Nine(10)) should be(0)
   }
 
 }

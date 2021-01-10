@@ -1,55 +1,11 @@
 import Dependencies._
 import scoverage.ScoverageKeys.coverageMinimum
 
-lazy val commonSettings = Seq(
-  organization := "io.tyoras",
-  scalaVersion := "2.13.3",
-  version := "0.1.0-SNAPSHOT",
-  betterFor,
-  scalacOptions in Scapegoat += "-P:scapegoat:overrideLevels:UnsafeTraversableMethods=Warning",
-  test in assembly := {}
-)
+ThisBuild / organization := "io.tyoras"
+ThisBuild / scalaVersion := "2.13.3"
+ThisBuild / version := "0.1.0-SNAPSHOT"
 
-ThisBuild / scapegoatVersion := "1.4.6"
-ThisBuild / scapegoatDisabledInspections := Seq("IncorrectlyNamedExceptions")
-ThisBuild / coverageMinimum := 75
-ThisBuild / coverageFailOnMinimum := false
-
-lazy val root = (project in file("."))
-  .settings(name := "cards", commonSettings)
-  .aggregate(core, games, cli)
-
-lazy val core = (project in file("core"))
-  .settings(
-    commonSettings,
-    scalaOpts,
-    libraryDependencies ++= coreDeps,
-    buildInfoKeys := Seq[BuildInfoKey](version),
-    buildInfoPackage := "io.tyoras.cards",
-    buildInfoOptions += BuildInfoOption.BuildTime,
-    coverageExcludedPackages := ".*BuildInfo.scala"
-  )
-  .enablePlugins(BuildInfoPlugin)
-
-lazy val games = (project in file("games"))
-  .settings(
-    commonSettings,
-    scalaOpts,
-    libraryDependencies ++= gamesDeps
-  )
-  .dependsOn(core)
-
-lazy val cli = (project in file("cli"))
-  .settings(
-    commonSettings,
-    packagingSettings,
-    scalaOpts,
-    libraryDependencies ++= cliDeps
-  )
-  .enablePlugins(JavaAppPackaging, GraalVMNativeImagePlugin)
-  .dependsOn(games)
-
-lazy val scalaOpts = scalacOptions := Seq(
+ThisBuild / scalacOptions ++= Seq(
   "-Yrangepos",
   "-Xlint",
   "-deprecation",
@@ -66,6 +22,50 @@ lazy val scalaOpts = scalacOptions := Seq(
   "-encoding",
   "UTF-8"
 )
+
+lazy val commonSettings = Seq(
+  update / evictionWarningOptions := EvictionWarningOptions.empty,
+  addCompilerPlugin(com.olegpy.`better-monadic-for`),
+  scalacOptions in Scapegoat += "-P:scapegoat:overrideLevels:UnsafeTraversableMethods=Warning",
+  test in assembly := {}
+)
+
+ThisBuild / scapegoatVersion := "1.4.6"
+ThisBuild / scapegoatDisabledInspections := Seq("IncorrectlyNamedExceptions")
+ThisBuild / coverageMinimum := 75
+ThisBuild / coverageFailOnMinimum := false
+
+lazy val cards = (project in file("."))
+  .aggregate(core, games, cli)
+
+lazy val core = (project in file("core"))
+  .settings(
+    commonSettings,
+    libraryDependencies ++= coreTestDeps,
+    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoPackage := "io.tyoras.cards",
+    buildInfoOptions += BuildInfoOption.BuildTime,
+    coverageExcludedPackages := ".*BuildInfo.scala"
+  )
+  .enablePlugins(BuildInfoPlugin)
+
+lazy val games = (project in file("games"))
+  .settings(
+    commonSettings,
+    libraryDependencies ++= gamesDeps ++ gamesTestDeps
+  )
+  .dependsOn(core)
+
+lazy val cli = (project in file("cli"))
+  .settings(
+    commonSettings,
+    packagingSettings,
+    libraryDependencies ++= cliDeps ++ cliTestDeps
+  )
+  .enablePlugins(JavaAppPackaging, GraalVMNativeImagePlugin)
+  .dependsOn(games)
+
+
 
 lazy val packagingSettings = Seq(
   mainClass in (Compile, assembly) := Some("io.tyoras.cards.cli.Launcher"),

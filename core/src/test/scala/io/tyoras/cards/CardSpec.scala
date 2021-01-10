@@ -12,16 +12,16 @@ class CardSpec extends AnyFlatSpec with Matchers {
   val heartTen: Card = Card(Heart, Ten())
 
   "Cards comparison" should "be based on rank only" in {
-    heartKing > heartTen should be (true)
+    heartKing > heartTen should be(true)
   }
 
   "Two cards with the same rank value" should "be considered equivalent by comparison" in {
-    heartKing.compareTo(spadeKing) should be (0)
+    heartKing.compareTo(spadeKing) should be(0)
   }
 
   "toString" should "work" in {
     val expected = s"K$RESET$RED♥$RESET"
-    heartKing.toString should be (expected)
+    heartKing.toString should be(expected)
   }
 
 }

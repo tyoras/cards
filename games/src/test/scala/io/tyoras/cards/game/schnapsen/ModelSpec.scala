@@ -79,11 +79,11 @@ class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCh
 
   "GameRound.toString" should "work" in {
     forAll(gameRoundGen -> "gameRound") { gameRound =>
-    val toString = gameRound.toString
-      toString should include ("Dealer")
-      toString should include ("Forehand")
-      toString should include ("Trump card")
-      toString should include ("Talon")
+      val toString = gameRound.toString
+      toString should include("Dealer")
+      toString should include("Forehand")
+      toString should include("Trump card")
+      toString should include("Talon")
     }
   }
 
@@ -118,7 +118,7 @@ class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCh
 
   it should "update the forehand if the updated player matches its id" in {
     forAll(gameRoundGen -> "gameRound") { gameRound =>
-      val expectedForehand= gameRound.forehand.copy(name = "test")
+      val expectedForehand = gameRound.forehand.copy(name = "test")
       val updatedRound = gameRound.updatePlayer(expectedForehand)
       updatedRound.dealer shouldBe gameRound.dealer
       updatedRound.forehand shouldBe expectedForehand
@@ -167,7 +167,7 @@ class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCh
 
   it should "return player1 when the id match its one" in {
     forAll(gameContextGen -> "gameContext") { gameContext =>
-        gameContext.player(gameContext.player1.id).getOrElse(fail("Either was left")) shouldBe gameContext.player1
+      gameContext.player(gameContext.player1.id).getOrElse(fail("Either was left")) shouldBe gameContext.player1
     }
   }
 
