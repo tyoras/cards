@@ -1,8 +1,8 @@
 import sbt._
 
 object Dependencies {
-  lazy val cats = "org.typelevel" %% "cats-core"                      % "2.3.0"
-  lazy val catsEffect = "org.typelevel" %% "cats-effect"              % "2.3.0"
+  lazy val cats = "org.typelevel" %% "cats-core"                      % "2.3.1"
+  lazy val catsEffect = "org.typelevel" %% "cats-effect"              % "2.3.1"
   lazy val catsEffectTime = "io.chrisdavenport" %% "cats-effect-time" % "0.1.2"
   lazy val console4cats = "dev.profunktor" %% "console4cats"          % "0.8.1"
   val declineVersion = "1.3.0"
@@ -13,7 +13,7 @@ object Dependencies {
   lazy val logback = "ch.qos.logback"                                       % "logback-classic" % "1.2.3"
   lazy val scalaTest = "org.scalatest" %% "scalatest"                       % "3.2.3"
   lazy val scalaCheckIntegration = "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0"
-  lazy val scalaCheck = "org.scalacheck" %% "scalacheck"                    % "1.15.1"
+  lazy val scalaCheck = "org.scalacheck" %% "scalacheck"                    % "1.15.2"
 
   lazy val betterFor = addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 
