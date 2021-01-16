@@ -6,6 +6,8 @@ import io.tyoras.cards.game.schnapsen.PlayerId
 
 case class PlayerInfo(id: PlayerId, name: String, score: Int = 7) {
   lazy val reset: PlayerInfo = copy(score = 7)
+
+  override def toString: String = s"$name score $score"
 }
 
 case class GameContext(
@@ -18,6 +20,8 @@ case class GameContext(
 
   def player(id: PlayerId): Either[SchnapsenError, PlayerInfo] =
     playersById.get(id).toRight[SchnapsenError](InvalidPlayer(s"Unknown player id ($id)"))
+
+  override def toString: String = s"Started at: $startedAt - $player1 - $player2"
 }
 object GameContext {
   def reset(context: GameContext, startAt: ZonedDateTime): GameContext =

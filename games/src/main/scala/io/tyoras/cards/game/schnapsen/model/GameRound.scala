@@ -25,6 +25,7 @@ case class GameRound(
 ) {
   override def toString: String =
     s"""
+       |\tContext\t$context
        |\tDealer\t\t$dealer
        |\tForehand\t$forehand
        |\tTrump card\t$trumpCard

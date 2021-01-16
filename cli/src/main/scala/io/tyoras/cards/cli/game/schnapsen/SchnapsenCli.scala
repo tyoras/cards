@@ -1,8 +1,9 @@
 package io.tyoras.cards.cli.game.schnapsen
 
 import cats._
-import cats.effect.{Clock, Console, ExitCode, Sync}
+import cats.effect.{Clock, Concurrent, Console, ExitCode}
 import cats.implicits._
+import io.chrisdavenport.cats.effect.time.implicits._
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import io.chrisdavenport.log4cats.{Logger, SelfAwareStructuredLogger}
@@ -10,7 +11,6 @@ import io.tyoras.cards.cli.{displayCardChoice, displayDeck, lineSeparator}
 import io.tyoras.cards.game.schnapsen._
 import io.tyoras.cards.game.schnapsen.model._
 
-import io.chrisdavenport.cats.effect.time.implicits._
 import scala.util.Try
 
 trait SchnapsenCli[F[_]] {
@@ -30,7 +30,7 @@ object SchnapsenCli {
       |                             | |
       |                             |_|                   """.stripMargin
 
-  def apply[F[_] : Clock](implicit F: Sync[F], console: Console[F]): SchnapsenCli[F] = new SchnapsenCli[F] {
+  def apply[F[_] : Clock](implicit F: Concurrent[F], console: Console[F]): SchnapsenCli[F] = new SchnapsenCli[F] {
     implicit val unsafeLogger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
 
     private val displayIntro: F[Unit] =
@@ -55,28 +55,27 @@ object SchnapsenCli {
     }
 
     override val run: F[ExitCode] = {
-      val schnapsen = Schnapsen[F]
 
-      def transition(state: GameState): F[GameState] = {
+      def loop(game: Schnapsen[F]): F[Schnapsen[F]] =
         (for {
-          _                <- renderGameState(state)
-          rawInput         <- console.readLn
-          gameInput        <- parseInput(state, rawInput)
-          updatedGameState <- schnapsen.submitInput(state, gameInput)
-        } yield updatedGameState).handleErrorWith { case InvalidInput =>
-          console.putStrLn("Your last input is invalid, try again.") >> state.pure[F]
-        }.tailRecM(_.map {
-          case s: Exit => Right(s)
-          case s => Left(transition(s))
-        })
-      }
+          state     <- game.currentState
+          _         <- renderGameState(state)
+          rawInput  <- console.readLn
+          gameInput <- parseInput(state, rawInput)
+          _         <- game.submitInput(gameInput)
+        } yield game).handleErrorWith { case InvalidInput =>
+          console.putStrLn("Your last input is invalid, try again.").as(game)
+        }
 
       for {
         _           <- displayIntro
         gameContext <- initGameContext
-        init        <- schnapsen.initGameRound(gameContext)
-        _           <- transition(init)
-      } yield ExitCode.Success
+        game        <- Schnapsen(gameContext)
+        exitCode <- game.tailRecM(_.currentState.flatMap {
+          case Exit(_) => ExitCode.Success.asRight[Schnapsen[F]].pure[F]
+          case _ => loop(game).map(_.asLeft[ExitCode])
+        })
+      } yield exitCode
     }
 
     private def renderGameState(state: GameState): F[Unit] =
@@ -127,7 +126,7 @@ object SchnapsenCli {
                 if (winner.score <= 0)
                   console.putStrLn("End of the game!") >>
                     console.putStrLn(
-                      s"${winner.name} has won by reaching a final score of ${winner.score} game point while its opponent ${loser.name} had a final score of ${winner.score} game points."
+                      s"${winner.name} has won by reaching a final score of ${winner.score} game point while its opponent ${loser.name} had a final score of ${loser.score} game points."
                     ) >>
                     console.putStrLn(s"You can use \\q to quit the game or \\r to restart a new game.")
                 else console.putStrLn(s"Press 'Enter' when you are ready to start the next round.")
