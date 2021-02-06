@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: cards
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: cards
+    ports:
+      - 5432:5432

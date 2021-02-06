@@ -39,40 +39,70 @@ ThisBuild / coverageFailOnMinimum := false
 Global / lintUnusedKeysOnLoad := false
 
 lazy val cards = (project in file("."))
-  .aggregate(core, games, cli)
+  .aggregate(external, core, persistence, cli)
 
-lazy val core = (project in file("core"))
+lazy val external = (project in file("modules/external"))
   .settings(
     commonSettings,
-    libraryDependencies ++= coreTestDeps,
+    addCompilerPlugin(org.typelevel.`kind-projector`),
+    libraryDependencies ++= externalDeps
+  )
+
+lazy val core = (project in file("modules/core"))
+  .settings(
+    commonSettings,
+    libraryDependencies ++= coreDeps ++ coreTestDeps,
     buildInfoKeys := Seq[BuildInfoKey](version),
     buildInfoPackage := "io.tyoras.cards",
     buildInfoOptions += BuildInfoOption.BuildTime,
     coverageExcludedPackages := ".*BuildInfo.scala"
   )
   .enablePlugins(BuildInfoPlugin)
+  .dependsOn(external)
 
-lazy val games = (project in file("games"))
+lazy val config = (project in file("modules/config"))
   .settings(
     commonSettings,
-    libraryDependencies ++= gamesDeps ++ gamesTestDeps
+    libraryDependencies ++= configDeps ++ configTestDeps
   )
-  .dependsOn(core)
 
-lazy val cli = (project in file("cli"))
+lazy val persistence = (project in file("modules/persistence"))
   .settings(
     commonSettings,
-    packagingSettings,
+    libraryDependencies ++= persistenceDeps ++ persistenceTestDeps
+  )
+  .dependsOn(core, config)
+
+lazy val cli = (project in file("modules/cli"))
+  .settings(
+    commonSettings,
+    cliPackagingSettings,
     libraryDependencies ++= cliDeps ++ cliTestDeps
   )
   .enablePlugins(JavaAppPackaging, GraalVMNativeImagePlugin)
-  .dependsOn(games)
+  .dependsOn(core)
+
+lazy val server = (project in file("modules/server"))
+  .settings(
+    commonSettings,
+    serverPackagingSettings,
+    libraryDependencies ++= serverDeps ++ serverTestDeps
+  )
+  .enablePlugins(JavaAppPackaging, GraalVMNativeImagePlugin)
+  .dependsOn(core, config, persistence)
 
 
-
-lazy val packagingSettings = Seq(
+lazy val cliPackagingSettings = Seq(
   Compile / assembly / mainClass := Some("io.tyoras.cards.cli.Launcher"),
-  assembly / assemblyJarName := "cards.jar",
+  assembly / assemblyJarName := "cards-cli.jar",
+) ++ graalVMPackagingSettings
+
+lazy val serverPackagingSettings = Seq(
+  Compile / assembly / mainClass := Some("io.tyoras.cards.server.Main"),
+  assembly / assemblyJarName := "cards-server.jar",
+) ++ graalVMPackagingSettings
+
+lazy val graalVMPackagingSettings = Seq(
   graalVMNativeImageOptions ++= Seq(
     "--verbose",
     "--no-server",
