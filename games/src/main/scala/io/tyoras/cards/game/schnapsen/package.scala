@@ -90,7 +90,7 @@ package object schnapsen {
       _                      <- logger.debug("Starting new Schnapsen round")
       (dealerId, forehandId) <- decideFirstDealer(ctx)
       updatedContext = ctx.copy(previousFirstDealer = dealerId.some)
-      (dlHand, fhHand, talon, trumpCard) <- F.suspend {
+      (dlHand, fhHand, talon, trumpCard) <- F.defer {
         F.fromEither(dealing(baseDeck))
       }
       dlInfo <- F.fromEither(ctx.player(dealerId))

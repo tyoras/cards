@@ -12,7 +12,7 @@ object Dependencies {
 
   case object com {
     case object monovore {
-      val declineVersion = "1.3.0"
+      val declineVersion = "1.4.0"
       val decline = "com.monovore" %% "decline"                 % declineVersion
       val `decline-effect` = "com.monovore" %% "decline-effect" % declineVersion
     }
@@ -41,18 +41,18 @@ object Dependencies {
       val `context-applied` = "org.augustjune" %% "context-applied" % "0.1.4"
     }
     case object scalacheck {
-      val scalacheck = "org.scalacheck" %% "scalacheck" % "1.15.2"
+      val scalacheck = "org.scalacheck" %% "scalacheck" % "1.15.3"
     }
     case object scalatest {
-      val scalatest = "org.scalatest" %% "scalatest" % "3.2.3"
+      val scalatest = "org.scalatest" %% "scalatest" % "3.2.7"
     }
     case object scalatestplus {
       val `scalacheck-1-14` = "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0"
     }
 
     case object typelevel {
-      val `cats-core` = "org.typelevel" %% "cats-core"     % "2.4.1"
-      val `cats-effect` = "org.typelevel" %% "cats-effect" % "2.3.1"
+      val `cats-core` = "org.typelevel" %% "cats-core"     % "2.5.0"
+      val `cats-effect` = "org.typelevel" %% "cats-effect" % "2.4.1"
     }
   }
 

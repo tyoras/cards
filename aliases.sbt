@@ -7,6 +7,7 @@ addCommandAlias("c", "compile")
 addCommandAlias("tc", "test:compile")
 addCommandAlias("t", "test")
 addCommandAlias("r", "run")
+addCommandAlias("dep", "dependencyUpdates")
 
 onLoadMessage +=
   s"""|
@@ -20,4 +21,5 @@ onLoadMessage +=
       |${styled("tc")}          │ test:compile
       |${styled("t")}           │ test
       |${styled("r")}           │ run
+      |${styled("dep")}         │ dependencyUpdates
       |────────────┴──────────────────""".stripMargin

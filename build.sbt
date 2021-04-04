@@ -2,7 +2,7 @@ import Dependencies._
 import scoverage.ScoverageKeys.coverageMinimum
 
 ThisBuild / organization := "io.tyoras"
-ThisBuild / scalaVersion := "2.13.4"
+ThisBuild / scalaVersion := "2.13.5"
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalacOptions ++= Seq(
@@ -31,7 +31,7 @@ lazy val commonSettings = Seq(
   test in assembly := {}
 )
 
-ThisBuild / scapegoatVersion := "1.4.7"
+ThisBuild / scapegoatVersion := "1.4.8"
 ThisBuild / scapegoatDisabledInspections := Seq("IncorrectlyNamedExceptions")
 ThisBuild / coverageMinimum := 75
 ThisBuild / coverageFailOnMinimum := false
