@@ -5,7 +5,7 @@ import cats.effect.Sync
 import cats.implicits._
 import cats.{Applicative, ApplicativeError}
 import io.chrisdavenport.fuuid.FUUID
-import io.chrisdavenport.log4cats.StructuredLogger
+import org.typelevel.log4cats.StructuredLogger
 import io.tyoras.cards._
 import io.tyoras.cards.game.schnapsen.model.Marriage.Status
 import io.tyoras.cards.game.schnapsen.model.{DeckError, GameContext, GameRound, Marriage, Player}

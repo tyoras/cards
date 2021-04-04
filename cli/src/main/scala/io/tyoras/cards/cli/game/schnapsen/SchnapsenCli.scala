@@ -5,8 +5,8 @@ import cats.effect.{Clock, Concurrent, Console, ExitCode}
 import cats.implicits._
 import io.chrisdavenport.cats.effect.time.implicits._
 import io.chrisdavenport.fuuid.FUUID
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
-import io.chrisdavenport.log4cats.{Logger, SelfAwareStructuredLogger}
+import org.typelevel.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
 import io.tyoras.cards.cli.{displayCardChoice, displayDeck, lineSeparator}
 import io.tyoras.cards.game.schnapsen._
 import io.tyoras.cards.game.schnapsen.model._

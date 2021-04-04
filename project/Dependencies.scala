@@ -32,7 +32,6 @@ object Dependencies {
     case object chrisdavenport {
       val `cats-effect-time` = "io.chrisdavenport" %% "cats-effect-time" % "0.1.2"
       val fuuid = "io.chrisdavenport" %% "fuuid"                         % "0.5.0"
-      val `log4cats-slf4j` = "io.chrisdavenport" %% "log4cats-slf4j"     % "1.1.1"
     }
   }
 
@@ -51,8 +50,9 @@ object Dependencies {
     }
 
     case object typelevel {
-      val `cats-core` = "org.typelevel" %% "cats-core"     % "2.5.0"
-      val `cats-effect` = "org.typelevel" %% "cats-effect" % "2.4.1"
+      val `cats-core` = "org.typelevel" %% "cats-core"           % "2.5.0"
+      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "2.4.1"
+      val `log4cats-slf4j` = "org.typelevel" %% "log4cats-slf4j" % "1.2.2"
     }
   }
 
@@ -65,9 +65,9 @@ object Dependencies {
   lazy val gamesDeps = Seq(
     io.chrisdavenport.`cats-effect-time`,
     io.chrisdavenport.fuuid,
-    io.chrisdavenport.`log4cats-slf4j`,
     org.typelevel.`cats-core`,
-    org.typelevel.`cats-effect`
+    org.typelevel.`cats-effect`,
+    org.typelevel.`log4cats-slf4j`
   )
 
   lazy val gamesTestDeps = Seq(
@@ -82,9 +82,9 @@ object Dependencies {
     com.monovore.`decline-effect`,
     dev.profunktor.console4cats,
     io.chrisdavenport.`cats-effect-time`,
-    io.chrisdavenport.`log4cats-slf4j`,
     org.typelevel.`cats-core`,
-    org.typelevel.`cats-effect`
+    org.typelevel.`cats-effect`,
+    org.typelevel.`log4cats-slf4j`
   )
 
   lazy val cliTestDeps = Seq(

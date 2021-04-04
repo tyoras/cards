@@ -4,8 +4,8 @@ import cats.data.StateT
 import cats.effect.{Clock, Concurrent, Sync}
 import cats.implicits._
 import io.chrisdavenport.cats.effect.time.implicits.ClockOps
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
-import io.chrisdavenport.log4cats.{Logger, StructuredLogger}
+import org.typelevel.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.{Logger, StructuredLogger}
 import io.tyoras.cards.game.schnapsen.model.Marriage.Status
 import io.tyoras.cards.game.schnapsen.model._
 import io.tyoras.cards.util.fsm.FinalStateMachine
