@@ -74,19 +74,6 @@ pages:
   only:
     - master
 
-codacy_coverage:
-  stage: deploy
-  dependencies:
-    - unit_test
-  script:
-  - apt install -y jq
-  - LATEST_VERSION="$(curl -Ls https://api.bintray.com/packages/codacy/Binaries/codacy-coverage-reporter/versions/_latest | jq -r .name)"
-  - curl -Ls -o codacy-coverage-reporter "https://dl.bintray.com/codacy/Binaries/${LATEST_VERSION}/codacy-coverage-reporter-linux"
-  - chmod +x codacy-coverage-reporter
-  - ./codacy-coverage-reporter report -l scala -r /builds/tyoras/cards/target/scala-2.13/coverage-report/cobertura.xml
-  only:
-    - master
-
 Build:
   image: docker:latest
   services:
