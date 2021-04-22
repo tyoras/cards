@@ -43,15 +43,15 @@ object Dependencies {
       val scalacheck = "org.scalacheck" %% "scalacheck" % "1.15.3"
     }
     case object scalatest {
-      val scalatest = "org.scalatest" %% "scalatest" % "3.2.7"
+      val scalatest = "org.scalatest" %% "scalatest" % "3.2.8"
     }
     case object scalatestplus {
       val `scalacheck-1-14` = "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0"
     }
 
     case object typelevel {
-      val `cats-core` = "org.typelevel" %% "cats-core"           % "2.5.0"
-      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "2.5.0"
+      val `cats-core` = "org.typelevel" %% "cats-core"           % "2.6.0"
+      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "2.4.1"
       val `log4cats-slf4j` = "org.typelevel" %% "log4cats-slf4j" % "1.2.2"
     }
   }
