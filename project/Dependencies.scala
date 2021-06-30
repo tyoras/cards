@@ -31,7 +31,7 @@ object Dependencies {
   case object io {
     case object chrisdavenport {
       val `cats-effect-time` = "io.chrisdavenport" %% "cats-effect-time" % "0.1.2"
-      val fuuid = "io.chrisdavenport" %% "fuuid"                         % "0.5.0"
+      val fuuid = "io.chrisdavenport" %% "fuuid"                         % "0.6.1"
     }
   }
 
