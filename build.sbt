@@ -27,14 +27,16 @@ lazy val commonSettings = Seq(
   update / evictionWarningOptions := EvictionWarningOptions.empty,
   addCompilerPlugin(com.olegpy.`better-monadic-for`),
   addCompilerPlugin(org.augustjune.`context-applied`),
-  scalacOptions in Scapegoat += "-P:scapegoat:overrideLevels:UnsafeTraversableMethods=Warning",
-  test in assembly := {}
+  Scapegoat / scalacOptions += "-P:scapegoat:overrideLevels:UnsafeTraversableMethods=Warning",
+  assembly / test := {}
 )
 
 ThisBuild / scapegoatVersion := "1.4.9"
 ThisBuild / scapegoatDisabledInspections := Seq("IncorrectlyNamedExceptions")
 ThisBuild / coverageMinimum := 75
 ThisBuild / coverageFailOnMinimum := false
+
+Global / lintUnusedKeysOnLoad := false
 
 lazy val cards = (project in file("."))
   .aggregate(core, games, cli)
@@ -69,8 +71,8 @@ lazy val cli = (project in file("cli"))
 
 
 lazy val packagingSettings = Seq(
-  mainClass in (Compile, assembly) := Some("io.tyoras.cards.cli.Launcher"),
-  assemblyJarName in assembly := "cards.jar",
+  Compile / assembly / mainClass := Some("io.tyoras.cards.cli.Launcher"),
+  assembly / assemblyJarName := "cards.jar",
   graalVMNativeImageOptions ++= Seq(
     "--verbose",
     "--no-server",
