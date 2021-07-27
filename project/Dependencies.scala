@@ -5,7 +5,7 @@ object Dependencies {
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.2.3"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.2.5"
       }
     }
   }
@@ -40,19 +40,19 @@ object Dependencies {
       val `context-applied` = "org.augustjune" %% "context-applied" % "0.1.4"
     }
     case object scalacheck {
-      val scalacheck = "org.scalacheck" %% "scalacheck" % "1.15.3"
+      val scalacheck = "org.scalacheck" %% "scalacheck" % "1.15.4"
     }
     case object scalatest {
-      val scalatest = "org.scalatest" %% "scalatest" % "3.2.8"
+      val scalatest = "org.scalatest" %% "scalatest" % "3.2.9"
     }
     case object scalatestplus {
       val `scalacheck-1-14` = "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0"
     }
 
     case object typelevel {
-      val `cats-core` = "org.typelevel" %% "cats-core"           % "2.6.0"
-      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "2.5.0"
-      val `log4cats-slf4j` = "org.typelevel" %% "log4cats-slf4j" % "1.3.0"
+      val `cats-core` = "org.typelevel" %% "cats-core"           % "2.6.1"
+      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "2.5.1"
+      val `log4cats-slf4j` = "org.typelevel" %% "log4cats-slf4j" % "1.3.1"
     }
   }
 

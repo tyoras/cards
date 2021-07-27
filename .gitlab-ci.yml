@@ -1,4 +1,4 @@
-image: "hseeberger/scala-sbt:16_1.5.0_2.13.5"
+image: "hseeberger/scala-sbt:16.0.2_1.5.5_2.13.6"
 
 stages:
   - test
