@@ -39,7 +39,7 @@ ThisBuild / coverageFailOnMinimum := false
 Global / lintUnusedKeysOnLoad := false
 
 lazy val cards = (project in file("."))
-  .aggregate(external, core, persistence, cli)
+  .aggregate(external, core, persistence, cli, config, server)
 
 lazy val external = (project in file("modules/external"))
   .settings(
