@@ -51,7 +51,7 @@ object Dependencies {
       val `context-applied` = "org.augustjune" %% "context-applied" % "0.1.4"
     }
     case object flywaydb {
-      val `flyway-core` = "org.flywaydb" % "flyway-core" % "7.11.4"
+      val `flyway-core` = "org.flywaydb" % "flyway-core" % "7.12.0"
     }
     case object http4s {
       val http4sVersion = "0.23.0"
