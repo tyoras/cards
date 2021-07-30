@@ -14,5 +14,5 @@ package object config {
   def parseConfig[F[_] : Sync](configPath: Path): F[CardsConfig] =
     ConfigSource
       .default(ConfigSource.file(configPath))
-      .loadF[F, CardsConfig]
+      .loadF[F, CardsConfig]()
 }

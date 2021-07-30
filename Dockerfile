@@ -36,6 +36,6 @@ RUN curl -L -o docker-latest.tgz http://get.docker.com/builds/Linux/x86_64/docke
 RUN tar -xvzf docker-latest.tgz
 
 FROM scratch
-COPY --from=builder /build/cli/target/graalvm-native-image/cli /cards
+COPY --from=builder /build/modules/cli/target/graalvm-native-image/cli /cards
 COPY --from=builder /build/docker/docker /docker
 ENTRYPOINT [ "/cards" ]

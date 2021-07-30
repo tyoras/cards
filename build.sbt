@@ -16,6 +16,7 @@ ThisBuild / scalacOptions ++= Seq(
   "-Ywarn-value-discard",
   //"-Xfatal-warnings", si possible
   "-Ywarn-unused",
+  "-Xlint:-byname-implicit",
   "-Ydelambdafy:method",
   "-language:higherKinds",
   "-language:implicitConversions",
