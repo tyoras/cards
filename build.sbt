@@ -40,14 +40,7 @@ ThisBuild / coverageFailOnMinimum := false
 Global / lintUnusedKeysOnLoad := false
 
 lazy val cards = (project in file("."))
-  .aggregate(external, core, persistence, cli, config, server)
-
-lazy val external = (project in file("modules/external"))
-  .settings(
-    commonSettings,
-    addCompilerPlugin(org.typelevel.`kind-projector`),
-    libraryDependencies ++= externalDeps
-  )
+  .aggregate(core, persistence, cli, config, server)
 
 lazy val core = (project in file("modules/core"))
   .settings(
@@ -59,7 +52,6 @@ lazy val core = (project in file("modules/core"))
     coverageExcludedPackages := ".*BuildInfo.scala"
   )
   .enablePlugins(BuildInfoPlugin)
-  .dependsOn(external)
 
 lazy val config = (project in file("modules/config"))
   .settings(

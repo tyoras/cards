@@ -5,9 +5,11 @@ The goal is to both have fun implementing these games and experimenting function
 
 ## Architecture
 The project is designed around a set of modules :
-- `core` contains basic concepts useful modeling a card game.
-- `games` contains the game logic implementations.
+- `core` contains basic concepts useful modeling a card game and games logic implementations.
+- `config` contains the game logic implementations.
+- `persistence` contains the details related to the postgresql persistence of the games.
 - `cli` contains a [cli](https://en.wikipedia.org/wiki/Command-line_interface) oriented UI for the games.
+- `server` contains a web server for playing the games via restful apis.
 
 ## Finished games
 None yet.

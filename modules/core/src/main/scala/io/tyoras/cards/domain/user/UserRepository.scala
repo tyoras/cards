@@ -1,11 +1,11 @@
 package io.tyoras.cards.domain.user
 
-import java.util.UUID
+import io.chrisdavenport.fuuid.FUUID
 
 trait UserRepository[F[_]] {
   def writeMany(users: List[User]): F[List[User.Existing]]
 
-  def readManyById(ids: List[UUID]): F[List[User.Existing]]
+  def readManyById(ids: List[FUUID]): F[List[User.Existing]]
 
   def readManyByPartialName(name: String): F[List[User.Existing]]
 

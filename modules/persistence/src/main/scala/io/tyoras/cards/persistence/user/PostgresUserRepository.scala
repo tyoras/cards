@@ -3,10 +3,9 @@ package io.tyoras.cards.persistence.user
 import cats.effect.{Clock, Resource, Sync}
 import cats.syntax.all._
 import io.chrisdavenport.cats.effect.time.implicits._
+import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.user.{User, UserRepository}
 import skunk.Session
-
-import java.util.UUID
 
 object PostgresUserRepository {
   def of[F[_] : Sync](sessionPool: Resource[F, Session[F]]): F[UserRepository[F]] = F.delay {
@@ -27,20 +26,22 @@ object PostgresUserRepository {
           } yield updated
         }
 
-      override def readManyById(ids: List[UUID]): F[List[User.Existing]] =
-        sessionPool.use(_.prepare(Statements.Select.many(ids.size)).use(_.stream(ids.to(List), 1024).compile.toList))
+      override def readManyById(ids: List[FUUID]): F[List[User.Existing]] =
+        sessionPool.use(_.prepare(Statements.Select.many(ids.size)).use(_.stream(ids, chunkSize).compile.toList))
 
       override def readManyByPartialName(name: String): F[List[User.Existing]] =
-        sessionPool.use(_.prepare(Statements.Select.byName).use(_.stream(name, 1024).compile.toList))
+        sessionPool.use(_.prepare(Statements.Select.byName).use(_.stream(name, chunkSize).compile.toList))
 
       override def readAll: F[List[User.Existing]] =
-        sessionPool.use(_.execute(Statements.Select.all).map(_.to(List)))
+        sessionPool.use(_.execute(Statements.Select.all))
 
       override def deleteMany(users: List[User.Existing]): F[Unit] =
-        sessionPool.use(_.prepare(Statements.Delete.many(users.size)).use(_.execute(users.to(List).map(_.id)).void))
+        sessionPool.use(_.prepare(Statements.Delete.many(users.size)).use(_.execute(users.map(_.id)).void))
 
       override def deleteAll: F[Unit] = sessionPool.use(_.execute(Statements.Delete.all).void)
     }
   }
+
+  private val chunkSize = 1024
 
 }

@@ -1,13 +1,13 @@
 package io.tyoras.cards.persistence.user
 
+import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.user.User
-import io.tyoras.cards.persistence.timestampTZ
+import io.tyoras.cards.persistence.{fuuid, timestampTZ}
 import skunk._
 import skunk.codec.all._
 import skunk.implicits._
 
 import java.time.ZonedDateTime
-import java.util.UUID
 
 object Statements {
   final implicit private class UserDataOps(private val data: User.Data.type) {
@@ -15,7 +15,7 @@ object Statements {
   }
 
   final implicit private class UserExistingOps(private val user: User.Existing.type) {
-    val codec: Codec[User.Existing] = (uuid ~ timestampTZ ~ timestampTZ ~ User.Data.codec).gimap[User.Existing]
+    val codec: Codec[User.Existing] = (fuuid ~ timestampTZ ~ timestampTZ ~ User.Data.codec).gimap[User.Existing]
   }
 
   object Insert {
@@ -36,11 +36,11 @@ object Statements {
     val one: Query[User.Existing ~ ZonedDateTime, User.Existing] =
       sql"""UPDATE users
             SET name = ${varchar(100)}, about = $varchar, updated_at = $timestampTZ
-            WHERE id = $uuid
+            WHERE id = $fuuid
             RETURNING *
          """.query(User.Existing.codec).contramap(input)
 
-    private def input(e: User.Existing ~ ZonedDateTime): String ~ String ~ ZonedDateTime ~ UUID = {
+    private def input(e: User.Existing ~ ZonedDateTime): String ~ String ~ ZonedDateTime ~ FUUID = {
       val (data, updatedAt) = e
       data.name ~ data.about ~ updatedAt ~ data.id
     }
@@ -53,15 +53,15 @@ object Statements {
     val byName: Query[String, User.Existing] =
       sql"""SELECT * FROM users WHERE name ~ ${varchar(100)}""".query(User.Existing.codec)
 
-    def many(size: Int): Query[List[UUID], User.Existing] =
-      sql"""SELECT * FROM users WHERE id in (${uuid.list(size)})""".query(User.Existing.codec)
+    def many(size: Int): Query[List[FUUID], User.Existing] =
+      sql"""SELECT * FROM users WHERE id in (${fuuid.list(size)})""".query(User.Existing.codec)
   }
 
   object Delete {
     val all: Command[Void] =
       sql"""DELETE FROM users""".command
 
-    def many(size: Int): Command[List[UUID]] =
-      sql"""DELETE FROM users WHERE id in (${uuid.list(size)})""".command
+    def many(size: Int): Command[List[FUUID]] =
+      sql"""DELETE FROM users WHERE id in (${fuuid.list(size)})""".command
   }
 }

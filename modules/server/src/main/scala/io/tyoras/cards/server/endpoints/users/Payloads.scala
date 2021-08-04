@@ -1,10 +1,11 @@
 package io.tyoras.cards.server.endpoints.users
 
-import io.circe.{Decoder, Encoder}
+import io.chrisdavenport.fuuid.FUUID
 import io.circe.generic.semiauto._
+import io.circe.{Decoder, Encoder}
+import io.chrisdavenport.fuuid.circe._
 
 import java.time.ZonedDateTime
-import java.util.UUID
 
 object Payloads {
   object Request {
@@ -15,7 +16,7 @@ object Payloads {
   }
 
   object Response {
-    final case class User(id: UUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, name: String, about: String)
+    final case class User(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, name: String, about: String)
     object User {
       implicit val encoder: Encoder[User] = deriveEncoder
     }

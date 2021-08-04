@@ -31,8 +31,11 @@ object Dependencies {
 
   case object io {
     case object chrisdavenport {
-      val `cats-effect-time` = "io.chrisdavenport" %% "cats-effect-time" % "0.1.2"
-      val fuuid = "io.chrisdavenport" %% "fuuid"                         % "0.8.0-M1"
+      val `cats-effect-time` = "io.chrisdavenport" %% "cats-effect-time" % "0.2.0"
+      val fuuidVersion = "0.8.0-M2"
+      val fuuid = "io.chrisdavenport" %% "fuuid"                 % fuuidVersion
+      val `fuuid-circe` = "io.chrisdavenport" %% "fuuid-circe"   % fuuidVersion
+      val `fuuid-http4s` = "io.chrisdavenport" %% "fuuid-http4s" % fuuidVersion
     }
 
     case object circe {
@@ -51,7 +54,7 @@ object Dependencies {
       val `flyway-core` = "org.flywaydb" % "flyway-core" % "7.11.4"
     }
     case object http4s {
-      val http4sVersion = "0.23.0-RC1"
+      val http4sVersion = "0.23.0"
       val `http4s-blaze-server` = dep("blaze-server")
       val `http4s-circe` = dep("circe")
       val `http4s-dsl` = dep("dsl")
@@ -85,7 +88,7 @@ object Dependencies {
   }
 
   lazy val coreDeps = Seq(
-    //io.chrisdavenport.`cats-effect-time`,
+    io.chrisdavenport.`cats-effect-time`,
     io.chrisdavenport.fuuid,
     org.typelevel.`cats-core`,
     org.typelevel.`cats-effect`,
@@ -110,7 +113,7 @@ object Dependencies {
   ).map(_ % Test)
 
   lazy val persistenceDeps = Seq(
-    //io.chrisdavenport.`cats-effect-time`,
+    io.chrisdavenport.`cats-effect-time`,
     io.chrisdavenport.fuuid,
     org.flywaydb.`flyway-core`,
     org.postgresql.postgresql,
@@ -130,7 +133,7 @@ object Dependencies {
     ch.qos.logback.`logback-classic`,
     com.monovore.decline,
     com.monovore.`decline-effect`,
-    //io.chrisdavenport.`cats-effect-time`,
+    io.chrisdavenport.`cats-effect-time`,
     org.typelevel.`cats-core`,
     org.typelevel.`cats-effect`,
     org.typelevel.`log4cats-slf4j`
@@ -143,6 +146,9 @@ object Dependencies {
 
   lazy val serverDeps = Seq(
     ch.qos.logback.`logback-classic`,
+    io.chrisdavenport.fuuid,
+    io.chrisdavenport.`fuuid-circe`,
+    io.chrisdavenport.`fuuid-http4s`,
     io.circe.`circe-core`,
     io.circe.`circe-generic`,
     org.http4s.`http4s-blaze-server`,
@@ -157,9 +163,4 @@ object Dependencies {
     org.scalatest.scalatest
   ).map(_ % Test)
 
-  lazy val externalDeps = Seq(
-    org.typelevel.`cats-core`,
-    org.typelevel.`cats-effect`,
-    "org.scala-lang" % "scala-reflect" % "2.13.6"
-  )
 }

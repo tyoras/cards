@@ -12,7 +12,5 @@ package object config {
   implicit def hint[T]: ProductHint[T] = ProductHint[T](ConfigFieldMapping(CamelCase, SnakeCase))
 
   def parseConfig[F[_] : Sync](configPath: Path): F[CardsConfig] =
-    ConfigSource
-      .default(ConfigSource.file(configPath))
-      .loadF[F, CardsConfig]()
+    ConfigSource.default(ConfigSource.file(configPath)).loadF[F, CardsConfig]()
 }

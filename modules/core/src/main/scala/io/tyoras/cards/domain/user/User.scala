@@ -2,9 +2,9 @@ package io.tyoras.cards.domain.user
 
 import cats.Show
 import cats.implicits.toShow
+import io.chrisdavenport.fuuid.FUUID
 
 import java.time.ZonedDateTime
-import java.util.UUID
 
 sealed abstract class User extends Product with Serializable {
   protected type ThisType <: User
@@ -16,7 +16,7 @@ sealed abstract class User extends Product with Serializable {
 }
 
 object User {
-  final case class Existing(id: UUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: Data) extends User {
+  final case class Existing(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: Data) extends User {
     override protected type ThisType = Existing
 
     override def name: String = data.name
