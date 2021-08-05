@@ -3,7 +3,7 @@ package io.tyoras.cards.server
 import cats.effect.{Async, Resource}
 import cats.syntax.all._
 import io.tyoras.cards.config.ServerConfig
-import io.tyoras.cards.server.endpoints.Endpoint
+import io.tyoras.cards.server.endpoints.{Endpoint, ErrorHandling}
 import org.http4s.HttpApp
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.implicits._
@@ -18,7 +18,8 @@ trait Server[F[_]] {
 }
 object Server {
   def of[F[_] : Async](ec: ExecutionContext)(config: ServerConfig, httpApp: HttpApp[F]): Server[F] = new Server[F] {
-    override val serve: Resource[F, Unit] = BlazeServerBuilder[F](ec).bindHttp(config.port, config.host).withHttpApp(httpApp).resource.void
+    override val serve: Resource[F, Unit] =
+      BlazeServerBuilder[F](ec).bindHttp(config.port, config.host).withHttpApp(httpApp).withServiceErrorHandler(ErrorHandling.defaultErrorHandler).resource.void
   }
 
   object HttpApp {

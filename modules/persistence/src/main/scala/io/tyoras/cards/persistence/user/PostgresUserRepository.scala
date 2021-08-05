@@ -11,12 +11,16 @@ object PostgresUserRepository {
   def of[F[_] : Sync](sessionPool: Resource[F, Session[F]]): F[UserRepository[F]] = F.delay {
     new UserRepository[F] {
       override def writeMany(users: List[User]): F[List[User.Existing]] = users.traverse {
-        case data: User.Data => insertOne(data)
+        case data: User.Data => insert(data)
         case user: User.Existing => updateOne(user)
       }
 
-      private def insertOne(data: User.Data): F[User.Existing] =
-        sessionPool.use { _.prepare(Statements.Insert.one).use(_.unique(data)) }
+      override def insert(data: User.Data, withId: Option[FUUID] = None): F[User.Existing] =
+        sessionPool.use { session =>
+          withId.fold(session.prepare(Statements.Insert.one).use(_.unique(data))) { id =>
+            session.prepare(Statements.Insert.oneWithId).use(_.unique(id, data))
+          }
+        }
 
       private def updateOne(user: User.Existing): F[User.Existing] =
         sessionPool.use { session =>

@@ -7,7 +7,7 @@ import io.chrisdavenport.cats.effect.time.implicits.ClockOps
 import io.chrisdavenport.fuuid.FUUID
 
 trait UserService[F[_]] {
-  def create(user: User.Data): F[User.Existing]
+  def create(user: User.Data, withId: Option[FUUID] = None): F[User.Existing]
 
   def createMany(users: List[User.Data]): F[List[User.Existing]]
 
@@ -28,15 +28,13 @@ trait UserService[F[_]] {
   def deleteMany(users: List[User.Existing]): F[Unit]
 
   def deleteAll: F[Unit]
-
-  def createOrUpdate(id: FUUID, user: User.Data): F[User.Existing]
 }
 
 object UserService {
   def of[F[_] : Monad : Clock](userRepo: UserRepository[F]): UserService[F] =
     new UserService[F] {
-      override def create(user: User.Data): F[User.Existing] =
-        createMany(List(user)).map(_.head)
+      override def create(user: User.Data, withId: Option[FUUID]): F[User.Existing] =
+        userRepo.insert(user, withId)
 
       override def createMany(Users: List[User.Data]): F[List[User.Existing]] =
         writeMany(Users)
@@ -77,11 +75,5 @@ object UserService {
 
       override val deleteAll: F[Unit] =
         userRepo.deleteAll
-
-      override def createOrUpdate(id: FUUID, user: User.Data): F[User.Existing] = for {
-        found   <- readById(id)
-        now     <- Clock[F].getZonedDateTimeUTC
-        updated <- found.fold(create(user))(existing => update(existing.withUpdatedName(user.name, now).withUpdatedAbout(user.about, now)))
-      } yield updated
     }
 }

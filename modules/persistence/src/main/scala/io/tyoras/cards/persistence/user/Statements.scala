@@ -25,6 +25,12 @@ object Statements {
             RETURNING *
          """.query(User.Existing.codec)
 
+    val oneWithId: Query[FUUID ~ User.Data, User.Existing] =
+      sql"""INSERT INTO users (id, name, about)
+            VALUES(${fuuid ~ User.Data.codec})
+            RETURNING *
+         """.query(User.Existing.codec)
+
     def many(size: Int): Query[List[User.Data], User.Existing] =
       sql"""INSERT INTO users (name, about)
             VALUES(${User.Data.codec.list(size)})
