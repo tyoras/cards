@@ -10,7 +10,6 @@ import org.http4s.implicits._
 import org.http4s.server.Router
 import org.http4s.server.middleware.Logger
 
-import scala.concurrent.ExecutionContext
 import scala.util.chaining._
 
 trait Server[F[_]] {

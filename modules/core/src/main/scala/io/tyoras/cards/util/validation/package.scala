@@ -1,6 +1,6 @@
 package io.tyoras.cards.util
 
-import cats.ApplicativeError
+import cats.ApplicativeThrow
 import cats.data.Validated._
 import cats.data.{NonEmptyChain, ValidatedNec}
 import cats.syntax.all._
@@ -21,7 +21,7 @@ package object validation {
         ValidationError(c.toList)
       }
 
-    def validateF[F[_], B](implicit v: Validator[A, B], F: ApplicativeError[F, Throwable]): F[B] =
+    def validateF[F[_] : ApplicativeThrow, B](implicit v: Validator[A, B]): F[B] =
       F.fromEither(validateE)
   }
 

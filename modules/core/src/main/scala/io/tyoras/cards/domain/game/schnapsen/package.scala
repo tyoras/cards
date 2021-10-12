@@ -3,12 +3,12 @@ package io.tyoras.cards.domain.game
 import cats.data.StateT
 import cats.effect.Sync
 import cats.implicits._
-import cats.{Applicative, ApplicativeError}
+import cats.{Applicative, ApplicativeThrow}
 import io.chrisdavenport.fuuid.FUUID
-import org.typelevel.log4cats.StructuredLogger
 import io.tyoras.cards.domain.card._
 import io.tyoras.cards.domain.game.schnapsen.model.Marriage.Status
-import io.tyoras.cards.domain.game.schnapsen.model.{DeckError, GameContext, GameRound, Marriage, Player}
+import io.tyoras.cards.domain.game.schnapsen.model._
+import org.typelevel.log4cats.StructuredLogger
 
 package object schnapsen {
   val schnapsenRanks: Set[Rank] = Set(Ace(11), Ten(), King(4), Queen(3), Jack(2))
@@ -24,7 +24,7 @@ package object schnapsen {
 
   private[schnapsen] def dealer[F[_] : Applicative]: InternalGameState[F, Player] = StateT.inspect { _.dealer }
 
-  def drawFirstCardF[F[_]](deck: Deck)(implicit F: ApplicativeError[F, Throwable]): F[(Card, Deck)] = {
+  def drawFirstCardF[F[_] : ApplicativeThrow](deck: Deck): F[(Card, Deck)] = {
     val (drawnCard, updatedDeck) = drawFirstCard(deck)
     for {
       c <- drawnCard.fold(F.raiseError[Card](DeckError("Not enough card left in the deck to draw.")))(F.pure)
