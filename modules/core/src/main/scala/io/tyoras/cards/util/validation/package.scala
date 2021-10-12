@@ -26,12 +26,14 @@ package object validation {
   }
 
   implicit class FieldValidationOps[A](a: A)(implicit pf: Option[ParentField] = None) {
-    /** Apply validators on an optional field.
-      * Use it for optional field with default value.
+    /** Apply validators on an optional field. Use it for optional field with default value.
       *
-      * @param field      field name
-      * @param validators validation functions to apply on the field value
-      * @return ValidationResult containing all the failed validations in case of failures or the value itself in case of success
+      * @param field
+      *   field name
+      * @param validators
+      *   validation functions to apply on the field value
+      * @return
+      *   ValidationResult containing all the failed validations in case of failures or the value itself in case of success
       */
     def optional(field: String, validators: ((String, A) => ValidationResult[A])*): ValidationResult[A] =
       validateField(field, a, validators: _*)
@@ -44,23 +46,27 @@ package object validation {
 
   implicit class MandatoryFieldValidationOps[A](a: Option[A])(implicit pf: Option[ParentField] = None) {
 
-    /** Apply validators on a mandatory field after checking it is present.
-      * Use it for mandatory field.
+    /** Apply validators on a mandatory field after checking it is present. Use it for mandatory field.
       *
-      * @param field      field name
-      * @param validators validation functions to apply on the field value
-      * @return ValidationResult containing all the failed validations in case of failures or the value itself in case of success
+      * @param field
+      *   field name
+      * @param validators
+      *   validation functions to apply on the field value
+      * @return
+      *   ValidationResult containing all the failed validations in case of failures or the value itself in case of success
       */
     def mandatory(field: String, validators: ((String, A) => ValidationResult[A])*): ValidationResult[A] = isMandatory(completeFieldName(field), a) andThen {
       v => validateField(field, v, validators: _*)
     }
 
-    /** Apply validators on an optional field if it present.
-      * Use it for optional field without default value.
+    /** Apply validators on an optional field if it present. Use it for optional field without default value.
       *
-      * @param field      field name
-      * @param validators validation functions to apply on the field value
-      * @return ValidationResult containing all the failed validations in case of failures or the value itself in case of success
+      * @param field
+      *   field name
+      * @param validators
+      *   validation functions to apply on the field value
+      * @return
+      *   ValidationResult containing all the failed validations in case of failures or the value itself in case of success
       */
     def optional(field: String, validators: ((String, A) => ValidationResult[A])*): ValidationResult[Option[A]] =
       a.fold(none[A].valid[NonEmptyChain[ErrorField]])(v => validateField(field, v, validators: _*).map(_.some))

@@ -34,7 +34,7 @@ lazy val commonSettings = Seq(
 
 ThisBuild / scapegoatVersion := "1.4.10"
 ThisBuild / scapegoatDisabledInspections := Seq("IncorrectlyNamedExceptions")
-ThisBuild / coverageMinimum := 75
+ThisBuild / coverageMinimumStmtTotal := 75
 ThisBuild / coverageFailOnMinimum := false
 
 Global / lintUnusedKeysOnLoad := false
