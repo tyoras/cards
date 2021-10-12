@@ -18,7 +18,7 @@ object PostgresUserRepository {
       override def insert(data: User.Data, withId: Option[FUUID] = None): F[User.Existing] =
         sessionPool.use { session =>
           withId.fold(session.prepare(Statements.Insert.one).use(_.unique(data))) { id =>
-            session.prepare(Statements.Insert.oneWithId).use(_.unique(id, data))
+            session.prepare(Statements.Insert.oneWithId).use(_.unique(id -> data))
           }
         }
 

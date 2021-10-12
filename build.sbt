@@ -32,7 +32,7 @@ lazy val commonSettings = Seq(
   assembly / test := {}
 )
 
-ThisBuild / scapegoatVersion := "1.4.9"
+ThisBuild / scapegoatVersion := "1.4.10"
 ThisBuild / scapegoatDisabledInspections := Seq("IncorrectlyNamedExceptions")
 ThisBuild / coverageMinimum := 75
 ThisBuild / coverageFailOnMinimum := false

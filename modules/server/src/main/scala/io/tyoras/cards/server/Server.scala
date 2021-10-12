@@ -17,9 +17,9 @@ trait Server[F[_]] {
   def serve: Resource[F, Unit]
 }
 object Server {
-  def of[F[_] : Async](ec: ExecutionContext)(config: ServerConfig, httpApp: HttpApp[F]): Server[F] = new Server[F] {
+  def of[F[_] : Async](config: ServerConfig, httpApp: HttpApp[F]): Server[F] = new Server[F] {
     override val serve: Resource[F, Unit] =
-      BlazeServerBuilder[F](ec).bindHttp(config.port, config.host).withHttpApp(httpApp).withServiceErrorHandler(ErrorHandling.defaultErrorHandler).resource.void
+      BlazeServerBuilder[F].bindHttp(config.port, config.host).withHttpApp(httpApp).withServiceErrorHandler(ErrorHandling.defaultErrorHandler).resource.void
   }
 
   object HttpApp {
