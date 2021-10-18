@@ -66,7 +66,7 @@ object Dependencies {
       private def dep(artifact: String): ModuleID = "org.http4s" %% s"http4s-$artifact" % http4sVersion
     }
     case object postgresql {
-      val postgresql = "org.postgresql" % "postgresql" % "42.2.24"
+      val postgresql = "org.postgresql" % "postgresql" % "42.3.0"
     }
     case object scalacheck {
       val scalacheck = "org.scalacheck" %% "scalacheck" % "1.15.4"
