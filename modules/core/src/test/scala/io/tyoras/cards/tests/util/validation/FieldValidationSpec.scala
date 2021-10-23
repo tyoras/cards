@@ -58,7 +58,8 @@ class FieldValidationSpec extends AnyFlatSpec with Matchers {
     val completeName = s"$fieldName.$nestedFieldName"
     val expectedErrors = NonEmptyChain(BlankFieldError(completeName), TooShortError(completeName, minLength))
     val nestedValidator = new Validator[String, String] {
-      override def validate(a: String)(implicit pf: Option[ParentField]): ValidationResult[String] = a.optional(nestedFieldName, notBlank, max(3), min(minLength))
+      override def validate(a: String)(implicit pf: Option[ParentField]): ValidationResult[String] =
+        a.optional(nestedFieldName, notBlank, max(3), min(minLength))
     }
     fieldValue.nestedOptional(fieldName)(nestedValidator) should be(expectedErrors.invalid)
   }

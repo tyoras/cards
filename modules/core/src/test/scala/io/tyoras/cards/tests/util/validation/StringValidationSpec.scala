@@ -1,6 +1,5 @@
 package io.tyoras.cards.tests.util.validation
 
-
 import cats.syntax.validated._
 import io.tyoras.cards.util.validation.StringValidation._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -24,7 +23,6 @@ class StringValidationSpec extends AnyFlatSpec with Matchers {
     notEmpty("field_name", fieldValue) should be(fieldValue.validNec)
   }
 
-
   "notBlank validator" should "return BlankFieldError when the field is blank" in {
     val fieldName = "field_name"
     val expectedError = BlankFieldError(fieldName)
@@ -42,7 +40,6 @@ class StringValidationSpec extends AnyFlatSpec with Matchers {
     notBlank(fieldName, "") should be(expectedError.invalidNec)
   }
 
-
   "max validator" should "return TooLongError when the size of the field is greater than the max length" in {
     val fieldName = "field_name"
     val maxLength = 3
@@ -59,7 +56,6 @@ class StringValidationSpec extends AnyFlatSpec with Matchers {
     val fieldValue = "abc"
     max(3)("field_name", fieldValue) should be(fieldValue.validNec)
   }
-
 
   "min validator" should "return TooShortError when the size of the field is lower than the min length" in {
     val fieldName = "field_name"
