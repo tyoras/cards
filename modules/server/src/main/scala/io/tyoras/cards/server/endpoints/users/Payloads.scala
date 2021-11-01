@@ -5,7 +5,6 @@ import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.circe._
 import io.circe.generic.semiauto._
 import io.circe.{Decoder, Encoder}
-import io.scalaland.chimney.Transformer
 import io.tyoras.cards.domain.user.User
 import io.tyoras.cards.domain.user.User.Existing
 import io.tyoras.cards.util.validation.StringValidation._
@@ -33,8 +32,8 @@ object Payloads {
     object User {
       implicit val encoder: Encoder[User] = deriveEncoder
 
-      implicit val existingToResponse: Transformer[Existing, Response.User] =
-        Transformer.define[Existing, Response.User].enableMethodAccessors.buildTransformer
+      def fromExistingUser(user: Existing): Response.User =
+        Response.User(user.id, user.createdAt, user.updatedAt, user.name, user.about)
     }
   }
 

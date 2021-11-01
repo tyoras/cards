@@ -44,10 +44,6 @@ object Dependencies {
       val `circe-generic` = dep("generic")
       private def dep(artifact: String): ModuleID = "io.circe" %% s"circe-$artifact" % circeVersion
     }
-
-    case object scalaland {
-      val chimney = "io.scalaland" %% "chimney" % "0.6.1"
-    }
   }
 
   case object org {
@@ -155,7 +151,6 @@ object Dependencies {
     io.chrisdavenport.`fuuid-http4s`,
     io.circe.`circe-core`,
     io.circe.`circe-generic`,
-    io.scalaland.chimney,
     org.http4s.`http4s-blaze-server`,
     org.http4s.`http4s-circe`,
     org.http4s.`http4s-dsl`,
