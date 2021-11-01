@@ -30,7 +30,7 @@ object Schnapsen {
     } yield new SchnapsenImplem[F](fsm)
 }
 
-private class SchnapsenImplem[F[_] : Sync : StructuredLogger](fsm: FinalStateMachine[F, GameState]) extends Schnapsen[F] {
+private class SchnapsenImplem[F[_] : StructuredLogger](fsm: FinalStateMachine[F, GameState])(implicit F: Sync[F]) extends Schnapsen[F] {
 
   override def submitInput(input: Input): F[GameState] = fsm.transition { s =>
     Logger[F].debug(s"Submitting input $input on current state : $s") >>

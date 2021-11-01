@@ -48,12 +48,10 @@ object Dependencies {
   }
 
   case object org {
-    case object augustjune {
-      val `context-applied` = "org.augustjune" %% "context-applied" % "0.1.4"
-    }
     case object flywaydb {
       val `flyway-core` = "org.flywaydb" % "flyway-core" % "8.0.2"
     }
+
     case object http4s {
       val http4sVersion = "0.23.6"
       val `http4s-blaze-server` = dep("blaze-server")
@@ -62,15 +60,19 @@ object Dependencies {
 
       private def dep(artifact: String): ModuleID = "org.http4s" %% s"http4s-$artifact" % http4sVersion
     }
+
     case object postgresql {
       val postgresql = "org.postgresql" % "postgresql" % "42.3.0"
     }
+
     case object scalacheck {
       val scalacheck = "org.scalacheck" %% "scalacheck" % "1.15.4"
     }
+
     case object scalatest {
       val scalatest = "org.scalatest" %% "scalatest" % "3.2.10"
     }
+
     case object scalatestplus {
       val `scalacheck-1-14` = "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0"
     }

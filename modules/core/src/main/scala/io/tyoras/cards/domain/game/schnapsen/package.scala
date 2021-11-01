@@ -27,7 +27,7 @@ package object schnapsen {
   def drawFirstCardF[F[_] : ApplicativeThrow](deck: Deck): F[(Card, Deck)] = {
     val (drawnCard, updatedDeck) = drawFirstCard(deck)
     for {
-      c <- drawnCard.fold(F.raiseError[Card](DeckError("Not enough card left in the deck to draw.")))(F.pure)
+      c <- drawnCard.fold(ApplicativeThrow[F].raiseError[Card](DeckError("Not enough card left in the deck to draw.")))(Applicative[F].pure)
     } yield (c, updatedDeck)
   }
 
@@ -43,7 +43,7 @@ package object schnapsen {
       }
       ._2
 
-  private[schnapsen] def initGameRound[F[_] : Sync](ctx: GameContext)(implicit logger: StructuredLogger[F]): F[GameRound] = {
+  private[schnapsen] def initGameRound[F[_]](ctx: GameContext)(implicit F: Sync[F], logger: StructuredLogger[F]): F[GameRound] = {
     def decideFirstDealer(context: GameContext): F[(PlayerId, PlayerId)] = {
       val p1 = context.player1.id
       val p2 = context.player2.id

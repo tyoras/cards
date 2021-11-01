@@ -26,7 +26,6 @@ ThisBuild / scalacOptions ++= Seq(
 lazy val commonSettings = Seq(
   update / evictionWarningOptions := EvictionWarningOptions.empty,
   addCompilerPlugin(com.olegpy.`better-monadic-for`),
-  addCompilerPlugin(org.augustjune.`context-applied`),
   assembly / test := {}
 )
 

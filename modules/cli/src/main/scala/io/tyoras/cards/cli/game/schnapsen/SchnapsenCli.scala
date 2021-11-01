@@ -31,7 +31,7 @@ object SchnapsenCli {
       |                             | |
       |                             |_|                   """.stripMargin
 
-  def apply[F[_] : Async](implicit console: Console[F]): SchnapsenCli[F] = new SchnapsenCli[F] {
+  def apply[F[_]](implicit F: Async[F], console: Console[F]): SchnapsenCli[F] = new SchnapsenCli[F] {
     implicit val unsafeLogger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
 
     private val displayIntro: F[Unit] =

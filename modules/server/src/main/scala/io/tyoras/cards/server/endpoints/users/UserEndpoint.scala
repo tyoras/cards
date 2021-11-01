@@ -1,6 +1,7 @@
 package io.tyoras.cards.server.endpoints.users
 
 import cats.effect.Async
+import cats.effect.kernel.Sync
 import cats.syntax.all._
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
@@ -18,7 +19,7 @@ import org.http4s.{EntityDecoder, HttpRoutes, Response, Status}
 import scala.util.chaining.scalaUtilChainingOps
 
 object UserEndpoint {
-  def of[F[_] : Async](userService: UserService[F]): F[Endpoint[F]] = F.delay {
+  def of[F[_] : Async](userService: UserService[F]): F[Endpoint[F]] = Sync[F].delay {
     new Endpoint[F] with Http4sDsl[F] {
 
       implicit val inputDecoder: EntityDecoder[F, Creation] = accumulatingJsonOf[F, Creation]

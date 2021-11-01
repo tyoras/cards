@@ -22,7 +22,7 @@ package object validation {
       }
 
     def validateF[F[_] : ApplicativeThrow, B](implicit v: Validator[A, B]): F[B] =
-      F.fromEither(validateE)
+      ApplicativeThrow[F].fromEither(validateE)
   }
 
   implicit class FieldValidationOps[A](a: A)(implicit pf: Option[ParentField] = None) {

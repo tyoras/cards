@@ -24,7 +24,7 @@ object SessionPool {
   }
 
   def initializeDb[F[_] : Sync](config: DatabaseConfig): F[Unit] =
-    F.delay {
+    Sync[F].delay {
       Flyway.configure().dataSource(config.jdbcUrl, config.user, config.password).load().migrate()
     }.void
 }

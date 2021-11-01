@@ -8,7 +8,7 @@ import io.tyoras.cards.domain.user.{User, UserRepository}
 import skunk.Session
 
 object PostgresUserRepository {
-  def of[F[_] : Sync](sessionPool: Resource[F, Session[F]]): F[UserRepository[F]] = F.delay {
+  def of[F[_] : Sync](sessionPool: Resource[F, Session[F]]): F[UserRepository[F]] = Sync[F].delay {
     new UserRepository[F] {
       override def writeMany(users: List[User]): F[List[User.Existing]] = users.traverse {
         case data: User.Data => insert(data)
