@@ -43,7 +43,7 @@ package object schnapsen {
       }
       ._2
 
-  private[schnapsen] def initGameRound[F[_]](ctx: GameContext)(implicit F: Sync[F], logger: StructuredLogger[F]): F[GameRound] = {
+  private[schnapsen] def initGameRound[F[_]](ctx: GameContext)(logger: StructuredLogger[F])(implicit F: Sync[F]): F[GameRound] = {
     def decideFirstDealer(context: GameContext): F[(PlayerId, PlayerId)] = {
       val p1 = context.player1.id
       val p2 = context.player2.id
@@ -88,11 +88,13 @@ package object schnapsen {
 
     for {
       _                      <- logger.debug("Starting new Schnapsen round")
-      (dealerId, forehandId) <- decideFirstDealer(ctx)
+      decision <- decideFirstDealer(ctx)
+      (dealerId, forehandId) = decision
       updatedContext = ctx.copy(previousFirstDealer = dealerId.some)
-      (dlHand, fhHand, talon, trumpCard) <- F.defer {
+      dealt <- F.defer {
         F.fromEither(dealing(baseDeck))
       }
+      (dlHand, fhHand, talon, trumpCard) = dealt
       dlInfo <- F.fromEither(ctx.player(dealerId))
       dealer = Player(dlInfo.id, dlInfo.name, dlHand)
       fhInfo <- F.fromEither(ctx.player(forehandId))

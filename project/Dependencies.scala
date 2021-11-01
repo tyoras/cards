@@ -24,10 +24,6 @@ object Dependencies {
       val decline = "com.monovore" %% "decline"                 % declineVersion
       val `decline-effect` = "com.monovore" %% "decline-effect" % declineVersion
     }
-
-    case object olegpy {
-      val `better-monadic-for` = "com.olegpy" %% "better-monadic-for" % "0.3.1"
-    }
   }
 
   case object io {

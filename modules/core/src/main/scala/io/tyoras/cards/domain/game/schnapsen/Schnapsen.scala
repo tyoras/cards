@@ -5,7 +5,7 @@ import cats.effect.{Async, Clock, Sync}
 import cats.syntax.all._
 import io.chrisdavenport.cats.effect.time.implicits.ClockOps
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import org.typelevel.log4cats.{Logger, StructuredLogger}
+import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger, StructuredLogger}
 import io.tyoras.cards.domain.game.schnapsen.model.Marriage.Status
 import io.tyoras.cards.domain.game.schnapsen.model._
 import io.tyoras.cards.util.fsm.FinalStateMachine
@@ -21,16 +21,17 @@ object Schnapsen {
 
   def apply[F[_] : Async](context: GameContext): F[Schnapsen[F]] =
     for {
-      implicit0(logger: StructuredLogger[F]) <- Slf4jLogger.create[F]
+      logger <- Slf4jLogger.create[F]
       _                                      <- logger.debug("Starting new Schnapsen game")
-      initialRound                           <- initGameRound(context)
+      initialRound                           <- initGameRound(context)(logger)
       _                                      <- logger.debug(s"Initial round : $initialRound")
       initialState = Init(initialRound)
       fsm <- SynchronizedConcurrentFSM.create[F, GameState](initialState)
-    } yield new SchnapsenImplem[F](fsm)
+    } yield new SchnapsenImplem[F](fsm)(logger)
 }
 
-private class SchnapsenImplem[F[_] : StructuredLogger](fsm: FinalStateMachine[F, GameState])(implicit F: Sync[F]) extends Schnapsen[F] {
+private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: StructuredLogger[F])(implicit F: Sync[F]) extends Schnapsen[F] {
+  implicit val logger: StructuredLogger[F] = l
 
   override def submitInput(input: Input): F[GameState] = fsm.transition { s =>
     Logger[F].debug(s"Submitting input $input on current state : $s") >>
@@ -45,7 +46,7 @@ private class SchnapsenImplem[F[_] : StructuredLogger](fsm: FinalStateMachine[F,
   private def menu: PartialFunction[(GameState, Input), F[GameState]] = {
     case (s, restart: Restart) =>
       Logger[F].debug(s"Player ${restart.playerId} has asked to restart a new game") >>
-        Clock[F].getZonedDateTimeUTC.flatMap(now => initGameRound(GameContext.reset(s.round.context, now))).map(newRound => EarlyGameForehandTurn(newRound))
+        Clock[F].getZonedDateTimeUTC.flatMap(now => initGameRound(GameContext.reset(s.round.context, now))(logger)).map(newRound => EarlyGameForehandTurn(newRound))
     case (s, end: End) =>
       Logger[F].debug(s"Player ${end.playerId} has asked to exit the game").as(Exit(s.round))
   }
@@ -65,7 +66,7 @@ private class SchnapsenImplem[F[_] : StructuredLogger](fsm: FinalStateMachine[F,
         Logger[F].warn(se)(s"Error during dealer turn, ignoring input $i") *> Sync[F].pure(s)
       }
     case (s: LateGameForehandTurn, i: Meld) => marriage(s, i)
-    case (Finish(r, _), _: Start) => initGameRound[F](r.context).map(newRound => EarlyGameForehandTurn(newRound))
+    case (Finish(r, _), _: Start) => initGameRound[F](r.context)(logger).map(newRound => EarlyGameForehandTurn(newRound))
   }
 
   private def forehandTurn(state: ForehandTurn, input: PlayCard): F[GameState] = {
@@ -186,7 +187,8 @@ private class SchnapsenImplem[F[_] : StructuredLogger](fsm: FinalStateMachine[F,
 
   private def drawCard(player: Player): InternalGameState[F, Card] = StateT { state =>
     for {
-      (card, updatedDeck) <- drawFirstCardF[F](state.talon)
+      drawn <- drawFirstCardF[F](state.talon)
+      (card, updatedDeck) = drawn
       _                   <- Logger[F].debug(s"Player ${player.name} has drawn $card")
       updatedPlayer = player.copy(hand = player.hand :+ card)
       updatedState = state.updatePlayer(updatedPlayer).copy(talon = updatedDeck)
@@ -200,7 +202,8 @@ private class SchnapsenImplem[F[_] : StructuredLogger](fsm: FinalStateMachine[F,
     if (playableRule.apply(card)) card.pure[F] else F.raiseError(InvalidCard())
 
   private def finishEarlyGame(game: GameRound): F[GameState] = for {
-    (lastCard, updatedDeck) <- drawFirstCardF[F](game.talon)
+    drawn <- drawFirstCardF[F](game.talon)
+    (lastCard, updatedDeck) = drawn
     updatedForehand = game.forehand.copy(hand = game.forehand.hand :+ lastCard)
     updatedDealer = game.dealer.copy(hand = game.dealer.hand :+ game.trumpCard)
     lateGame = game.copy(talon = updatedDeck, forehand = updatedForehand, dealer = updatedDealer)
