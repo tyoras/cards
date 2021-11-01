@@ -11,13 +11,14 @@ object Dependencies {
   }
 
   case object com {
-    case object github {
-      case object pureconfig {
-        val pureconfigVersion = "0.17.0"
-        val pureconfig = "com.github.pureconfig" %% "pureconfig"                           % pureconfigVersion
-        val `pureconfig-cats-effect` = "com.github.pureconfig" %% "pureconfig-cats-effect" % pureconfigVersion
-      }
-    }
+//    case object github {
+//      case object pureconfig {
+//        val pureconfigVersion = "0.17.0"
+//        val pureconfig = "com.github.pureconfig" %% "pureconfig"                           % pureconfigVersion
+//        val `pureconfig-cats-effect` = "com.github.pureconfig" %% "pureconfig-cats-effect" % pureconfigVersion
+//      }
+//    }
+
     case object monovore {
       val declineVersion = "2.2.0"
       val decline = "com.monovore" %% "decline"                 % declineVersion
@@ -102,8 +103,8 @@ object Dependencies {
   ).map(_ % Test)
 
   lazy val configDeps = Seq(
-    com.github.pureconfig.pureconfig,
-    com.github.pureconfig.`pureconfig-cats-effect`,
+//    com.github.pureconfig.pureconfig,
+//    com.github.pureconfig.`pureconfig-cats-effect`,
     org.typelevel.`cats-effect`
   )
 
