@@ -1,5 +1,4 @@
 import Dependencies._
-import scoverage.ScoverageKeys.coverageMinimum
 
 ThisBuild / organization := "io.tyoras"
 ThisBuild / scalaVersion := "2.13.6"
@@ -28,12 +27,9 @@ lazy val commonSettings = Seq(
   update / evictionWarningOptions := EvictionWarningOptions.empty,
   addCompilerPlugin(com.olegpy.`better-monadic-for`),
   addCompilerPlugin(org.augustjune.`context-applied`),
-  Scapegoat / scalacOptions += "-P:scapegoat:overrideLevels:UnsafeTraversableMethods=Warning",
   assembly / test := {}
 )
 
-ThisBuild / scapegoatVersion := "1.4.10"
-ThisBuild / scapegoatDisabledInspections := Seq("IncorrectlyNamedExceptions")
 ThisBuild / coverageMinimumStmtTotal := 75
 ThisBuild / coverageFailOnMinimum := false
 

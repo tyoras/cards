@@ -19,10 +19,6 @@ cache:
     - "sbt-cache/target"
     - "sbt-cache/.coursier"
 
-#before_script:
-#  # Log the sbt version
-#  - sbt sbtVersion
-
 unit_test:
   stage: test
   script:
@@ -32,18 +28,6 @@ unit_test:
     - target/scala-2.13/scoverage-report/
     - target/scala-2.13/coverage-report/
   
-scapegoat_analysis:
-  stage: test
-  script:
-    - sbt scapegoat
-  artifacts:
-    paths:
-      - modules/cli/target/scala-2.13/scapegoat-report/
-      - modules/config/target/scala-2.13/scapegoat-report/
-      - modules/core/target/scala-2.13/scapegoat-report/
-      - modules/persistence/target/scala-2.13/scapegoat-report/
-      - modules/server/target/scala-2.13/scapegoat-report/
-
 check_format:
   stage: test
   script:
@@ -61,16 +45,10 @@ pages:
   stage: deploy
   dependencies:
     - unit_test
-    - scapegoat_analysis
   script:
     - rm -rf public/coverage public/scapegoat
-    - mkdir -p public/coverage public/scapegoat/cli public/scapegoat/config public/scapegoat/core public/scapegoat/persistence public/scapegoat/server
+    - mkdir -p public/coverage
     - mv target/scala-2.13/scoverage-report/* public/coverage/
-    - mv modules/cli/target/scala-2.13/scapegoat-report/scapegoat.html public/scapegoat/cli/index.html
-    - mv modules/config/target/scala-2.13/scapegoat-report/scapegoat.html public/scapegoat/config/index.html
-    - mv modules/core/target/scala-2.13/scapegoat-report/scapegoat.html public/scapegoat/core/index.html
-    - mv modules/persistence/target/scala-2.13/scapegoat-report/scapegoat.html public/scapegoat/persistence/index.html
-    - mv modules/server/target/scala-2.13/scapegoat-report/scapegoat.html public/scapegoat/server/index.html
   artifacts:
     paths:
       - public
