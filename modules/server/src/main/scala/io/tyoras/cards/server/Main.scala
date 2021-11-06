@@ -13,14 +13,13 @@ import natchez.Trace.Implicits.noop
 
 import java.nio.file.{Path, Paths}
 
-object Main extends IOApp {
+object Main extends IOApp:
   private val defaultConfigPath = Paths.get("cards-server.conf")
-  override def run(args: List[String]): IO[ExitCode] = {
+  override def run(args: List[String]): IO[ExitCode] =
     val configPath = args.headOption.fold(defaultConfigPath)(Paths.get(_))
     init[IO](configPath).useForever.as(ExitCode.Success).handleErrorWith(t => IO.println(s"Service has failed to start ${t.getMessage}").as(ExitCode.Error))
-  }
 
-  private def init[F[_] : Async : Console : Network : natchez.Trace](configPath: Path): Resource[F, Unit] = for {
+  private def init[F[_] : Async : Console : Network : natchez.Trace](configPath: Path): Resource[F, Unit] = for
     config        <- Resource.eval(parseConfig(configPath))
     dbSessionPool <- SessionPool.of(config.database)
     userRepo      <- Resource.eval(PostgresUserRepository.of[F](dbSessionPool))
@@ -28,6 +27,4 @@ object Main extends IOApp {
     userEndpoint <- Resource.eval(UserEndpoint.of(userService))
     httpApp = Server.HttpApp.of(userEndpoint)
     _ <- Server.of(config.server, httpApp).serve
-  } yield ()
-
-}
+  yield ()

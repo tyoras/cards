@@ -6,7 +6,7 @@ import org.scalatest.matchers.should.Matchers
 
 import scala.Console.{RED, RESET}
 
-class CardSpec extends AnyFlatSpec with Matchers {
+class CardSpec extends AnyFlatSpec with Matchers:
 
   val heartKing: Card = Card(Heart, King())
   val spadeKing: Card = Card(Spade, King())
@@ -25,4 +25,3 @@ class CardSpec extends AnyFlatSpec with Matchers {
     heartKing.toString should be(expected)
   }
 
-}

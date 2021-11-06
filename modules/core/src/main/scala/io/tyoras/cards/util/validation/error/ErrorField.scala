@@ -1,12 +1,9 @@
 package io.tyoras.cards.util.validation.error
 
-trait ErrorField {
+trait ErrorField:
   def code: String
-
   def field: String
-
   def message: Option[String]
-}
 
 case class BasicErrorField(
   override val code: String,

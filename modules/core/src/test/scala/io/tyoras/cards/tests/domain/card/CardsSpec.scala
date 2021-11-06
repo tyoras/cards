@@ -8,7 +8,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
+class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks:
 
   "blackSuits" should "contain only spade and club" in {
     blackSuits should contain.only(Spade, Club)
@@ -231,4 +231,3 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
     drawnCard should be(None)
     remainingDeck should be(deck)
   }
-}

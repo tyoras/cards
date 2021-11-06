@@ -4,7 +4,7 @@ import io.tyoras.cards.domain.card._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class RankSpec extends AnyFlatSpec with Matchers {
+class RankSpec extends AnyFlatSpec with Matchers:
 
   "Ranks default values" should "respect the usual order" in {
     val ranksInOrder = List(Two(), Three(), Four(), Five(), Six(), Seven(), Eight(), Nine(), Ten(), Jack(), Queen(), King(), Ace())
@@ -15,4 +15,3 @@ class RankSpec extends AnyFlatSpec with Matchers {
     Ten().compareTo(Nine(10)) should be(0)
   }
 
-}

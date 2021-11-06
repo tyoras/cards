@@ -70,7 +70,7 @@ object Dependencies {
     }
 
     case object scalatestplus {
-      val `scalacheck-1-14` = "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0"
+      val `scalacheck-1-15` = "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0"
     }
 
     case object tpolecat {
@@ -97,7 +97,7 @@ object Dependencies {
   lazy val coreTestDeps = Seq(
     org.scalacheck.scalacheck,
     org.scalatest.scalatest,
-    org.scalatestplus.`scalacheck-1-14`
+    org.scalatestplus.`scalacheck-1-15`
   ).map(_ % Test)
 
   lazy val configDeps = Seq(
@@ -125,7 +125,7 @@ object Dependencies {
   lazy val persistenceTestDeps = Seq(
     org.scalacheck.scalacheck,
     org.scalatest.scalatest,
-    org.scalatestplus.`scalacheck-1-14`
+    org.scalatestplus.`scalacheck-1-15`
   ).map(_ % Test)
 
   lazy val cliDeps = Seq(

@@ -2,10 +2,10 @@ package io.tyoras.cards.util.fsm.concurrent
 
 import cats.effect._
 import cats.effect.std.Semaphore
-import cats.implicits._
+import cats.syntax.all._
 import io.tyoras.cards.util.fsm.FinalStateMachine
 
-object SynchronizedConcurrentFSM {
+object SynchronizedConcurrentFSM:
   def create[F[_] : Concurrent, A](a: A): F[FinalStateMachine[F, A]] =
     (Ref.of[F, A](a), Semaphore(1)).mapN { (state, semaphore) =>
       new FinalStateMachine[F, A] {
@@ -18,4 +18,3 @@ object SynchronizedConcurrentFSM {
         }
       }
     }
-}

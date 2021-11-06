@@ -7,7 +7,7 @@ import io.tyoras.cards.BuildInfo
 import io.tyoras.cards.cli.game.WarCli
 import io.tyoras.cards.cli.game.schnapsen.SchnapsenCli
 
-object Launcher extends CommandIOApp(name = "cards", header = banner, version = s"cards version ${BuildInfo.version} built at ${BuildInfo.builtAtString}") {
+object Launcher extends CommandIOApp(name = "cards", header = banner, version = s"cards version ${BuildInfo.version} built at ${BuildInfo.builtAtString}"):
 
   case object SchnapsenCommand
   val schnapsenCommandOpts: Opts[SchnapsenCommand.type] =
@@ -21,13 +21,10 @@ object Launcher extends CommandIOApp(name = "cards", header = banner, version = 
       Opts(WarCommand)
     }
 
-  override def main: Opts[IO[ExitCode]] = {
+  override def main: Opts[IO[ExitCode]] =
     (schnapsenCommandOpts orElse warCommandOpts).map {
       case SchnapsenCommand => SchnapsenCli[IO].run
       case WarCommand => WarCli[IO].run
     }.map {
       displayBanner[IO] >> _
     }
-  }
-
-}

@@ -6,7 +6,7 @@ import org.scalatest.matchers.should.Matchers
 
 import scala.Console.{BLACK, RED, RESET}
 
-class SuitSpec extends AnyFlatSpec with Matchers {
+class SuitSpec extends AnyFlatSpec with Matchers:
 
   "Heart" should "have symbol" in {
     Heart.toString should be(s"$RESET$RED♥$RESET")
@@ -39,4 +39,3 @@ class SuitSpec extends AnyFlatSpec with Matchers {
   it should "be black" in {
     Spade.color should be(Black)
   }
-}

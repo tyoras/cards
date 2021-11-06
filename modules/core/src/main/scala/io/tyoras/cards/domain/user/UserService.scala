@@ -6,7 +6,7 @@ import cats.syntax.all._
 import io.chrisdavenport.cats.effect.time.implicits.ClockOps
 import io.chrisdavenport.fuuid.FUUID
 
-trait UserService[F[_]] {
+trait UserService[F[_]]:
   def create(user: User.Data, withId: Option[FUUID] = None): F[User.Existing]
 
   def createMany(users: List[User.Data]): F[List[User.Existing]]
@@ -28,9 +28,8 @@ trait UserService[F[_]] {
   def deleteMany(users: List[User.Existing]): F[Unit]
 
   def deleteAll: F[Unit]
-}
 
-object UserService {
+object UserService:
   def of[F[_] : Monad : Clock](userRepo: UserRepository[F]): UserService[F] =
     new UserService[F] {
       override def create(user: User.Data, withId: Option[FUUID]): F[User.Existing] =
@@ -53,10 +52,8 @@ object UserService {
         userRepo.readManyById(ids)
 
       override def readManyByName(name: String): F[List[User.Existing]] =
-        if (name.isEmpty)
-          List.empty.pure[F]
-        else
-          userRepo.readManyByPartialName(name.trim)
+        if name.isEmpty then List.empty.pure[F]
+        else userRepo.readManyByPartialName(name.trim)
 
       override val readAll: F[List[User.Existing]] =
         userRepo.readAll
@@ -76,4 +73,3 @@ object UserService {
       override val deleteAll: F[Unit] =
         userRepo.deleteAll
     }
-}

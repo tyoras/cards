@@ -9,20 +9,20 @@ import io.tyoras.cards.domain.user.UserService
 import io.tyoras.cards.server.endpoints.Endpoint
 import io.tyoras.cards.server.endpoints.ErrorHandling.ApiMessage
 import io.tyoras.cards.server.endpoints.users.Payloads.Request.Creation
-import io.tyoras.cards.util.validation.ValidationOps
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import org.http4s.{EntityDecoder, HttpRoutes, Response, Status}
+import io.tyoras.cards.util.validation.syntax._
 
 import scala.util.chaining.scalaUtilChainingOps
 
-object UserEndpoint {
+object UserEndpoint:
   def of[F[_] : Async](userService: UserService[F]): F[Endpoint[F]] = Sync[F].delay {
     new Endpoint[F] with Http4sDsl[F] {
 
-      implicit val inputDecoder: EntityDecoder[F, Creation] = accumulatingJsonOf[F, Creation]
+      given EntityDecoder[F, Creation] = accumulatingJsonOf[F, Creation]
 
       override val routes: HttpRoutes[F] = Router {
         "users" -> HttpRoutes.of {
@@ -37,13 +37,13 @@ object UserEndpoint {
 
       object PartialName extends QueryParamDecoderMatcher[String]("name")
 
-      private def create(payload: Creation): F[Response[F]] = for {
+      private def create(payload: Creation): F[Response[F]] = for
         validated <- payload.validateF
         created   <- userService.create(validated)
         response  <- Created(Payloads.Response.User.fromExistingUser(created))
-      } yield response
+      yield response
 
-      private def createOrUpdate(id: FUUID)(payload: Creation): F[Response[F]] = for {
+      private def createOrUpdate(id: FUUID)(payload: Creation): F[Response[F]] = for
         validated <- payload.validateF
         search    <- userService.readById(id)
         result <- search.fold(userService.create(validated, withId = id.some)) { existing =>
@@ -52,7 +52,7 @@ object UserEndpoint {
         transformed = Payloads.Response.User.fromExistingUser(result)
         status = search.fold(Status.Created)(_ => Status.Ok)
         response = Response[F](status).withEntity(transformed)
-      } yield response
+      yield response
 
       private def searchByName(name: String): F[Response[F]] =
         userService.readManyByName(name).map(_.map(Payloads.Response.User.fromExistingUser)).flatMap(Ok(_))
@@ -69,5 +69,3 @@ object UserEndpoint {
       private val notFoundResponse = NotFound(ApiMessage("not_found", "Requested resource does not exist."))
     }
   }
-
-}

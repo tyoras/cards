@@ -7,7 +7,7 @@ import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.user.{User, UserRepository}
 import skunk.Session
 
-object PostgresUserRepository {
+object PostgresUserRepository:
   def of[F[_] : Sync](sessionPool: Resource[F, Session[F]]): F[UserRepository[F]] = Sync[F].delay {
     new UserRepository[F] {
       override def writeMany(users: List[User]): F[List[User.Existing]] = users.traverse {
@@ -24,10 +24,10 @@ object PostgresUserRepository {
 
       private def updateOne(user: User.Existing): F[User.Existing] =
         sessionPool.use { session =>
-          for {
+          for
             now     <- Clock[F].getZonedDateTimeUTC
             updated <- session.prepare(Statements.Update.one).use(_.unique(user -> now))
-          } yield updated
+          yield updated
         }
 
       override def readManyById(ids: List[FUUID]): F[List[User.Existing]] =
@@ -47,5 +47,3 @@ object PostgresUserRepository {
   }
 
   private val chunkSize = 1024
-
-}

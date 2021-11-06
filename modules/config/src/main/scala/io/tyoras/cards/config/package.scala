@@ -8,7 +8,7 @@ import cats.effect.Sync
 
 import java.nio.file.Path
 
-package object config {
+package object config:
 //  implicit def hint[T]: ProductHint[T] = ProductHint[T](ConfigFieldMapping(CamelCase, SnakeCase))
 
   def parseConfig[F[_] : Sync](configPath: Path): F[CardsConfig] =
@@ -29,4 +29,3 @@ package object config {
         )
       )
     )
-}

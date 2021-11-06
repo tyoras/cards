@@ -1,22 +1,13 @@
 import Dependencies._
 
 ThisBuild / organization := "io.tyoras"
-ThisBuild / scalaVersion := "2.13.6"
+ThisBuild / scalaVersion := "3.1.0"
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalacOptions ++= Seq(
-  "-Yrangepos",
-  "-Xlint",
-  "-deprecation",
   "-feature",
   "-unchecked",
-  "-Ywarn-dead-code",
-  "-Ywarn-numeric-widen",
-  "-Ywarn-value-discard",
   //"-Xfatal-warnings", si possible
-  "-Ywarn-unused",
-  "-Xlint:-byname-implicit",
-  "-Ydelambdafy:method",
   "-language:higherKinds",
   "-language:implicitConversions",
   "-encoding",

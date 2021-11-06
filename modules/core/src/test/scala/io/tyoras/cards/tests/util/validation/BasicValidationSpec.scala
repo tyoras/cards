@@ -6,7 +6,7 @@ import io.tyoras.cards.util.validation.BasicValidation._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class BasicValidationSpec extends AnyFlatSpec with Matchers {
+class BasicValidationSpec extends AnyFlatSpec with Matchers:
 
   "isMandatory validator" should "return MissingFieldError if the field is absent" in {
     val fieldName = "field_name"
@@ -18,4 +18,3 @@ class BasicValidationSpec extends AnyFlatSpec with Matchers {
     val fieldValue = 42
     isMandatory("field_name", fieldValue.some) should be(fieldValue.validNec)
   }
-}

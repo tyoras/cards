@@ -9,32 +9,26 @@ import io.tyoras.cards.domain.user.User
 import io.tyoras.cards.domain.user.User.Existing
 import io.tyoras.cards.util.validation.StringValidation._
 import io.tyoras.cards.util.validation._
+import io.tyoras.cards.util.validation.syntax._
 
 import java.time.ZonedDateTime
 
-object Payloads {
-  object Request {
+object Payloads:
+  object Request:
     final case class Creation(name: Option[String], about: Option[String])
-    object Creation {
-      implicit val decoder: Decoder[Creation] = deriveDecoder
+    object Creation:
+      given Decoder[Creation] = deriveDecoder
 
-      implicit val validator: Validator[Creation, User.Data] = new Validator[Creation, User.Data] {
-        override def validate(c: Creation)(implicit pf: Option[ParentField]): ValidationResult[User.Data] = (
+      given Validator[Creation, User.Data] = new:
+        override def validate(c: Creation)(using pf: Option[ParentField]): ValidationResult[User.Data] = (
           c.name.mandatory("name", notBlank, max(100)),
           c.about.mandatory("about", notBlank)
         ).mapN(User.Data.apply)
-      }
-    }
-  }
 
-  object Response {
+  object Response:
     final case class User(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, name: String, about: String)
-    object User {
-      implicit val encoder: Encoder[User] = deriveEncoder
+    object User:
+      given Encoder[User] = deriveEncoder
 
       def fromExistingUser(user: Existing): Response.User =
         Response.User(user.id, user.createdAt, user.updatedAt, user.name, user.about)
-    }
-  }
-
-}

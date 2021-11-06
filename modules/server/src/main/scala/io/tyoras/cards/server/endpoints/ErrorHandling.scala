@@ -11,19 +11,17 @@ import org.http4s.circe.DecodingFailures
 import org.http4s.server.ServiceErrorHandler
 import org.log4s.{getLogger, Logger}
 
-object ErrorHandling {
+object ErrorHandling:
   val logger: Logger = getLogger
 
   final case class ApiMessage(code: String, message: String, errors: List[ApiError] = Nil)
-  object ApiMessage {
-    implicit val decoder: Encoder[ApiMessage] = deriveEncoder
-  }
+  object ApiMessage:
+    given Encoder[ApiMessage] = deriveEncoder
   final case class ApiError(code: String, field: String, message: String)
-  object ApiError {
-    implicit val decoder: Encoder[ApiError] = deriveEncoder
-  }
+  object ApiError:
+    given Encoder[ApiError] = deriveEncoder
 
-  val default: PartialFunction[Throwable, (Status, ApiMessage)] = {
+  val default: PartialFunction[Throwable, (Status, ApiMessage)] =
     case ve: ValidationError =>
       (Status.UnprocessableEntity, ApiMessage(ve.code, ve.message, ve.errors.map(e => ApiError(e.code, e.field, e.message.getOrElse("")))))
     case pf: ParseFailure =>
@@ -36,7 +34,6 @@ object ErrorHandling {
     case t =>
       logger.error(t)(s"Service raised an unexpected error: ${t.toString}")
       (Status.InternalServerError, ApiMessage("server_error", t.toString))
-  }
 
   def defaultErrorHandler[F[_] : Sync]: ServiceErrorHandler[F] =
     errorHandlerWithFallback(default)
@@ -49,8 +46,8 @@ object ErrorHandling {
       Response[F](status).withEntity(message).pure[F]
     }
 
-  private def handleInvalidMessageBodyFailure(imbf: InvalidMessageBodyFailure): (Status, ApiMessage) = {
-    val msg = imbf.cause match {
+  private def handleInvalidMessageBodyFailure(imbf: InvalidMessageBodyFailure): (Status, ApiMessage) =
+    val msg = imbf.cause match
       case Some(df: DecodingFailure) =>
         val error = failureToApiError(df)
         ApiMessage("validation_error", "validation failed", List(error))
@@ -58,16 +55,11 @@ object ErrorHandling {
         val errors = dfs.failures.map(failureToApiError).toList
         ApiMessage("validation_error", "validation failed", errors)
       case _ => ApiMessage("validation_error", imbf.message)
-    }
     (Status.UnprocessableEntity, msg)
-  }
 
   private def failureToApiError(df: DecodingFailure): ApiError =
     ApiError("field_error", failureToFieldPath(df), df.message)
 
-  private def failureToFieldPath(df: DecodingFailure): String = {
+  private def failureToFieldPath(df: DecodingFailure): String =
     val path = CursorOp.opsToPath(df.history)
-    if (path.startsWith(".")) path.replaceFirst(".", "") else path
-  }
-
-}
+    if path.startsWith(".") then path.replaceFirst(".", "") else path

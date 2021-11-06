@@ -2,10 +2,10 @@ package io.tyoras.cards
 
 import cats.Monad
 import cats.effect.std.Console
-import cats.implicits._
+import cats.syntax.all._
 import io.tyoras.cards.domain.card.{Card, Deck, Hand}
 
-package object cli {
+package object cli:
 
   val banner: String =
     """ _____               _
@@ -19,36 +19,32 @@ package object cli {
 
   val lineSeparator: String = "-" * 58
 
-  def displayBanner[F[_] : Monad : Console]: F[Unit] = for {
+  def displayBanner[F[_] : Monad : Console]: F[Unit] = for
     _ <- Console[F].println(banner)
     _ <- Console[F].println(lineSeparator)
-  } yield ()
+  yield ()
 
-  def displayDeck[F[_] : Monad : Console](deck: Deck): F[Unit] = {
+  def displayDeck[F[_] : Monad : Console](deck: Deck): F[Unit] =
     val nbCards = deck.length / 4
 
-    def displayCard(c: Card): F[Unit] = {
-      val offset = if (c.rank.value == 10) "" else " "
+    def displayCard(c: Card): F[Unit] =
+      val offset = if c.rank.value == 10 then "" else " "
       Console[F].print(s"$offset$c ")
-    }
 
     def displaySplit(deck: Deck): F[Unit] = Monad[F].tailRecM(deck) {
       case Nil => ().asRight[Deck].pure[F]
       case d =>
         val (split, rest) = d.splitAt(nbCards)
-        for {
+        for
           _ <- split.traverse_(displayCard)
           _ <- Console[F].println("")
-        } yield rest.asLeft
+        yield rest.asLeft
     }
 
     displaySplit(deck)
-  }
 
-  def displayCardChoice[F[_] : Console](playableCards: Hand): F[Unit] = {
+  def displayCardChoice[F[_] : Console](playableCards: Hand): F[Unit] =
     val choices = playableCards.zipWithIndex.map { case (c: Card, i: Int) =>
       s"\t${i + 1} : Play $c"
     }
     Console[F].println(s"${choices.mkString("\n")}")
-  }
-}

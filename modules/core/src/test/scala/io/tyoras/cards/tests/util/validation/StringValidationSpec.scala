@@ -5,7 +5,7 @@ import io.tyoras.cards.util.validation.StringValidation._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class StringValidationSpec extends AnyFlatSpec with Matchers {
+class StringValidationSpec extends AnyFlatSpec with Matchers:
 
   "notEmpty validator" should "return EmptyFieldError when the field is empty" in {
     val fieldName = "field_name"
@@ -74,4 +74,3 @@ class StringValidationSpec extends AnyFlatSpec with Matchers {
     min(3)("field_name", fieldValue) should be(fieldValue.validNec)
   }
 
-}

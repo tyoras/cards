@@ -9,16 +9,12 @@ import skunk.implicits._
 
 import java.time.ZonedDateTime
 
-object Statements {
-  final implicit private class UserDataOps(private val data: User.Data.type) {
-    val codec: Codec[User.Data] = (varchar(100) ~ varchar).gimap[User.Data]
-  }
+object Statements:
+  extension (data: User.Data.type) def codec: Codec[User.Data] = (varchar(100) ~ varchar).gimap[User.Data]
 
-  final implicit private class UserExistingOps(private val user: User.Existing.type) {
-    val codec: Codec[User.Existing] = (fuuid ~ timestampTZ ~ timestampTZ ~ User.Data.codec).gimap[User.Existing]
-  }
+  extension (user: User.Existing.type) def codec: Codec[User.Existing] = (fuuid ~ timestampTZ ~ timestampTZ ~ User.Data.codec).gimap[User.Existing]
 
-  object Insert {
+  object Insert:
     val one: Query[User.Data, User.Existing] =
       sql"""INSERT INTO users (name, about)
             VALUES(${User.Data.codec})
@@ -36,9 +32,8 @@ object Statements {
             VALUES(${User.Data.codec.list(size)})
             RETURNING *
          """.query(User.Existing.codec)
-  }
 
-  object Update {
+  object Update:
     val one: Query[User.Existing ~ ZonedDateTime, User.Existing] =
       sql"""UPDATE users
             SET name = ${varchar(100)}, about = $varchar, updated_at = $timestampTZ
@@ -46,13 +41,11 @@ object Statements {
             RETURNING *
          """.query(User.Existing.codec).contramap(input)
 
-    private def input(e: User.Existing ~ ZonedDateTime): String ~ String ~ ZonedDateTime ~ FUUID = {
+    private def input(e: User.Existing ~ ZonedDateTime): String ~ String ~ ZonedDateTime ~ FUUID =
       val (data, updatedAt) = e
       data.name ~ data.about ~ updatedAt ~ data.id
-    }
-  }
 
-  object Select {
+  object Select:
     val all: Query[Void, User.Existing] =
       sql"""SELECT * FROM users""".query(User.Existing.codec)
 
@@ -61,13 +54,10 @@ object Statements {
 
     def many(size: Int): Query[List[FUUID], User.Existing] =
       sql"""SELECT * FROM users WHERE id in (${fuuid.list(size)})""".query(User.Existing.codec)
-  }
 
-  object Delete {
+  object Delete:
     val all: Command[Void] =
       sql"""DELETE FROM users""".command
 
     def many(size: Int): Command[List[FUUID]] =
       sql"""DELETE FROM users WHERE id in (${fuuid.list(size)})""".command
-  }
-}

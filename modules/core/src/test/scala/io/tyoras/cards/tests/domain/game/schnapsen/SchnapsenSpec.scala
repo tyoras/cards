@@ -9,7 +9,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class SchnapsenSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks {
+class SchnapsenSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyChecks:
 
   "baseDeck" should "be the good one for Schnapsen" in {
     val expectedSchnapsenDeck = Set(
@@ -55,4 +55,3 @@ class SchnapsenSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPrope
     val program = drawFirstCardF[IO](deck)
     a[DeckError] should be thrownBy program.unsafeRunSync()
   }
-}

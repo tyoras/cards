@@ -9,7 +9,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCheckDrivenPropertyChecks {
+class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCheckDrivenPropertyChecks:
 
   "Player.toString" should "work" in {
     val diamondTen = Card(Diamond, Ten())
@@ -184,4 +184,3 @@ class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCh
       resetGC.player2.score shouldBe 7
     }
   }
-}

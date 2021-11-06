@@ -12,16 +12,15 @@ import org.http4s.server.middleware.Logger
 
 import scala.util.chaining._
 
-trait Server[F[_]] {
+trait Server[F[_]]:
   def serve: Resource[F, Unit]
-}
-object Server {
+object Server:
   def of[F[_] : Async](config: ServerConfig, httpApp: HttpApp[F]): Server[F] = new Server[F] {
     override val serve: Resource[F, Unit] =
       BlazeServerBuilder[F].bindHttp(config.port, config.host).withHttpApp(httpApp).withServiceErrorHandler(ErrorHandling.defaultErrorHandler).resource.void
   }
 
-  object HttpApp {
+  object HttpApp:
     def of[F[_] : Async](first: Endpoint[F], remaining: Endpoint[F]*): HttpApp[F] =
       (first +: remaining)
         .map(_.routes)
@@ -29,5 +28,3 @@ object Server {
         .pipe(routes => Router("api" -> routes))
         .orNotFound
         .pipe(Logger.httpApp(logHeaders = true, logBody = true))
-  }
-}

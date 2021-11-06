@@ -4,39 +4,27 @@ import cats.data.Validated
 import cats.syntax.option._
 import io.tyoras.cards.util.validation.error.ErrorField
 
-object StringValidation {
+object StringValidation:
 
-  final case class EmptyFieldError(fieldName: String) extends ErrorField {
+  final case class EmptyFieldError(fieldName: String) extends ErrorField:
     override def code = "empty"
-
     override def field: String = fieldName
-
     override def message: Option[String] = s"$fieldName should not be empty.".some
-  }
 
-  final case class BlankFieldError(fieldName: String) extends ErrorField {
+  final case class BlankFieldError(fieldName: String) extends ErrorField:
     override def code = "blank"
-
     override def field: String = fieldName
-
     override def message: Option[String] = s"$fieldName should not be blank.".some
-  }
 
-  final case class TooShortError(fieldName: String, minLength: Int) extends ErrorField {
+  final case class TooShortError(fieldName: String, minLength: Int) extends ErrorField:
     override def code = "too_short"
-
     override def field: String = fieldName
-
     override def message: Option[String] = s"$fieldName is too short, the minimum authorized length is $minLength.".some
-  }
 
-  final case class TooLongError(fieldName: String, maxLength: Int) extends ErrorField {
+  final case class TooLongError(fieldName: String, maxLength: Int) extends ErrorField:
     override def code = "too_long"
-
     override def field: String = fieldName
-
     override def message: Option[String] = s"$fieldName is too long, the maximum authorized length is $maxLength.".some
-  }
 
   def notEmpty(field: String, s: String): ValidationResult[String] =
     Validated.condNec(s.nonEmpty, s, EmptyFieldError(field))
@@ -49,5 +37,3 @@ object StringValidation {
 
   def max(maxLength: Int)(field: String, s: String): ValidationResult[String] =
     Validated.condNec(s.length <= maxLength, s, TooLongError(field, maxLength))
-
-}

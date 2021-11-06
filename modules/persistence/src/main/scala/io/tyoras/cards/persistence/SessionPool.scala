@@ -9,8 +9,8 @@ import natchez.Trace
 import org.flywaydb.core.Flyway
 import skunk.{Session, SessionPool}
 
-object SessionPool {
-  def of[F[_] : Sync : Concurrent : Trace : Network : Console](config: DatabaseConfig): SessionPool[F] = {
+object SessionPool:
+  def of[F[_] : Sync : Concurrent : Trace : Network : Console](config: DatabaseConfig): SessionPool[F] =
     Resource.eval(initializeDb(config)) >>
       Session.pooled(
         host = config.host,
@@ -21,10 +21,8 @@ object SessionPool {
         max = config.maxSession,
         debug = false
       )
-  }
 
   def initializeDb[F[_] : Sync](config: DatabaseConfig): F[Unit] =
     Sync[F].delay {
       Flyway.configure().dataSource(config.jdbcUrl, config.user, config.password).load().migrate()
     }.void
-}

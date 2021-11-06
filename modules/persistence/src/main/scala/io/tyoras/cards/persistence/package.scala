@@ -8,7 +8,7 @@ import skunk.data.Type
 
 import java.time.{ZoneOffset, ZonedDateTime}
 
-package object persistence {
+package object persistence:
   val fuuid: Codec[FUUID] = Codec.simple[FUUID](
     u => u.show,
     s => FUUID.fromString(s).leftMap(_.getMessage),
@@ -19,4 +19,3 @@ package object persistence {
   )(
     _.withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime
   )
-}
