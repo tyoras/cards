@@ -58,7 +58,7 @@ object Dependencies {
     }
 
     case object postgresql {
-      val postgresql = "org.postgresql" % "postgresql" % "42.3.0"
+      val postgresql = "org.postgresql" % "postgresql" % "42.3.1"
     }
 
     case object scalacheck {
