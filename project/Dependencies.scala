@@ -5,7 +5,7 @@ object Dependencies {
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.2.7"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.2.8"
       }
     }
   }
