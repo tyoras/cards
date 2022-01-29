@@ -49,7 +49,7 @@ object Dependencies {
     }
 
     case object http4s {
-      val http4sVersion = "0.23.7"
+      val http4sVersion = "0.23.9"
       val `http4s-blaze-server` = dep("blaze-server")
       val `http4s-circe` = dep("circe")
       val `http4s-dsl` = dep("dsl")
