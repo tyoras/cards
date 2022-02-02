@@ -1,7 +1,7 @@
 import Dependencies._
 
 ThisBuild / organization := "io.tyoras"
-ThisBuild / scalaVersion := "3.1.0"
+ThisBuild / scalaVersion := "3.1.1"
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalacOptions ++= Seq(
