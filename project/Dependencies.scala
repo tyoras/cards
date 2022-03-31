@@ -5,7 +5,7 @@ object Dependencies {
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.2.10"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.2.11"
       }
     }
   }
@@ -45,11 +45,11 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-core` = "org.flywaydb" % "flyway-core" % "8.4.4"
+      val `flyway-core` = "org.flywaydb" % "flyway-core" % "8.5.5"
     }
 
     case object http4s {
-      val http4sVersion = "0.23.10"
+      val http4sVersion = "0.23.11"
       val `http4s-blaze-server` = dep("blaze-server")
       val `http4s-circe` = dep("circe")
       val `http4s-dsl` = dep("dsl")
@@ -75,12 +75,12 @@ object Dependencies {
 
     case object tpolecat {
       val `skunk-core` =
-        "org.tpolecat" %% "skunk-core" % "0.2.3"
+        "org.tpolecat" %% "skunk-core" % "0.3.1"
     }
 
     case object typelevel {
       val `cats-core` = "org.typelevel" %% "cats-core"           % "2.7.0"
-      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "3.3.5"
+      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "3.3.9"
       val `kind-projector` = "org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full
       val `log4cats-slf4j` = "org.typelevel" %% "log4cats-slf4j" % "2.2.0"
     }
