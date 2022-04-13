@@ -1,6 +1,6 @@
 package io.tyoras.cards.domain.game.war
 
-import io.tyoras.cards.domain.card._
+import io.tyoras.cards.domain.card.*
 
 import scala.annotation.tailrec
 
@@ -22,8 +22,8 @@ object War:
   @tailrec
   def battle(player1Hand: Hand, player2Hand: Hand, previousTurnCards: List[Card] = List()): (Hand, Hand) =
     (player1Hand, player2Hand) match
-      case (p1, List()) => (p1, List())
-      case (List(), p2) => (List(), p2)
+      case h @ (_, Nil) => h
+      case h @ (Nil, _) => h
       case (nextCard1 :: remainingCards1, nextCard2 :: remainingCards2) =>
         score(nextCard1, nextCard2, previousTurnCards) match
           case Player1Wins(cards) => (remainingCards1 ::: cards, remainingCards2)
@@ -32,6 +32,6 @@ object War:
 
   @tailrec
   def play(hands: (Hand, Hand)): (Hand, Hand) = hands match
-    case (h, List()) => (h, List())
-    case (List(), h) => (List(), h)
+    case (h, Nil) => (h, Nil)
+    case (Nil, h) => (Nil, h)
     case (player1: Hand, player2: Hand) => play(battle(player1, player2))

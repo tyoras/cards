@@ -1,13 +1,20 @@
 package io.tyoras.cards.server
 
-import cats.effect._
+import cats.data.NonEmptyList
+import cats.effect.*
 import cats.effect.kernel.Resource
 import cats.effect.std.Console
 import fs2.io.net.Network
-import io.tyoras.cards.config._
+import io.chrisdavenport.fuuid.FUUID
+import io.circe.Json
+import io.tyoras.cards.config.*
+import io.tyoras.cards.domain.game.{Game, GameService, GameType}
 import io.tyoras.cards.domain.user.UserService
-import io.tyoras.cards.persistence.SessionPool
+import io.tyoras.cards.persistence.game.PostgresGameRepository
 import io.tyoras.cards.persistence.user.PostgresUserRepository
+import io.tyoras.cards.persistence.{gameType, SessionPool}
+import io.tyoras.cards.server.endpoints.games.GameEndpoint
+import io.tyoras.cards.server.endpoints.games.war.WarEndpoint
 import io.tyoras.cards.server.endpoints.users.UserEndpoint
 import natchez.Trace.Implicits.noop
 
@@ -24,7 +31,11 @@ object Main extends IOApp:
     dbSessionPool <- SessionPool.of(config.database)
     userRepo      <- Resource.eval(PostgresUserRepository.of[F](dbSessionPool))
     userService = UserService.of(userRepo)
+    gameRepo <- Resource.eval(PostgresGameRepository.of[F](dbSessionPool))
+    gameService = GameService.of(gameRepo)
     userEndpoint <- Resource.eval(UserEndpoint.of(userService))
-    httpApp = Server.HttpApp.of(userEndpoint)
+    gameEndpoint <- Resource.eval(GameEndpoint.of(gameService))
+    warEndpoint  <- Resource.eval(WarEndpoint.of(gameService))
+    httpApp = Server.HttpApp.of(userEndpoint, gameEndpoint, warEndpoint)
     _ <- Server.of(config.server, httpApp).serve
   yield ()

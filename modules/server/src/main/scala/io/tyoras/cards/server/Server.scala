@@ -14,6 +14,7 @@ import scala.util.chaining._
 
 trait Server[F[_]]:
   def serve: Resource[F, Unit]
+
 object Server:
   def of[F[_] : Async](config: ServerConfig, httpApp: HttpApp[F]): Server[F] = new Server[F] {
     override val serve: Resource[F, Unit] =

@@ -74,8 +74,11 @@ object Dependencies {
     }
 
     case object tpolecat {
+      val skunkVersion = "0.3.1"
       val `skunk-core` =
-        "org.tpolecat" %% "skunk-core" % "0.3.1"
+        "org.tpolecat" %% "skunk-core" % skunkVersion
+      val `skunk-circe` =
+        "org.tpolecat" %% "skunk-circe" % skunkVersion
     }
 
     case object typelevel {
@@ -89,6 +92,7 @@ object Dependencies {
   lazy val coreDeps = Seq(
     io.chrisdavenport.`cats-effect-time`,
     io.chrisdavenport.fuuid,
+    io.circe.`circe-core`,
     org.typelevel.`cats-core`,
     org.typelevel.`cats-effect`,
     org.typelevel.`log4cats-slf4j`
@@ -114,9 +118,11 @@ object Dependencies {
   lazy val persistenceDeps = Seq(
     io.chrisdavenport.`cats-effect-time`,
     io.chrisdavenport.fuuid,
+    io.circe.`circe-core`,
     org.flywaydb.`flyway-core`,
     org.postgresql.postgresql,
     org.tpolecat.`skunk-core`,
+    org.tpolecat.`skunk-circe`,
     org.typelevel.`cats-core`,
     org.typelevel.`cats-effect`,
     org.typelevel.`log4cats-slf4j`

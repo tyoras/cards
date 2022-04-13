@@ -9,7 +9,7 @@ The project is designed around a set of modules :
 - `config` contains the game logic implementations.
 - `persistence` contains the details related to the postgresql persistence of the games.
 - `cli` contains a [cli](https://en.wikipedia.org/wiki/Command-line_interface) oriented UI for the games.
-- `server` contains a web server for playing the games via restful apis.
+- `server` (Work in progress) contains a web server for playing the games via restful apis.
 
 ## Finished games
 None yet.

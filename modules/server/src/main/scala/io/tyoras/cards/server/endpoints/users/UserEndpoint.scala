@@ -1,7 +1,6 @@
 package io.tyoras.cards.server.endpoints.users
 
-import cats.effect.Async
-import cats.effect.kernel.Sync
+import cats.effect.{Async, Sync}
 import cats.syntax.all._
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.http4s.FUUIDVar

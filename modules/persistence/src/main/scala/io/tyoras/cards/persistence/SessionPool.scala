@@ -2,12 +2,12 @@ package io.tyoras.cards.persistence
 
 import cats.effect.std.Console
 import cats.effect.{Concurrent, Resource, Sync}
-import cats.syntax.all._
+import cats.syntax.all.*
 import fs2.io.net.Network
 import io.tyoras.cards.config.DatabaseConfig
 import natchez.Trace
 import org.flywaydb.core.Flyway
-import skunk.{Session, SessionPool}
+import skunk.{Session, SessionPool, Strategy}
 
 object SessionPool:
   def of[F[_] : Sync : Concurrent : Trace : Network : Console](config: DatabaseConfig): SessionPool[F] =
@@ -19,6 +19,7 @@ object SessionPool:
         password = config.password.some,
         database = config.db,
         max = config.maxSession,
+        strategy = Strategy.SearchPath,
         debug = false
       )
 
