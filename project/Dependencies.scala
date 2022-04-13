@@ -45,7 +45,7 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-core` = "org.flywaydb" % "flyway-core" % "8.5.5"
+      val `flyway-core` = "org.flywaydb" % "flyway-core" % "8.5.7"
     }
 
     case object http4s {
