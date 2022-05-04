@@ -85,7 +85,7 @@ object Dependencies {
       val `cats-core` = "org.typelevel" %% "cats-core"           % "2.7.0"
       val `cats-effect` = "org.typelevel" %% "cats-effect"       % "3.3.11"
       val `kind-projector` = "org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full
-      val `log4cats-slf4j` = "org.typelevel" %% "log4cats-slf4j" % "2.2.0"
+      val `log4cats-slf4j` = "org.typelevel" %% "log4cats-slf4j" % "2.3.1"
     }
   }
 
