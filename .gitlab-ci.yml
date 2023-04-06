@@ -1,4 +1,4 @@
-image: "hseeberger/scala-sbt:17.0.1_1.6.2_3.1.1"
+image: "sbtscala/scala-sbt:graalvm-ce-22.3.0-b2-java17_1.8.2_3.2.2"
 
 stages:
   - test

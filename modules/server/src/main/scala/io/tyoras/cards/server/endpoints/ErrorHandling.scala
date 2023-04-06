@@ -35,13 +35,13 @@ object ErrorHandling:
       logger.error(t)(s"Service raised an unexpected error: ${t.toString}")
       (Status.InternalServerError, ApiMessage("server_error", t.toString))
 
-  def defaultErrorHandler[F[_] : Sync]: ServiceErrorHandler[F] =
+  def defaultErrorHandler[F[_] : Sync]: PartialFunction[Throwable, F[Response[F]]] =
     errorHandlerWithFallback(default)
 
-  def errorHandler[F[_] : Sync](pf: PartialFunction[Throwable, (Status, ApiMessage)]): ServiceErrorHandler[F] =
+  def errorHandler[F[_] : Sync](pf: PartialFunction[Throwable, (Status, ApiMessage)]): PartialFunction[Throwable, F[Response[F]]] =
     errorHandlerWithFallback(pf orElse default)
 
-  private def errorHandlerWithFallback[F[_] : Sync](pf: PartialFunction[Throwable, (Status, ApiMessage)]): ServiceErrorHandler[F] = _ =>
+  private def errorHandlerWithFallback[F[_] : Sync](pf: PartialFunction[Throwable, (Status, ApiMessage)]): PartialFunction[Throwable, F[Response[F]]] =
     pf andThen { case (status, message) =>
       Response[F](status).withEntity(message).pure[F]
     }

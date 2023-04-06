@@ -1,16 +1,17 @@
 package io.tyoras.cards.server
 
 import cats.effect.{Async, Resource}
-import cats.syntax.all._
+import cats.syntax.all.*
 import io.tyoras.cards.config.ServerConfig
 import io.tyoras.cards.server.endpoints.{Endpoint, ErrorHandling}
 import org.http4s.HttpApp
-import org.http4s.blaze.server.BlazeServerBuilder
-import org.http4s.implicits._
+import org.http4s.ember.server.EmberServerBuilder
+import org.http4s.implicits.*
 import org.http4s.server.Router
 import org.http4s.server.middleware.Logger
+import com.comcast.ip4s._
 
-import scala.util.chaining._
+import scala.util.chaining.*
 
 trait Server[F[_]]:
   def serve: Resource[F, Unit]
@@ -18,7 +19,14 @@ trait Server[F[_]]:
 object Server:
   def of[F[_] : Async](config: ServerConfig, httpApp: HttpApp[F]): Server[F] = new Server[F] {
     override val serve: Resource[F, Unit] =
-      BlazeServerBuilder[F].bindHttp(config.port, config.host).withHttpApp(httpApp).withServiceErrorHandler(ErrorHandling.defaultErrorHandler).resource.void
+      EmberServerBuilder
+        .default[F]
+        .withHostOption(Host.fromString(config.host))
+        .withPort(Port.fromInt(config.port).get)
+        .withHttpApp(httpApp)
+        .withErrorHandler(ErrorHandling.defaultErrorHandler)
+        .build
+        .void
   }
 
   object HttpApp:

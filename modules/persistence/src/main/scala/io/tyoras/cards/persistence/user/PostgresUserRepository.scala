@@ -17,8 +17,8 @@ object PostgresUserRepository:
 
       override def insert(data: User.Data, withId: Option[FUUID] = None): F[User.Existing] =
         sessionPool.use { session =>
-          withId.fold(session.prepare(Statements.Insert.one).use(_.unique(data))) { id =>
-            session.prepare(Statements.Insert.oneWithId).use(_.unique(id -> data))
+          withId.fold(session.prepareR(Statements.Insert.one).use(_.unique(data))) { id =>
+            session.prepareR(Statements.Insert.oneWithId).use(_.unique(id -> data))
           }
         }
 
@@ -26,21 +26,21 @@ object PostgresUserRepository:
         sessionPool.use { session =>
           for
             now     <- Clock[F].getZonedDateTimeUTC
-            updated <- session.prepare(Statements.Update.one).use(_.unique(user -> now))
+            updated <- session.prepareR(Statements.Update.one).use(_.unique(user -> now))
           yield updated
         }
 
       override def readManyById(ids: List[FUUID]): F[List[User.Existing]] =
-        sessionPool.use(_.prepare(Statements.Select.many(ids.size)).use(_.stream(ids, chunkSize).compile.toList))
+        sessionPool.use(_.prepareR(Statements.Select.many(ids.size)).use(_.stream(ids, chunkSize).compile.toList))
 
       override def readManyByPartialName(name: String): F[List[User.Existing]] =
-        sessionPool.use(_.prepare(Statements.Select.byName).use(_.stream(name, chunkSize).compile.toList))
+        sessionPool.use(_.prepareR(Statements.Select.byName).use(_.stream(name, chunkSize).compile.toList))
 
       override def readAll: F[List[User.Existing]] =
         sessionPool.use(_.execute(Statements.Select.all))
 
       override def deleteMany(users: List[User.Existing]): F[Unit] =
-        sessionPool.use(_.prepare(Statements.Delete.many(users.size)).use(_.execute(users.map(_.id)).void))
+        sessionPool.use(_.prepareR(Statements.Delete.many(users.size)).use(_.execute(users.map(_.id)).void))
 
       override def deleteAll: F[Unit] = sessionPool.use(_.execute(Statements.Delete.all).void)
     }

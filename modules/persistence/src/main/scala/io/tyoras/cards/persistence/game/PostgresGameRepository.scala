@@ -26,10 +26,10 @@ object PostgresGameRepository:
         sessionPool.use { session =>
           session.transaction.use { xa =>
             for
-              inserted <- withId.fold(session.prepare(Statements.Insert.one).use(_.unique(GameCreationDBModel.fromGameData[State](data)))) { id =>
-                session.prepare(Statements.Insert.oneWithId).use(_.unique(id -> GameCreationDBModel.fromGameData[State](data)))
+              inserted <- withId.fold(session.prepareR(Statements.Insert.one).use(_.unique(GameCreationDBModel.fromGameData[State](data)))) { id =>
+                session.prepareR(Statements.Insert.oneWithId).use(_.unique(id -> GameCreationDBModel.fromGameData[State](data)))
               }
-              _      <- data.players.traverse(playerId => session.prepare(Statements.Insert.onePlayer).use(_.execute(inserted.id -> playerId)))
+              _      <- data.players.traverse(playerId => session.prepareR(Statements.Insert.onePlayer).use(_.execute(inserted.id -> playerId)))
               result <- Sync[F].fromEither(inserted.toExistingGame[State](data.players))
             yield result
           }
@@ -40,32 +40,32 @@ object PostgresGameRepository:
         sessionPool.use { session =>
           for
             now     <- Clock[F].getZonedDateTimeUTC
-            updated <- session.prepare(Statements.Update.one).use(_.unique(GameUpdateDBModel.fromExisingGame(game, now)))
+            updated <- session.prepareR(Statements.Update.one).use(_.unique(GameUpdateDBModel.fromExisingGame(game, now)))
             result  <- Sync[F].fromEither(updated.toExistingGame[State](game.data.players))
           yield result
         }
 
       override def readAll[State : Decoder]: F[List[Game.Existing[State]]] = List.empty.pure
-      //TODO implement read all
-      //FIXME what can be passed to .stream(...) as Void as no instance ?
+      // TODO implement read all
+      // FIXME what can be passed to .stream(...) as Void as no instance ?
 //        sessionPool.use(_.prepare(Statements.Select.all).use(_.stream(???, chunkSize).chunkAdjacent.through(toExisting[F, State]).compile.toList))
 
       override def readManyById[State : Decoder](ids: List[FUUID]): F[List[Game.Existing[State]]] =
         sessionPool.use(
-          _.prepare(Statements.Select.many(ids.size)).use(
+          _.prepareR(Statements.Select.many(ids.size)).use(
             _.stream(ids, chunkSize).chunkAdjacent.through(toExisting[F, State]).compile.toList
           )
         )
 
       override def readManyByUser[State : Decoder](userId: FUUID): F[List[Game.Existing[State]]] =
         sessionPool.use(
-          _.prepare(Statements.Select.byUser).use(
+          _.prepareR(Statements.Select.byUser).use(
             _.stream(userId, chunkSize).chunkAdjacent.through(toExisting[F, State]).compile.toList
           )
         )
 
       override def deleteMany(games: List[Game.Existing[_]]): F[Unit] =
-        sessionPool.use(_.prepare(Statements.Delete.many(games.size)).use(_.execute(games.map(_.id)).void))
+        sessionPool.use(_.prepareR(Statements.Delete.many(games.size)).use(_.execute(games.map(_.id)).void))
 
       override def deleteAll: F[Unit] = sessionPool.use(_.execute(Statements.Delete.all).void)
   }

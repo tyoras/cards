@@ -29,8 +29,8 @@ case class GameRound(
        |\tForehand\t$forehand
        |\tTrump card\t$trumpCard
        |\tTalon\t\t${if talon.isEmpty then "empty" else talon.mkString(" ")}\t| status = ${talonClosing.fold("open")(p =>
-      s"closed by ${playersById(p.closedBy).name}"
-    )}""".stripMargin
+        s"closed by ${playersById(p.closedBy).name}"
+      )}""".stripMargin
 
   val trumpSuit: Suit = trumpCard.suit
   val roles: Map[Role, Player] = Map(Forehand -> forehand, Dealer -> dealer)

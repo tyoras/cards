@@ -1,11 +1,11 @@
-import sbt._
+import sbt.*
 
 object Dependencies {
 
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.2.11"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.4.6"
       }
     }
   }
@@ -20,7 +20,7 @@ object Dependencies {
 //    }
 
     case object monovore {
-      val declineVersion = "2.2.0"
+      val declineVersion = "2.4.1"
       val decline = "com.monovore" %% "decline"                 % declineVersion
       val `decline-effect` = "com.monovore" %% "decline-effect" % declineVersion
     }
@@ -36,7 +36,7 @@ object Dependencies {
     }
 
     case object circe {
-      val circeVersion = "0.14.1"
+      val circeVersion = "0.14.5"
       val `circe-core` = dep("core")
       val `circe-generic` = dep("generic")
       private def dep(artifact: String): ModuleID = "io.circe" %% s"circe-$artifact" % circeVersion
@@ -45,12 +45,12 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-core` = "org.flywaydb" % "flyway-core" % "8.5.11"
+      val `flyway-core` = "org.flywaydb" % "flyway-core" % "9.16.3"
     }
 
     case object http4s {
-      val http4sVersion = "0.23.11"
-      val `http4s-blaze-server` = dep("blaze-server")
+      val http4sVersion = "0.23.18"
+      val `http4s-ember-server` = dep("ember-server")
       val `http4s-circe` = dep("circe")
       val `http4s-dsl` = dep("dsl")
 
@@ -58,23 +58,23 @@ object Dependencies {
     }
 
     case object postgresql {
-      val postgresql = "org.postgresql" % "postgresql" % "42.3.5"
+      val postgresql = "org.postgresql" % "postgresql" % "42.6.0"
     }
 
     case object scalacheck {
-      val scalacheck = "org.scalacheck" %% "scalacheck" % "1.16.0"
+      val scalacheck = "org.scalacheck" %% "scalacheck" % "1.17.0"
     }
 
     case object scalatest {
-      val scalatest = "org.scalatest" %% "scalatest" % "3.2.12"
+      val scalatest = "org.scalatest" %% "scalatest" % "3.2.15"
     }
 
     case object scalatestplus {
-      val `scalacheck-1-15` = "org.scalatestplus" %% "scalacheck-1-15" % "3.2.11.0"
+      val `scalacheck-1-15` = "org.scalatestplus" %% "scalacheck-1-17" % "3.2.15.0"
     }
 
     case object tpolecat {
-      val skunkVersion = "0.3.1"
+      val skunkVersion = "0.5.1"
       val `skunk-core` =
         "org.tpolecat" %% "skunk-core" % skunkVersion
       val `skunk-circe` =
@@ -82,10 +82,10 @@ object Dependencies {
     }
 
     case object typelevel {
-      val `cats-core` = "org.typelevel" %% "cats-core"           % "2.7.0"
-      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "3.3.11"
+      val `cats-core` = "org.typelevel" %% "cats-core"           % "2.9.0"
+      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "3.4.8"
       val `kind-projector` = "org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full
-      val `log4cats-slf4j` = "org.typelevel" %% "log4cats-slf4j" % "2.3.1"
+      val `log4cats-slf4j` = "org.typelevel" %% "log4cats-slf4j" % "2.5.0"
     }
   }
 
@@ -156,7 +156,7 @@ object Dependencies {
     io.chrisdavenport.`fuuid-http4s`,
     io.circe.`circe-core`,
     io.circe.`circe-generic`,
-    org.http4s.`http4s-blaze-server`,
+    org.http4s.`http4s-ember-server`,
     org.http4s.`http4s-circe`,
     org.http4s.`http4s-dsl`,
     org.typelevel.`cats-core`,
