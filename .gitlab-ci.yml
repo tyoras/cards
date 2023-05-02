@@ -27,6 +27,11 @@ unit_test:
     paths:
     - target/scala-3.3.0-RC5/scoverage-report/
     - target/scala-3.3.0-RC5/coverage-report/
+    when: always
+    reports:
+      junit:
+        - modules/core/target/test-reports/TEST-*.xml
+  coverage: '/Statement coverage[A-Za-z\.*]\s*:\s*([^%]+)/'
 
 check_format:
   stage: test
