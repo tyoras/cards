@@ -1,13 +1,13 @@
 import Dependencies.*
 
 ThisBuild / organization := "io.tyoras"
-ThisBuild / scalaVersion := "3.2.2"
-ThisBuild / version := "0.1.0-SNAPSHOT"
+ThisBuild / scalaVersion := "3.3.0-RC5"
+ThisBuild / version      := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalacOptions ++= Seq(
   "-feature",
   "-unchecked",
-  //"-Xfatal-warnings", si possible
+  // "-Xfatal-warnings", si possible
   "-language:higherKinds",
   "-language:implicitConversions",
   "-encoding",
@@ -15,34 +15,31 @@ ThisBuild / scalacOptions ++= Seq(
 )
 
 lazy val commonSettings = Seq(
-  update / evictionWarningOptions := EvictionWarningOptions.empty,
-  assembly / test := {}
+  update / evictionWarningOptions := EvictionWarningOptions.empty
 )
 
 ThisBuild / coverageMinimumStmtTotal := 75
-ThisBuild / coverageFailOnMinimum := false
+ThisBuild / coverageFailOnMinimum    := false
 
 Global / lintUnusedKeysOnLoad := false
 
-lazy val cards = (project in file("."))
-  .aggregate(core, persistence, cli, config, server)
+lazy val cards = (project in file(".")).aggregate(core, persistence, cli, config, server)
 
 lazy val core = (project in file("modules/core"))
   .settings(
     commonSettings,
     libraryDependencies ++= coreDeps ++ coreTestDeps,
-    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoKeys    := Seq[BuildInfoKey](version),
     buildInfoPackage := "io.tyoras.cards",
     buildInfoOptions += BuildInfoOption.BuildTime,
     coverageExcludedPackages := ".*BuildInfo.scala"
   )
   .enablePlugins(BuildInfoPlugin)
 
-lazy val config = (project in file("modules/config"))
-  .settings(
-    commonSettings,
-    libraryDependencies ++= configDeps ++ configTestDeps
-  )
+lazy val config = (project in file("modules/config")).settings(
+  commonSettings,
+  libraryDependencies ++= configDeps ++ configTestDeps
+)
 
 lazy val persistence = (project in file("modules/persistence"))
   .settings(
@@ -57,7 +54,7 @@ lazy val cli = (project in file("modules/cli"))
     cliPackagingSettings,
     libraryDependencies ++= cliDeps ++ cliTestDeps
   )
-  .enablePlugins(JavaAppPackaging, GraalVMNativeImagePlugin)
+  .enablePlugins(NativeImagePlugin)
   .dependsOn(core)
 
 lazy val server = (project in file("modules/server"))
@@ -66,42 +63,28 @@ lazy val server = (project in file("modules/server"))
     serverPackagingSettings,
     libraryDependencies ++= serverDeps ++ serverTestDeps
   )
-  .enablePlugins(JavaAppPackaging, GraalVMNativeImagePlugin)
+  .enablePlugins(NativeImagePlugin)
   .dependsOn(core, config, persistence)
 
-
 lazy val cliPackagingSettings = Seq(
-  Compile / assembly / mainClass := Some("io.tyoras.cards.cli.Launcher"),
-  assembly / assemblyJarName := "cards-cli.jar",
+  Compile / mainClass := Some("io.tyoras.cards.cli.Launcher")
 ) ++ graalVMPackagingSettings
 
 lazy val serverPackagingSettings = Seq(
-  Compile / assembly / mainClass := Some("io.tyoras.cards.server.Main"),
-  assembly / assemblyJarName := "cards-server.jar",
+  Compile / mainClass := Some("io.tyoras.cards.server.Main")
 ) ++ graalVMPackagingSettings
 
 lazy val graalVMPackagingSettings = Seq(
-  graalVMNativeImageOptions ++= Seq(
-    "--verbose",
-    "--no-server",
+  nativeImageOptions ++= Seq(
+    "-H:+ReportExceptionStackTraces",
+    "--initialize-at-run-time=scala.util.Random",
+    "--initialize-at-run-time=org.slf4j.LoggerFactory",
+    "--initialize-at-run-time=org.slf4j.MDC",
+    "--initialize-at-build-time=scala.runtime.Statics$VM",
     "--no-fallback",
     "--static",
-    "--libc=musl",
     "--enable-http",
-    "--enable-https",
-    "--enable-all-security-services",
-    "--report-unsupported-elements-at-runtime",
-    "--allow-incomplete-classpath",
-    "-H:+ReportExceptionStackTraces",
-    "-H:+ReportUnsupportedElementsAtRuntime",
-    "-H:+PrintClassInitialization",
-    "-H:+RemoveSaturatedTypeFlows",
-    "-H:ReflectionConfigurationFiles=/build/reflect-config.json",
-    "-H:+StackTrace",
-    "-H:+JNI",
-    "-H:-SpawnIsolates",
-    "-H:-UseServiceLoaderFeature",
-    "--install-exit-handlers",
-    "--initialize-at-build-time=scala.runtime.Statics$VM,ch.qos.logback.core.boolex.JaninoEventEvaluatorBase"
-  )
+    "--enable-https"
+  ),
+  nativeImageVersion := "22.3.1"
 )
