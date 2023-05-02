@@ -5,7 +5,7 @@ object Dependencies {
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.4.6"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.4.7"
       }
     }
   }
@@ -28,7 +28,7 @@ object Dependencies {
 
   case object io {
     case object chrisdavenport {
-      val `cats-effect-time` = "io.chrisdavenport" %% "cats-effect-time" % "0.2.0"
+      val `cats-effect-time` = "io.chrisdavenport" %% "cats-effect-time" % "0.2.1"
       val fuuidVersion = "0.8.0-M2"
       val fuuid = "io.chrisdavenport" %% "fuuid"                 % fuuidVersion
       val `fuuid-circe` = "io.chrisdavenport" %% "fuuid-circe"   % fuuidVersion
@@ -45,7 +45,7 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-core` = "org.flywaydb" % "flyway-core" % "9.16.3"
+      val `flyway-core` = "org.flywaydb" % "flyway-core" % "9.17.0"
     }
 
     case object http4s {
@@ -83,9 +83,9 @@ object Dependencies {
 
     case object typelevel {
       val `cats-core` = "org.typelevel" %% "cats-core"           % "2.9.0"
-      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "3.4.8"
+      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "3.4.10"
       val `kind-projector` = "org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full
-      val `log4cats-slf4j` = "org.typelevel" %% "log4cats-slf4j" % "2.5.0"
+      val `log4cats-slf4j` = "org.typelevel" %% "log4cats-slf4j" % "2.6.0"
     }
   }
 
