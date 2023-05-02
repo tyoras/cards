@@ -127,7 +127,8 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
     forAll(randomDeckGen -> "hand") { hand =>
       val distinctHand = hand.toSet.toList
       whenever(distinctHand.nonEmpty) {
-        val expectedCard :: handWithoutCardToPick = distinctHand
+        val expectedCard = distinctHand.head
+        val handWithoutCardToPick = distinctHand.tail
         val (pickedCard, remainingHand) = pickCard(expectedCard, distinctHand)
         pickedCard.value shouldBe expectedCard
         remainingHand should contain theSameElementsInOrderAs handWithoutCardToPick
@@ -139,7 +140,8 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
     forAll(randomDeckGen -> "hand") { hand =>
       val distinctHand = hand.toSet.toList
       whenever(distinctHand.nonEmpty) {
-        val card :: handWithoutCardToPick = distinctHand
+        val card = distinctHand.head
+        val handWithoutCardToPick = distinctHand.tail
         pickCard(card, handWithoutCardToPick) shouldBe (None -> handWithoutCardToPick)
       }
     }
