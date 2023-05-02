@@ -22,12 +22,11 @@ cache:
 unit_test:
   stage: test
   script:
-  - sbt clean test
-#  - sbt clean coverage test coverageReport coverageAggregate
-#  artifacts:
-#    paths:
-#    - target/scala-2.13/scoverage-report/
-#    - target/scala-2.13/coverage-report/
+  - sbt clean coverage test coverageReport coverageAggregate
+  artifacts:
+    paths:
+    - target/scala-3.3.0-RC5/scoverage-report/
+    - target/scala-3.3.0-RC5/coverage-report/
 
 check_format:
   stage: test
@@ -42,20 +41,20 @@ check_dependency_update:
   - sbt "set dependencyUpdatesFailBuild := true" dependencyUpdates
   allow_failure: true
 
-#pages:
-#  stage: deploy
-#  dependencies:
-#    - unit_test
-#  script:
-#    - rm -rf public/coverage
-#    - mkdir -p public/coverage
-#    - mv target/scala-2.13/scoverage-report/* public/coverage/
-#  artifacts:
-#    paths:
-#      - public
-#    expire_in: 30 days
-#  only:
-#    - master
+pages:
+  stage: deploy
+  dependencies:
+    - unit_test
+  script:
+    - rm -rf public/coverage
+    - mkdir -p public/coverage
+    - mv target/scala-3.3.0-RC5/scoverage-report/* public/coverage/
+  artifacts:
+    paths:
+      - public
+    expire_in: 30 days
+  only:
+    - master
 
 Build:
   image: docker:latest
