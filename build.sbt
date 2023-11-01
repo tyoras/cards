@@ -1,7 +1,7 @@
 import Dependencies.*
 
 ThisBuild / organization := "io.tyoras"
-ThisBuild / scalaVersion := "3.3.0-RC5"
+ThisBuild / scalaVersion := "3.3.1"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalacOptions ++= Seq(
@@ -86,5 +86,5 @@ lazy val graalVMPackagingSettings = Seq(
     "--enable-http",
     "--enable-https"
   ),
-  nativeImageVersion := "22.3.1"
+  nativeImageVersion := "22.3.3"
 )

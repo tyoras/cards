@@ -73,4 +73,3 @@ class StringValidationSpec extends AnyFlatSpec with Matchers:
     val fieldValue = "abc"
     min(3)("field_name", fieldValue) should be(fieldValue.validNec)
   }
-

@@ -5,7 +5,7 @@ object Dependencies {
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.4.7"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.4.11"
       }
     }
   }
@@ -36,7 +36,7 @@ object Dependencies {
     }
 
     case object circe {
-      val circeVersion = "0.14.5"
+      val circeVersion = "0.14.6"
       val `circe-core` = dep("core")
       val `circe-generic` = dep("generic")
       private def dep(artifact: String): ModuleID = "io.circe" %% s"circe-$artifact" % circeVersion
@@ -45,11 +45,11 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-core` = "org.flywaydb" % "flyway-core" % "9.17.0"
+      val `flyway-core` = "org.flywaydb" % "flyway-core" % "10.0.0"
     }
 
     case object http4s {
-      val http4sVersion = "0.23.18"
+      val http4sVersion = "0.23.23"
       val `http4s-ember-server` = dep("ember-server")
       val `http4s-circe` = dep("circe")
       val `http4s-dsl` = dep("dsl")
@@ -66,15 +66,15 @@ object Dependencies {
     }
 
     case object scalatest {
-      val scalatest = "org.scalatest" %% "scalatest" % "3.2.15"
+      val scalatest = "org.scalatest" %% "scalatest" % "3.2.17"
     }
 
     case object scalatestplus {
-      val `scalacheck-1-15` = "org.scalatestplus" %% "scalacheck-1-17" % "3.2.15.0"
+      val `scalacheck-1-15` = "org.scalatestplus" %% "scalacheck-1-17" % "3.2.17.0"
     }
 
     case object tpolecat {
-      val skunkVersion = "0.5.1"
+      val skunkVersion = "0.6.1"
       val `skunk-core` =
         "org.tpolecat" %% "skunk-core" % skunkVersion
       val `skunk-circe` =
@@ -82,8 +82,8 @@ object Dependencies {
     }
 
     case object typelevel {
-      val `cats-core` = "org.typelevel" %% "cats-core"           % "2.9.0"
-      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "3.4.10"
+      val `cats-core` = "org.typelevel" %% "cats-core"           % "2.10.0"
+      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "3.5.2"
       val `kind-projector` = "org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full
       val `log4cats-slf4j` = "org.typelevel" %% "log4cats-slf4j" % "2.6.0"
     }

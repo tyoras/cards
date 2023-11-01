@@ -9,6 +9,7 @@ import skunk.codec.all.*
 import skunk.data.Type
 import skunk.circe.codec.all.*
 import skunk.implicits.*
+import skunk.feature.legacyCommandSyntax
 import io.circe.Json
 
 import java.time.ZonedDateTime

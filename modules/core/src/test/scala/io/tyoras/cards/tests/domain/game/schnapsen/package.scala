@@ -69,7 +69,7 @@ package object schnapsen:
     opponentScore <- Gen.posNum[Int]
   yield TalonClosing(closedBy, opponentScore)
 
-  //FIXME complete and coherent gen for GameRound
+  // FIXME complete and coherent gen for GameRound
   val gameRoundGen: Gen[GameRound] = for
     context   <- gameContextGen
     deck      <- deckGen

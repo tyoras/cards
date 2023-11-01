@@ -63,7 +63,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
     }
   }
 
-  //actually as it is random the same order can be produced multiple time thus failing this test
+  // actually as it is random the same order can be produced multiple time thus failing this test
   it should "produce different deck order most of the time" ignore {
     forAll(randomDeckGen -> "deck") { deck =>
       whenever(deck.size > 1) {

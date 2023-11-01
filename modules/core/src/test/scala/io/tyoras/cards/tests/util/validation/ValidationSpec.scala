@@ -118,4 +118,3 @@ object ValidationSpec:
       i.optional_with_default_field.valid
     ).mapN(FakeDomainObject.apply)
   }
-

@@ -14,4 +14,3 @@ class RankSpec extends AnyFlatSpec with Matchers:
   "Two ranks with the same value" should "be considered equivalent by comparison" in {
     Ten().compareTo(Nine(10)) should be(0)
   }
-

@@ -1,4 +1,4 @@
-FROM sbtscala/scala-sbt:graalvm-ce-22.3.0-b2-java17_1.8.2_3.2.2 as builder
+FROM sbtscala/scala-sbt:graalvm-ce-22.3.3-b1-java17_1.9.7_3.3.1 as builder
 
 # Copy the build files
 COPY . /build

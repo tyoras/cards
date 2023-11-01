@@ -6,6 +6,7 @@ import io.tyoras.cards.persistence.{fuuid, timestampTZ}
 import skunk._
 import skunk.codec.all._
 import skunk.implicits._
+import skunk.feature.legacyCommandSyntax
 
 import java.time.ZonedDateTime
 
