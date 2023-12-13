@@ -5,7 +5,7 @@ object Dependencies {
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.4.11"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.4.14"
       }
     }
   }
@@ -45,11 +45,11 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-core` = "org.flywaydb" % "flyway-core" % "10.0.0"
+      val `flyway-core` = "org.flywaydb" % "flyway-core" % "10.2.0"
     }
 
     case object http4s {
-      val http4sVersion = "0.23.23"
+      val http4sVersion = "0.23.24"
       val `http4s-ember-server` = dep("ember-server")
       val `http4s-circe` = dep("circe")
       val `http4s-dsl` = dep("dsl")
@@ -58,7 +58,7 @@ object Dependencies {
     }
 
     case object postgresql {
-      val postgresql = "org.postgresql" % "postgresql" % "42.6.0"
+      val postgresql = "org.postgresql" % "postgresql" % "42.7.1"
     }
 
     case object scalacheck {
@@ -74,7 +74,7 @@ object Dependencies {
     }
 
     case object tpolecat {
-      val skunkVersion = "0.6.1"
+      val skunkVersion = "0.6.2"
       val `skunk-core` =
         "org.tpolecat" %% "skunk-core" % skunkVersion
       val `skunk-circe` =
