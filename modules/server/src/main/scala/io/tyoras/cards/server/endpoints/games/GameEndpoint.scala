@@ -16,6 +16,8 @@ import org.http4s.circe.CirceEntityEncoder.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import org.http4s.{EntityDecoder, HttpRoutes, Response, Status}
+import io.scalaland.chimney.dsl.*
+import io.tyoras.cards.server.endpoints.games.Payloads.Response.Game.fromExisting
 
 import scala.util.chaining.scalaUtilChainingOps
 
@@ -43,7 +45,7 @@ object GameEndpoint:
         gameService.readAll[Json].map(_.map(Payloads.Response.Game.fromExistingGame)).flatMap(Ok(_))
 
       private def searchById(id: FUUID): F[Response[F]] =
-        gameService.readById[Json](id).flatMap(_.fold(notFoundResponse)(Payloads.Response.Game.fromExistingGame(_).pipe(Ok(_))))
+        gameService.readById[Json](id).flatMap(_.fold(notFoundResponse)(_.transformInto[Payloads.Response.Game](fromExisting).pipe(Ok(_))))
 
       private def deleteById(id: FUUID): F[Response[F]] =
         gameService.readById[Json](id).flatMap(_.fold(notFoundResponse)(gameService.delete(_) >> NoContent()))

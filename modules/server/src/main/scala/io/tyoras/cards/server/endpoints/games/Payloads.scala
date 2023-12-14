@@ -12,6 +12,8 @@ import io.tyoras.cards.util.validation.syntax.*
 
 import java.time.ZonedDateTime
 
+import io.scalaland.chimney.Transformer
+
 object Payloads:
   given Encoder[GameType] = Encoder.encodeString.contramap(_.toString.toLowerCase)
 
@@ -25,5 +27,9 @@ object Payloads:
     object Game:
       given Encoder[Game] = deriveEncoder
 
+      given fromExisting: Transformer[Existing[?], Response.Game] =
+        Transformer.define[Existing[?], Response.Game].enableMethodAccessors.buildTransformer
+
+      // FIXME keeping this one because chimney does not find the implicit when the From type has a generic wildcard
       def fromExistingGame(game: Existing[_]): Response.Game =
         Response.Game(game.id, game.createdAt, game.updatedAt, game.gameType, game.players)

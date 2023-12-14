@@ -6,6 +6,7 @@ ThisBuild / version      := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalacOptions ++= Seq(
   "-feature",
+  "-deprecation",
   "-unchecked",
   // "-Xfatal-warnings", si possible
   "-language:higherKinds",

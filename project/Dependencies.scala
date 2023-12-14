@@ -35,6 +35,10 @@ object Dependencies {
       val `fuuid-http4s` = "io.chrisdavenport" %% "fuuid-http4s" % fuuidVersion
     }
 
+    case object scalaland {
+      val chimney = "io.scalaland" %% "chimney" % "0.8.3"
+    }
+
     case object circe {
       val circeVersion = "0.14.6"
       val `circe-core` = dep("core")
@@ -154,6 +158,7 @@ object Dependencies {
     io.chrisdavenport.fuuid,
     io.chrisdavenport.`fuuid-circe`,
     io.chrisdavenport.`fuuid-http4s`,
+    io.scalaland.chimney,
     io.circe.`circe-core`,
     io.circe.`circe-generic`,
     org.http4s.`http4s-ember-server`,

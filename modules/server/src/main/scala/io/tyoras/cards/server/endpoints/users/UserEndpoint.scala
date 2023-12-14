@@ -15,6 +15,8 @@ import org.http4s.server.Router
 import org.http4s.{EntityDecoder, HttpRoutes, Response, Status}
 import io.tyoras.cards.util.validation.syntax._
 
+import io.scalaland.chimney.dsl.*
+
 import scala.util.chaining.scalaUtilChainingOps
 
 object UserEndpoint:
@@ -39,7 +41,7 @@ object UserEndpoint:
       private def create(payload: Creation): F[Response[F]] = for
         validated <- payload.validateF
         created   <- userService.create(validated)
-        response  <- Created(Payloads.Response.User.fromExistingUser(created))
+        response  <- Created(created.transformInto[Payloads.Response.User])
       yield response
 
       private def createOrUpdate(id: FUUID)(payload: Creation): F[Response[F]] = for
@@ -48,19 +50,19 @@ object UserEndpoint:
         result <- search.fold(userService.create(validated, withId = id.some)) { existing =>
           userService.update(existing.copy(data = validated))
         }
-        transformed = Payloads.Response.User.fromExistingUser(result)
+        transformed = result.transformInto[Payloads.Response.User]
         status = search.fold(Status.Created)(_ => Status.Ok)
         response = Response[F](status).withEntity(transformed)
       yield response
 
       private def searchByName(name: String): F[Response[F]] =
-        userService.readManyByName(name).map(_.map(Payloads.Response.User.fromExistingUser)).flatMap(Ok(_))
+        userService.readManyByName(name).map(_.transformInto[List[Payloads.Response.User]]).flatMap(Ok(_))
 
       private val listAll: F[Response[F]] =
-        userService.readAll.map(_.map(Payloads.Response.User.fromExistingUser)).flatMap(Ok(_))
+        userService.readAll.map(_.transformInto[List[Payloads.Response.User]]).flatMap(Ok(_))
 
       private def searchById(id: FUUID): F[Response[F]] =
-        userService.readById(id).flatMap(_.fold(notFoundResponse)(Payloads.Response.User.fromExistingUser(_).pipe(Ok(_))))
+        userService.readById(id).flatMap(_.fold(notFoundResponse)(_.transformInto[Payloads.Response.User].pipe(Ok(_))))
 
       private def deleteById(id: FUUID): F[Response[F]] =
         userService.readById(id).flatMap(_.fold(notFoundResponse)(userService.delete(_) >> NoContent()))

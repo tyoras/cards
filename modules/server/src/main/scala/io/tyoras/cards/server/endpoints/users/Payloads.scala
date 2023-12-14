@@ -2,14 +2,16 @@ package io.tyoras.cards.server.endpoints.users
 
 import cats.implicits.catsSyntaxTuple2Semigroupal
 import io.chrisdavenport.fuuid.FUUID
-import io.chrisdavenport.fuuid.circe._
-import io.circe.generic.semiauto._
+import io.chrisdavenport.fuuid.circe.*
+import io.circe.generic.semiauto.*
 import io.circe.{Decoder, Encoder}
 import io.tyoras.cards.domain.user.User
 import io.tyoras.cards.domain.user.User.Existing
-import io.tyoras.cards.util.validation.StringValidation._
-import io.tyoras.cards.util.validation._
-import io.tyoras.cards.util.validation.syntax._
+import io.tyoras.cards.util.validation.StringValidation.*
+import io.tyoras.cards.util.validation.*
+import io.tyoras.cards.util.validation.syntax.*
+
+import io.scalaland.chimney.Transformer
 
 import java.time.ZonedDateTime
 
@@ -30,5 +32,5 @@ object Payloads:
     object User:
       given Encoder[User] = deriveEncoder
 
-      def fromExistingUser(user: Existing): Response.User =
-        Response.User(user.id, user.createdAt, user.updatedAt, user.name, user.about)
+      given Transformer[Existing, Response.User] =
+        Transformer.define[Existing, Response.User].enableMethodAccessors.buildTransformer

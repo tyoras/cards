@@ -11,12 +11,15 @@ import io.tyoras.cards.domain.game.{Game, GameService, GameType}
 import io.tyoras.cards.server.endpoints.Endpoint
 import io.tyoras.cards.server.endpoints.ErrorHandling.ApiMessage
 import io.tyoras.cards.server.endpoints.games.Payloads
+import io.tyoras.cards.server.endpoints.games.Payloads.Response.Game.fromExisting
 import io.tyoras.cards.server.endpoints.games.war.Payloads.Request.Creation
 import org.http4s.circe.*
 import org.http4s.circe.CirceEntityEncoder.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import org.http4s.{EntityDecoder, HttpRoutes, Response, Status}
+
+import io.scalaland.chimney.dsl.*
 
 import scala.util.chaining.scalaUtilChainingOps
 
@@ -34,6 +37,6 @@ object WarEndpoint:
 
       private def create(payload: Creation): F[Response[F]] = for
         created  <- gameService.create(Game.Data[Json](GameType.War, NonEmptyList.of(payload.player1, payload.player2), Json.obj("d" -> Json.fromString("e"))))
-        response <- Created(Payloads.Response.Game.fromExistingGame(created))
+        response <- Created(created.transformInto[Payloads.Response.Game](fromExisting))
       yield response
   }
