@@ -36,7 +36,7 @@ object Dependencies {
     }
 
     case object scalaland {
-      val chimney = "io.scalaland" %% "chimney" % "0.8.3"
+      val chimney = "io.scalaland" %% "chimney" % "0.8.5"
     }
 
     case object circe {
@@ -49,11 +49,11 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-core` = "org.flywaydb" % "flyway-core" % "10.2.0"
+      val `flyway-core` = "org.flywaydb" % "flyway-core" % "10.7.2"
     }
 
     case object http4s {
-      val http4sVersion = "0.23.24"
+      val http4sVersion = "0.23.25"
       val `http4s-ember-server` = dep("ember-server")
       val `http4s-circe` = dep("circe")
       val `http4s-dsl` = dep("dsl")
@@ -70,15 +70,15 @@ object Dependencies {
     }
 
     case object scalatest {
-      val scalatest = "org.scalatest" %% "scalatest" % "3.2.17"
+      val scalatest = "org.scalatest" %% "scalatest" % "3.2.18"
     }
 
     case object scalatestplus {
-      val `scalacheck-1-15` = "org.scalatestplus" %% "scalacheck-1-17" % "3.2.17.0"
+      val `scalacheck-1-15` = "org.scalatestplus" %% "scalacheck-1-17" % "3.2.18.0"
     }
 
     case object tpolecat {
-      val skunkVersion = "0.6.2"
+      val skunkVersion = "0.6.3"
       val `skunk-core` =
         "org.tpolecat" %% "skunk-core" % skunkVersion
       val `skunk-circe` =
@@ -87,7 +87,7 @@ object Dependencies {
 
     case object typelevel {
       val `cats-core` = "org.typelevel" %% "cats-core"           % "2.10.0"
-      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "3.5.2"
+      val `cats-effect` = "org.typelevel" %% "cats-effect"       % "3.5.3"
       val `kind-projector` = "org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full
       val `log4cats-slf4j` = "org.typelevel" %% "log4cats-slf4j" % "2.6.0"
     }
