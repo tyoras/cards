@@ -4,7 +4,7 @@ import cats.effect.*
 import cats.effect.kernel.Resource
 import cats.effect.std.Console
 import fs2.io.net.Network
-import io.tyoras.cards.config.*
+import io.tyoras.cards.server.config.*
 import io.tyoras.cards.domain.game.GameService
 import io.tyoras.cards.domain.user.UserService
 import io.tyoras.cards.persistence.game.PostgresGameRepository
@@ -34,5 +34,5 @@ object Main extends IOApp:
     gameEndpoint <- Resource.eval(GameEndpoint.of(gameService))
     warEndpoint  <- Resource.eval(WarEndpoint.of(gameService))
     httpApp = Server.HttpApp.of(userEndpoint, gameEndpoint, warEndpoint)
-    _ <- Server.of(config.server, httpApp).serve
+    _ <- Server.of(config.http, httpApp).serve
   yield ()

@@ -2,7 +2,6 @@ package io.tyoras.cards.server
 
 import cats.effect.{Async, Resource}
 import cats.syntax.all.*
-import io.tyoras.cards.config.ServerConfig
 import io.tyoras.cards.server.endpoints.{Endpoint, ErrorHandling}
 import org.http4s.HttpApp
 import org.http4s.ember.server.EmberServerBuilder
@@ -11,6 +10,7 @@ import org.http4s.server.Router
 import org.http4s.server.middleware.Logger
 import com.comcast.ip4s.*
 import fs2.io.net.Network
+import io.tyoras.cards.server.config.HttpConfig
 
 import scala.util.chaining.*
 
@@ -18,7 +18,7 @@ trait Server[F[_]]:
   def serve: Resource[F, Unit]
 
 object Server:
-  def of[F[_] : Async : Network](config: ServerConfig, httpApp: HttpApp[F]): Server[F] = new Server[F] {
+  def of[F[_] : Async : Network](config: HttpConfig, httpApp: HttpApp[F]): Server[F] = new Server[F] {
     override val serve: Resource[F, Unit] =
       EmberServerBuilder
         .default[F]

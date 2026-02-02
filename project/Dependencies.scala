@@ -107,17 +107,6 @@ object Dependencies {
     org.scalatestplus.`scalacheck-1-15`
   ).map(_ % Test)
 
-  lazy val configDeps = Seq(
-//    com.github.pureconfig.pureconfig,
-//    com.github.pureconfig.`pureconfig-cats-effect`,
-    org.typelevel.`cats-effect`
-  )
-
-  lazy val configTestDeps = Seq(
-    org.scalacheck.scalacheck,
-    org.scalatest.scalatest
-  ).map(_ % Test)
-
   lazy val persistenceDeps = Seq(
     io.chrisdavenport.`cats-effect-time`,
     io.chrisdavenport.fuuid,
