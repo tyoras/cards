@@ -5,7 +5,7 @@ import cats.implicits.catsSyntaxApplicativeId
 import io.circe.generic.semiauto.deriveEncoder
 import io.circe.{CursorOp, DecodingFailure, Encoder}
 import io.tyoras.cards.util.validation.error.ValidationError
-import org.http4s._
+import org.http4s.*
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.circe.DecodingFailures
 import org.log4s.{getLogger, Logger}

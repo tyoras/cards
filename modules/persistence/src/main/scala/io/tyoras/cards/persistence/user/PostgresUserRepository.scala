@@ -1,8 +1,8 @@
 package io.tyoras.cards.persistence.user
 
 import cats.effect.{Clock, Resource, Sync}
-import cats.syntax.all._
-import io.chrisdavenport.cats.effect.time.implicits._
+import cats.syntax.all.*
+import io.chrisdavenport.cats.effect.time.implicits.*
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.user.{User, UserRepository}
 import skunk.Session

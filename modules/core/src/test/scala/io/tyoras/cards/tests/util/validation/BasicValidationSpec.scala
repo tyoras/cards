@@ -1,8 +1,8 @@
 package io.tyoras.cards.tests.util.validation
 
-import cats.syntax.option._
-import cats.syntax.validated._
-import io.tyoras.cards.util.validation.BasicValidation._
+import cats.syntax.option.*
+import cats.syntax.validated.*
+import io.tyoras.cards.util.validation.BasicValidation.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

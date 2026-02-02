@@ -1,16 +1,16 @@
 package io.tyoras.cards.cli.game.schnapsen
 
-import cats._
+import cats.*
 import cats.effect.std.Console
 import cats.effect.{Async, Clock, ExitCode}
-import cats.syntax.all._
-import io.chrisdavenport.cats.effect.time.implicits._
+import cats.syntax.all.*
+import io.chrisdavenport.cats.effect.time.implicits.*
 import io.chrisdavenport.fuuid.FUUID
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
 import io.tyoras.cards.cli.{displayCardChoice, displayDeck, lineSeparator}
-import io.tyoras.cards.domain.game.schnapsen.{model, _}
-import io.tyoras.cards.domain.game.schnapsen.model._
+import io.tyoras.cards.domain.game.schnapsen.{model, *}
+import io.tyoras.cards.domain.game.schnapsen.model.*
 
 import scala.util.Try
 

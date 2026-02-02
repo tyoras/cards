@@ -1,6 +1,6 @@
 package io.tyoras.cards.tests.domain.card
 
-import io.tyoras.cards.domain.card._
+import io.tyoras.cards.domain.card.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

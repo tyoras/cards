@@ -1,8 +1,8 @@
 package io.tyoras.cards.util.fsm.concurrent
 
-import cats.effect._
+import cats.effect.*
 import cats.effect.std.Semaphore
-import cats.syntax.all._
+import cats.syntax.all.*
 import io.tyoras.cards.util.fsm.FinalStateMachine
 
 object SynchronizedConcurrentFSM:

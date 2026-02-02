@@ -2,7 +2,7 @@ package io.tyoras.cards.cli.game
 
 import cats.effect.std.Console
 import cats.effect.{ExitCode, Sync}
-import cats.syntax.all._
+import cats.syntax.all.*
 import io.tyoras.cards.cli.lineSeparator
 import io.tyoras.cards.domain.card.{international52Deck, shuffle}
 import io.tyoras.cards.domain.game.war.War.{divide, play}

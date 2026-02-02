@@ -1,7 +1,7 @@
 package io.tyoras.cards
 
 import org.scalacheck.Gen
-import io.tyoras.cards.domain.card._
+import io.tyoras.cards.domain.card.*
 
 package object tests:
 

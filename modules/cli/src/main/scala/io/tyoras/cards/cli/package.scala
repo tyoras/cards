@@ -2,7 +2,7 @@ package io.tyoras.cards
 
 import cats.Monad
 import cats.effect.std.Console
-import cats.syntax.all._
+import cats.syntax.all.*
 import io.tyoras.cards.domain.card.{Card, Deck, Hand}
 
 package object cli:

@@ -1,12 +1,12 @@
 package io.tyoras.cards.tests.util.validation
 
 import cats.data.NonEmptyChain
-import cats.syntax.option._
-import cats.syntax.validated._
+import cats.syntax.option.*
+import cats.syntax.validated.*
 import io.tyoras.cards.util.validation.BasicValidation.MissingFieldError
-import io.tyoras.cards.util.validation.StringValidation._
-import io.tyoras.cards.util.validation._
-import io.tyoras.cards.util.validation.syntax._
+import io.tyoras.cards.util.validation.StringValidation.*
+import io.tyoras.cards.util.validation.*
+import io.tyoras.cards.util.validation.syntax.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

@@ -2,7 +2,7 @@ package io.tyoras.cards
 
 import cats.effect.Sync
 //import pureconfig.generic.ProductHint
-//import pureconfig.generic.auto._
+//import pureconfig.generic.auto.*
 //import pureconfig.module.catseffect.syntax.CatsEffectConfigSource
 //import pureconfig.{CamelCase, ConfigFieldMapping, ConfigSource, SnakeCase}
 

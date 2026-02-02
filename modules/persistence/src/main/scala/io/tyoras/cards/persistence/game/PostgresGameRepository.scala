@@ -5,7 +5,7 @@ import cats.effect.{Clock, Resource, Sync}
 import cats.syntax.all.*
 import fs2.{Chunk, Pipe, Stream}
 import io.chrisdavenport.fuuid.FUUID
-import io.chrisdavenport.cats.effect.time.implicits._
+import io.chrisdavenport.cats.effect.time.implicits.*
 import io.circe.{Decoder, Encoder}
 import io.tyoras.cards.domain.game.{Game, GameRepository}
 import io.tyoras.cards.persistence.PersistenceError

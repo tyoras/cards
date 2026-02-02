@@ -2,15 +2,12 @@ package io.tyoras.cards.tests.util.validation
 
 import cats.effect.IO
 import cats.effect.unsafe.IORuntime
-import cats.syntax.apply._
-import cats.syntax.either._
-import cats.syntax.option._
-import cats.syntax.validated._
+import cats.syntax.all.*
 import io.tyoras.cards.tests.util.validation.ValidationSpec.{FakeDomainObject, FakeDomainSubObject, FakeInput, FakeInputSubObject}
-import io.tyoras.cards.util.validation.BasicValidation._
-import io.tyoras.cards.util.validation.StringValidation._
-import io.tyoras.cards.util.validation._
-import io.tyoras.cards.util.validation.syntax._
+import io.tyoras.cards.util.validation.BasicValidation.*
+import io.tyoras.cards.util.validation.StringValidation.*
+import io.tyoras.cards.util.validation.*
+import io.tyoras.cards.util.validation.syntax.*
 import io.tyoras.cards.util.validation.error.ValidationError
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec

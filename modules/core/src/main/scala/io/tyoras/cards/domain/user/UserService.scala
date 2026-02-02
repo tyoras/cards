@@ -2,7 +2,7 @@ package io.tyoras.cards.domain.user
 
 import cats.Monad
 import cats.effect.Clock
-import cats.syntax.all._
+import cats.syntax.all.*
 import io.chrisdavenport.cats.effect.time.implicits.ClockOps
 import io.chrisdavenport.fuuid.FUUID
 

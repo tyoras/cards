@@ -3,9 +3,9 @@ package io.tyoras.cards.tests.domain.game
 import cats.effect.IO
 import cats.implicits.catsSyntaxOptionId
 import io.chrisdavenport.fuuid.FUUIDGen
-import io.tyoras.cards.domain.card._
-import io.tyoras.cards.domain.game.schnapsen._
-import io.tyoras.cards.domain.game.schnapsen.model._
+import io.tyoras.cards.domain.card.*
+import io.tyoras.cards.domain.game.schnapsen.*
+import io.tyoras.cards.domain.game.schnapsen.model.*
 import org.scalacheck.{Arbitrary, Gen}
 import cats.effect.unsafe.implicits.global
 

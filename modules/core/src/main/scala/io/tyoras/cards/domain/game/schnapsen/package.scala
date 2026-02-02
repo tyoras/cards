@@ -2,12 +2,12 @@ package io.tyoras.cards.domain.game
 
 import cats.data.StateT
 import cats.effect.Sync
-import cats.syntax.all._
+import cats.syntax.all.*
 import cats.{Applicative, ApplicativeThrow}
 import io.chrisdavenport.fuuid.FUUID
-import io.tyoras.cards.domain.card._
+import io.tyoras.cards.domain.card.*
 import io.tyoras.cards.domain.game.schnapsen.model.Marriage.Status
-import io.tyoras.cards.domain.game.schnapsen.model._
+import io.tyoras.cards.domain.game.schnapsen.model.*
 import org.typelevel.log4cats.StructuredLogger
 
 package object schnapsen:

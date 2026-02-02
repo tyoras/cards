@@ -1,9 +1,9 @@
 package io.tyoras.cards.tests.domain.card
 
-import io.tyoras.cards.domain.card._
-import io.tyoras.cards.tests._
+import io.tyoras.cards.domain.card.*
+import io.tyoras.cards.tests.*
 import org.scalacheck.Gen
-import org.scalatest.OptionValues._
+import org.scalatest.OptionValues.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks

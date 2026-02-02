@@ -2,7 +2,7 @@ package io.tyoras.cards.tests.domain.game.schnapsen
 
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import io.tyoras.cards.domain.card._
+import io.tyoras.cards.domain.card.*
 import io.tyoras.cards.domain.game.schnapsen.model.DeckError
 import io.tyoras.cards.domain.game.schnapsen.{baseDeck, drawFirstCardF}
 import org.scalatest.flatspec.AnyFlatSpec

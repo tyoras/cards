@@ -1,7 +1,7 @@
 package io.tyoras.cards.util.validation
 
 import cats.data.Validated
-import cats.syntax.option._
+import cats.syntax.option.*
 import io.tyoras.cards.util.validation.error.ErrorField
 
 object StringValidation:

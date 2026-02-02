@@ -1,8 +1,8 @@
 package io.tyoras.cards.cli
 
 import cats.effect.{ExitCode, IO}
-import com.monovore.decline._
-import com.monovore.decline.effect._
+import com.monovore.decline.*
+import com.monovore.decline.effect.*
 import io.tyoras.cards.BuildInfo
 import io.tyoras.cards.cli.game.WarCli
 import io.tyoras.cards.cli.game.schnapsen.SchnapsenCli

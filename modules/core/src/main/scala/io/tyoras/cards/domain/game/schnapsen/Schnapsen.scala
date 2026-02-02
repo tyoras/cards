@@ -2,15 +2,15 @@ package io.tyoras.cards.domain.game.schnapsen
 
 import cats.data.StateT
 import cats.effect.{Async, Clock, Sync}
-import cats.syntax.all._
+import cats.syntax.all.*
 import io.chrisdavenport.cats.effect.time.implicits.ClockOps
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.{Logger, StructuredLogger}
 import io.tyoras.cards.domain.game.schnapsen.model.Marriage.Status
-import io.tyoras.cards.domain.game.schnapsen.model._
+import io.tyoras.cards.domain.game.schnapsen.model.*
 import io.tyoras.cards.util.fsm.FinalStateMachine
 import io.tyoras.cards.util.fsm.concurrent.SynchronizedConcurrentFSM
-import io.tyoras.cards.domain.card._
+import io.tyoras.cards.domain.card.*
 
 trait Schnapsen[F[_]]:
   def currentState: F[GameState]
