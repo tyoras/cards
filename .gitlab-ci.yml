@@ -39,7 +39,10 @@ scapegoat_analysis:
     - sbt scapegoat
   artifacts:
     paths:
-      - target/scala-3.7.4/scapegoat-report/
+      - cli/target/scala-3.7.4/scapegoat-report/
+      - core/target/scala-3.7.4/scapegoat-report/
+      - persistence/target/scala-3.7.4/scapegoat-report/
+      - server/target/scala-3.7.4/scapegoat-report/
 
 check_format:
   stage: test
@@ -60,9 +63,12 @@ pages:
     - scapegoat_analysis
   script:
     - rm -rf public/coverage public/scapegoat
-    - mkdir -p public/coverage public/scapegoat
+    - mkdir -p public/coverage public/scapegoat/cli public/scapegoat/core public/scapegoat/persistence public/scapegoat/server
     - mv target/scala-3.7.4/scoverage-report/* public/coverage/
-    - mv target/scala-3.7.4/scapegoat-report/scapegoat.html public/scapegoat/index.html
+    - mv cli/target/scala-3.7.4/scapegoat-report/scapegoat.html public/scapegoat/cli/index.html
+    - mv core/target/scala-3.7.4/scapegoat-report/scapegoat.html public/scapegoat/core/index.html
+    - mv persistence/target/scala-3.7.4/scapegoat-report/scapegoat.html public/scapegoat/persistence/index.html
+    - mv server/target/scala-3.7.4/scapegoat-report/scapegoat.html public/scapegoat/server/index.html
   artifacts:
     paths:
       - public
