@@ -9,7 +9,8 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits.*
 import org.http4s.server.Router
 import org.http4s.server.middleware.Logger
-import com.comcast.ip4s._
+import com.comcast.ip4s.*
+import fs2.io.net.Network
 
 import scala.util.chaining.*
 
@@ -17,12 +18,12 @@ trait Server[F[_]]:
   def serve: Resource[F, Unit]
 
 object Server:
-  def of[F[_] : Async](config: ServerConfig, httpApp: HttpApp[F]): Server[F] = new Server[F] {
+  def of[F[_] : Async : Network](config: ServerConfig, httpApp: HttpApp[F]): Server[F] = new Server[F] {
     override val serve: Resource[F, Unit] =
       EmberServerBuilder
         .default[F]
         .withHostOption(Host.fromString(config.host))
-        .withPort(Port.fromInt(config.port).get)
+        .withPort(Port.fromInt(config.port).getOrElse(Port.Wildcard))
         .withHttpApp(httpApp)
         .withErrorHandler(ErrorHandling.defaultErrorHandler)
         .build

@@ -5,22 +5,22 @@ import io.tyoras.cards.domain.card.{Card, Deck, Hand, King, Queen, Suit}
 
 sealed trait Role
 case object Forehand extends Role
-case object Dealer extends Role
+case object Dealer   extends Role
 
 case class Player(id: PlayerId, name: String, hand: Hand = Nil, score: Int = 0, wonCards: Hand = Nil, marriages: List[Marriage] = Nil):
-  override def toString = s"name = $name ($id) \t| score = $score \t| hand = ${hand.mkString(" ")}"
+  override def toString                 = s"name = $name ($id) \t| score = $score \t| hand = ${hand.mkString(" ")}"
   lazy val potentialMarriagePoints: Int = if wonCards.nonEmpty then marriages.foldRight(0)(_.status.score + _) else 0
-  lazy val hasFailedMarriage: Boolean = wonCards.isEmpty && marriages.nonEmpty
+  lazy val hasFailedMarriage: Boolean   = wonCards.isEmpty && marriages.nonEmpty
 
 case class GameRound(
-  context: GameContext,
-  dealer: Player,
-  forehand: Player,
-  talon: Deck,
-  trumpCard: Card,
-  talonClosing: Option[TalonClosing] = None,
-  lastHandWonBy: Option[PlayerId] = None,
-  victoryClaimedByForehand: Boolean = false
+    context: GameContext,
+    dealer: Player,
+    forehand: Player,
+    talon: Deck,
+    trumpCard: Card,
+    talonClosing: Option[TalonClosing] = None,
+    lastHandWonBy: Option[PlayerId] = None,
+    victoryClaimedByForehand: Boolean = false
 ):
   override def toString: String =
     s"""
@@ -32,8 +32,8 @@ case class GameRound(
         s"closed by ${playersById(p.closedBy).name}"
       )}""".stripMargin
 
-  val trumpSuit: Suit = trumpCard.suit
-  val roles: Map[Role, Player] = Map(Forehand -> forehand, Dealer -> dealer)
+  val trumpSuit: Suit                    = trumpCard.suit
+  val roles: Map[Role, Player]           = Map(Forehand -> forehand, Dealer -> dealer)
   val playersById: Map[PlayerId, Player] = Map(forehand.id -> forehand, dealer.id -> dealer)
 
   def updatePlayer(updatedPlayer: Player): GameRound =
@@ -65,6 +65,6 @@ sealed trait RoundOutcome:
 
   def reward: Int
 case class VictoryClaimed(override val winner: PlayerId, override val loser: PlayerId, override val reward: Int, successful: Boolean = true)
-  extends RoundOutcome
+    extends RoundOutcome
 case class TalonExhausted(override val winner: PlayerId, override val loser: PlayerId) extends RoundOutcome:
   override val reward: Int = 1

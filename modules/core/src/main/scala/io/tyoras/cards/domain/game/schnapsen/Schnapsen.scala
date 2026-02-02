@@ -56,16 +56,16 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
       forehandTurn(s, i).handleErrorWith { case se: SchnapsenError =>
         Logger[F].warn(se)(s"Error during turn, ignoring input $i") *> Sync[F].pure(s)
       }
-    case (s: ForehandTurn, i: ClaimVictory) => claimVictory(s, i)
+    case (s: ForehandTurn, i: ClaimVictory)               => claimVictory(s, i)
     case (s: EarlyGameForehandTurn, i: ExchangeTrumpJack) => exchangeTrumpJack(s, i)
-    case (s: EarlyGameForehandTurn, i: CloseTalon) => closeTalon(s, i)
-    case (s: EarlyGameForehandTurn, i: Meld) => marriage(s, i)
+    case (s: EarlyGameForehandTurn, i: CloseTalon)        => closeTalon(s, i)
+    case (s: EarlyGameForehandTurn, i: Meld)              => marriage(s, i)
     case (s: DealerTurn, i: PlayCard) =>
       dealerTurn(s, i).handleErrorWith { case se: SchnapsenError =>
         Logger[F].warn(se)(s"Error during dealer turn, ignoring input $i") *> Sync[F].pure(s)
       }
     case (s: LateGameForehandTurn, i: Meld) => marriage(s, i)
-    case (Finish(r, _), _: Start) => initGameRound[F](r.context)(logger).map(newRound => EarlyGameForehandTurn(newRound))
+    case (Finish(r, _), _: Start)           => initGameRound[F](r.context)(logger).map(newRound => EarlyGameForehandTurn(newRound))
 
   private def forehandTurn(state: ForehandTurn, input: PlayCard): F[GameState] =
     val forehand = state.currentPlayer
@@ -75,23 +75,23 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
       updatedGame <- playCard(forehand, card).runS(state.round)
     yield state match
       case _: EarlyGame => EarlyGameDealerTurn(updatedGame, card)
-      case _: LateGame => LateGameDealerTurn(updatedGame, card)
+      case _: LateGame  => LateGameDealerTurn(updatedGame, card)
 
   private def exchangeTrumpJack(state: EarlyGameForehandTurn, input: ExchangeTrumpJack): F[GameState] =
-    val forehand = state.currentPlayer
+    val forehand  = state.currentPlayer
     val trumpCard = state.round.trumpCard
     for
       _ <- checkPlayer(forehand, input.playerId)
       _ <- if state.canExchangeTrumpJack then F.unit else F.raiseError[Unit](InvalidAction())
-      remainingHand = pickCard(state.trumpJack, forehand.hand)._2
+      remainingHand   = pickCard(state.trumpJack, forehand.hand)._2
       updatedForehand = forehand.copy(hand = remainingHand :+ trumpCard)
-      updatedRound = state.round.copy(trumpCard = state.trumpJack, forehand = updatedForehand)
+      updatedRound    = state.round.copy(trumpCard = state.trumpJack, forehand = updatedForehand)
       _ <- Logger[F].debug(s"Player ${forehand.name} has exchanged the trump jack ${state.trumpJack} with the trump card $trumpCard")
     yield EarlyGameForehandTurn(updatedRound)
 
   private def closeTalon(state: EarlyGameForehandTurn, input: CloseTalon): F[GameState] =
     val forehand = state.currentPlayer
-    val dealer = state.round.dealer
+    val dealer   = state.round.dealer
     for
       _ <- checkPlayer(forehand, input.playerId)
       _ <- F.whenA(state.ongoingMarriage.isDefined)(F.raiseError[Unit](InvalidAction()))
@@ -103,14 +103,14 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
     val forehand = state.currentPlayer
     for
       _ <- checkPlayer(forehand, input.playerId)
-      marriage = Marriage(input.suit, Status.of(state.round.trumpSuit, input.suit))
-      wonPoints = if forehand.wonCards.isEmpty then 0 else marriage.status.score
+      marriage        = Marriage(input.suit, Status.of(state.round.trumpSuit, input.suit))
+      wonPoints       = if forehand.wonCards.isEmpty then 0 else marriage.status.score
       updatedForehand = forehand.copy(score = forehand.score + wonPoints, marriages = forehand.marriages :+ marriage)
-      updatedRound = state.round.copy(forehand = updatedForehand)
+      updatedRound    = state.round.copy(forehand = updatedForehand)
       _ <- Logger[F].debug(s"Player ${forehand.name} has meld : $marriage.")
     yield state match
       case _: EarlyGame => EarlyGameForehandTurn(updatedRound, ongoingMarriage = marriage.some)
-      case _: LateGame => LateGameForehandTurn(updatedRound, ongoingMarriage = marriage.some)
+      case _: LateGame  => LateGameForehandTurn(updatedRound, ongoingMarriage = marriage.some)
 
   private def dealerTurn(state: DealerTurn, input: PlayCard): F[GameState] =
 
@@ -129,11 +129,11 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
       case _: EarlyGameDealerTurn =>
         game.talon match
           case _ :: Nil => finishEarlyGame(game)
-          case _ => drawCards.runS(game).map(g => EarlyGameForehandTurn(g))
+          case _        => drawCards.runS(game).map(g => EarlyGameForehandTurn(g))
       case _: LateGameDealerTurn =>
         game.forehand.hand match
           case Nil => finishLateGame(game)
-          case _ => F.pure(LateGameForehandTurn(game))
+          case _   => F.pure(LateGameForehandTurn(game))
 
     for
       _            <- checkPlayer(state.currentPlayer, input.playerId)
@@ -159,9 +159,9 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
   }
 
   private def winTurn(winner: Player, c1: Card, c2: Card): InternalGameState[F, Unit] = StateT { state =>
-    val updatedScore = winner.score + c1.rank.value + c2.rank.value + winner.potentialMarriagePoints
+    val updatedScore    = winner.score + c1.rank.value + c2.rank.value + winner.potentialMarriagePoints
     val updatedWonCards = winner.wonCards ++ List(c1, c2)
-    val updatedWinner = winner.copy(wonCards = updatedWonCards, score = updatedScore)
+    val updatedWinner   = winner.copy(wonCards = updatedWonCards, score = updatedScore)
     val updatedState =
       if winner == state.forehand then state.copy(forehand = updatedWinner)
       else state.copy(dealer = state.forehand, forehand = updatedWinner)
@@ -174,7 +174,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
       (card, updatedDeck) = drawn
       _ <- Logger[F].debug(s"Player ${player.name} has drawn $card")
       updatedPlayer = player.copy(hand = player.hand :+ card)
-      updatedState = state.updatePlayer(updatedPlayer).copy(talon = updatedDeck)
+      updatedState  = state.updatePlayer(updatedPlayer).copy(talon = updatedDeck)
     yield (updatedState, card)
   }
 
@@ -187,18 +187,18 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
   private def finishEarlyGame(game: GameRound): F[GameState] = for
     drawn <- drawFirstCardF[F](game.talon)
     (lastCard, updatedDeck) = drawn
-    updatedForehand = game.forehand.copy(hand = game.forehand.hand :+ lastCard)
-    updatedDealer = game.dealer.copy(hand = game.dealer.hand :+ game.trumpCard)
-    lateGame = game.copy(talon = updatedDeck, forehand = updatedForehand, dealer = updatedDealer)
+    updatedForehand         = game.forehand.copy(hand = game.forehand.hand :+ lastCard)
+    updatedDealer           = game.dealer.copy(hand = game.dealer.hand :+ game.trumpCard)
+    lateGame                = game.copy(talon = updatedDeck, forehand = updatedForehand, dealer = updatedDealer)
     _ <- Logger[F].debug(s"Player ${updatedForehand.name} has drawn last card $lastCard")
     _ <- Logger[F].debug(s"Player ${updatedDealer.name} has drawn the trump card ${game.trumpCard}")
   yield LateGameForehandTurn(lateGame)
 
   private def finishLateGame(game: GameRound): F[GameState] = for
     _ <- Logger[F].debug("Last hand played with both player hands exhausted.")
-    winner = game.forehand // forehand is the winner of the last trick
-    loser = game.dealer
-    outcome = TalonExhausted(winner.id, loser.id)
+    winner      = game.forehand // forehand is the winner of the last trick
+    loser       = game.dealer
+    outcome     = TalonExhausted(winner.id, loser.id)
     updatedGame = game.copy(lastHandWonBy = winner.id.some)
   yield applyRoundOutcome(updatedGame, outcome)
 
@@ -207,22 +207,22 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
     for
       _ <- checkPlayer(forehand, input.playerId)
       _ <- Logger[F].debug(s"Player ${forehand.name} has claimed victory")
-      outcome = findClaimedVictoryWinner(state)
+      outcome      = findClaimedVictoryWinner(state)
       updatedRound = state.round.copy(victoryClaimedByForehand = true)
     yield applyRoundOutcome(updatedRound, outcome)
 
   private def findClaimedVictoryWinner(state: ForehandTurn): VictoryClaimed =
     val forehand = state.currentPlayer
-    val dealer = state.round.dealer
+    val dealer   = state.round.dealer
     val dealerScore = state.round.talonClosing match
       case Some(tc) => tc.opponentScore
-      case None => dealer.score
+      case None     => dealer.score
     (forehand.score, dealerScore) match
       case (fhs, 0) if fhs < 66 => VictoryClaimed(winner = dealer.id, loser = forehand.id, 3, successful = false)
       case (fhs, _) if fhs < 66 => VictoryClaimed(winner = dealer.id, loser = forehand.id, 2, successful = false)
-      case (_, 0) => VictoryClaimed(winner = forehand.id, loser = dealer.id, 3)
+      case (_, 0)               => VictoryClaimed(winner = forehand.id, loser = dealer.id, 3)
       case (_, dls) if dls < 33 => VictoryClaimed(winner = forehand.id, loser = dealer.id, 2)
-      case _ => VictoryClaimed(winner = forehand.id, loser = dealer.id, 1)
+      case _                    => VictoryClaimed(winner = forehand.id, loser = dealer.id, 1)
 
   private def applyRoundOutcome(round: GameRound, outcome: RoundOutcome): Finish =
     val p1 = round.context.player1
@@ -231,7 +231,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
       case p1.id => (p1.copy(score = p1.score - outcome.reward), p2)
       case p2.id => (p1, p2.copy(score = p2.score - outcome.reward))
     val updatedContext = round.context.copy(player1 = up1, player2 = up2)
-    val updatedRound = round.copy(context = updatedContext)
+    val updatedRound   = round.copy(context = updatedContext)
     Finish(updatedRound, outcome)
 
   override def currentState: F[GameState] = fsm.getCurrentState

@@ -1,22 +1,15 @@
 import Dependencies.*
 
 ThisBuild / organization := "io.tyoras"
-ThisBuild / scalaVersion := "3.3.1"
-ThisBuild / version      := "0.1.0-SNAPSHOT"
+ThisBuild / scalaVersion := "3.7.4"
 
-ThisBuild / scalacOptions ++= Seq(
-  "-feature",
-  "-deprecation",
-  "-unchecked",
-  // "-Xfatal-warnings", si possible
-  "-language:higherKinds",
-  "-language:implicitConversions",
-  "-encoding",
-  "UTF-8"
-)
+ThisBuild / tlBaseVersion    := "0.1"
+ThisBuild / scapegoatVersion := "3.2.4"
+ThisBuild / tlFatalWarnings  := false // no need for fatal warnings in this project
 
 lazy val commonSettings = Seq(
-  update / evictionWarningOptions := EvictionWarningOptions.empty
+  update / evictionWarningOptions := EvictionWarningOptions.empty,
+  scalafmtPrintDiff               := true
 )
 
 ThisBuild / coverageMinimumStmtTotal := 75

@@ -13,8 +13,8 @@ class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCh
 
   "Player.toString" should "work" in {
     val diamondTen = Card(Diamond, Ten())
-    val spadeJack = Card(Spade, Jack())
-    val player = Player(FUUID.fuuid("f8377258-437b-409c-bd4b-f7637c885539"), "Yoan", List(diamondTen, spadeJack))
+    val spadeJack  = Card(Spade, Jack())
+    val player     = Player(FUUID.fuuid("f8377258-437b-409c-bd4b-f7637c885539"), "Yoan", List(diamondTen, spadeJack))
     player.toString shouldBe s"name = Yoan (f8377258-437b-409c-bd4b-f7637c885539) \t| score = 0 \t| hand = ${diamondTen.toString} ${spadeJack.toString}"
   }
 
@@ -109,7 +109,7 @@ class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCh
   "GameRound.updatePlayer" should "update the dealer if the updated player matches its id" in {
     forAll(gameRoundGen -> "gameRound") { gameRound =>
       val expectedDealer = gameRound.dealer.copy(name = "test")
-      val updatedRound = gameRound.updatePlayer(expectedDealer)
+      val updatedRound   = gameRound.updatePlayer(expectedDealer)
       updatedRound.dealer shouldBe expectedDealer
       updatedRound.forehand shouldBe gameRound.forehand
     }
@@ -118,7 +118,7 @@ class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCh
   it should "update the forehand if the updated player matches its id" in {
     forAll(gameRoundGen -> "gameRound") { gameRound =>
       val expectedForehand = gameRound.forehand.copy(name = "test")
-      val updatedRound = gameRound.updatePlayer(expectedForehand)
+      val updatedRound     = gameRound.updatePlayer(expectedForehand)
       updatedRound.dealer shouldBe gameRound.dealer
       updatedRound.forehand shouldBe expectedForehand
     }

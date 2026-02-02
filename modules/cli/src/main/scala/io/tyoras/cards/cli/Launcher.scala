@@ -22,9 +22,12 @@ object Launcher extends CommandIOApp(name = "cards", header = banner, version = 
     }
 
   override def main: Opts[IO[ExitCode]] =
-    (schnapsenCommandOpts orElse warCommandOpts).map {
-      case SchnapsenCommand => SchnapsenCli[IO].run
-      case WarCommand => WarCli[IO].run
-    }.map {
-      displayBanner[IO] >> _
-    }
+    schnapsenCommandOpts
+      .orElse(warCommandOpts)
+      .map {
+        case SchnapsenCommand => SchnapsenCli[IO].run
+        case WarCommand       => WarCli[IO].run
+      }
+      .map {
+        displayBanner[IO] >> _
+      }

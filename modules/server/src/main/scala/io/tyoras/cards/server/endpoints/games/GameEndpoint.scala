@@ -1,21 +1,19 @@
 package io.tyoras.cards.server.endpoints.games
 
-import cats.data.NonEmptyList
 import cats.effect.{Async, Sync}
 import cats.syntax.all.*
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
 import io.chrisdavenport.fuuid.http4s.implicits.*
 import io.circe.Json
-import io.tyoras.cards.domain.game.{Game, GameService, GameType}
+import io.tyoras.cards.domain.game.GameService
 import io.tyoras.cards.server.endpoints.Endpoint
 import io.tyoras.cards.server.endpoints.ErrorHandling.ApiMessage
-import io.tyoras.cards.server.endpoints.games.Payloads.Request.Creation
 import org.http4s.circe.*
 import org.http4s.circe.CirceEntityEncoder.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
-import org.http4s.{EntityDecoder, HttpRoutes, Response, Status}
+import org.http4s.{HttpRoutes, Response}
 import io.scalaland.chimney.dsl.*
 import io.tyoras.cards.server.endpoints.games.Payloads.Response.Game.fromExisting
 
@@ -25,14 +23,12 @@ object GameEndpoint:
   def of[F[_] : Async](gameService: GameService[F]): F[Endpoint[F]] = Sync[F].delay {
     new Endpoint[F] with Http4sDsl[F] {
 
-      given EntityDecoder[F, Creation] = accumulatingJsonOf[F, Creation]
-
       override val routes: HttpRoutes[F] = Router {
         "games" -> HttpRoutes.of {
           case GET -> Root :? UserIdParam(userId) => listByUser(userId)
-          case GET -> Root => listAll
-          case GET -> Root / FUUIDVar(id) => searchById(id)
-          case DELETE -> Root / FUUIDVar(id) => deleteById(id)
+          case GET -> Root                        => listAll
+          case GET -> Root / FUUIDVar(id)         => searchById(id)
+          case DELETE -> Root / FUUIDVar(id)      => deleteById(id)
         }
       }
 
@@ -45,7 +41,7 @@ object GameEndpoint:
         gameService.readAll[Json].map(_.map(Payloads.Response.Game.fromExistingGame)).flatMap(Ok(_))
 
       private def searchById(id: FUUID): F[Response[F]] =
-        gameService.readById[Json](id).flatMap(_.fold(notFoundResponse)(_.transformInto[Payloads.Response.Game](fromExisting).pipe(Ok(_))))
+        gameService.readById[Json](id).flatMap(_.fold(notFoundResponse)(_.transformInto[Payloads.Response.Game](using fromExisting).pipe(Ok(_))))
 
       private def deleteById(id: FUUID): F[Response[F]] =
         gameService.readById[Json](id).flatMap(_.fold(notFoundResponse)(gameService.delete(_) >> NoContent()))

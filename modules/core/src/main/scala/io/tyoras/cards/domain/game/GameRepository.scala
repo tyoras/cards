@@ -15,6 +15,6 @@ trait GameRepository[F[_]]:
 
   def readManyByUser[State : Decoder](userId: FUUID): F[List[Game.Existing[State]]]
 
-  def deleteMany(game: List[Game.Existing[_]]): F[Unit]
+  def deleteMany(game: List[Game.Existing[?]]): F[Unit]
 
   def deleteAll: F[Unit]

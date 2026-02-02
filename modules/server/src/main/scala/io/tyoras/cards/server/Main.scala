@@ -1,18 +1,15 @@
 package io.tyoras.cards.server
 
-import cats.data.NonEmptyList
 import cats.effect.*
 import cats.effect.kernel.Resource
 import cats.effect.std.Console
 import fs2.io.net.Network
-import io.chrisdavenport.fuuid.FUUID
-import io.circe.Json
 import io.tyoras.cards.config.*
-import io.tyoras.cards.domain.game.{Game, GameService, GameType}
+import io.tyoras.cards.domain.game.GameService
 import io.tyoras.cards.domain.user.UserService
 import io.tyoras.cards.persistence.game.PostgresGameRepository
 import io.tyoras.cards.persistence.user.PostgresUserRepository
-import io.tyoras.cards.persistence.{gameType, SessionPool}
+import io.tyoras.cards.persistence.SessionPool
 import io.tyoras.cards.server.endpoints.games.GameEndpoint
 import io.tyoras.cards.server.endpoints.games.war.WarEndpoint
 import io.tyoras.cards.server.endpoints.users.UserEndpoint

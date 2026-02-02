@@ -8,7 +8,6 @@ import io.tyoras.cards.util.validation.error.ValidationError
 import org.http4s._
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.circe.DecodingFailures
-import org.http4s.server.ServiceErrorHandler
 import org.log4s.{getLogger, Logger}
 
 object ErrorHandling:
@@ -23,7 +22,7 @@ object ErrorHandling:
 
   val default: PartialFunction[Throwable, (Status, ApiMessage)] =
     case ve: ValidationError =>
-      (Status.UnprocessableEntity, ApiMessage(ve.code, ve.message, ve.errors.map(e => ApiError(e.code, e.field, e.message.getOrElse("")))))
+      (Status.UnprocessableContent, ApiMessage(ve.code, ve.message, ve.errors.map(e => ApiError(e.code, e.field, e.message.getOrElse("")))))
     case pf: ParseFailure =>
       (Status.BadRequest, ApiMessage("parse_failure", pf.message))
     case mmbf: MalformedMessageBodyFailure =>
@@ -39,10 +38,10 @@ object ErrorHandling:
     errorHandlerWithFallback(default)
 
   def errorHandler[F[_] : Sync](pf: PartialFunction[Throwable, (Status, ApiMessage)]): PartialFunction[Throwable, F[Response[F]]] =
-    errorHandlerWithFallback(pf orElse default)
+    errorHandlerWithFallback(pf.orElse(default))
 
   private def errorHandlerWithFallback[F[_] : Sync](pf: PartialFunction[Throwable, (Status, ApiMessage)]): PartialFunction[Throwable, F[Response[F]]] =
-    pf andThen { case (status, message) =>
+    pf.andThen { case (status, message) =>
       Response[F](status).withEntity(message).pure[F]
     }
 
@@ -55,7 +54,7 @@ object ErrorHandling:
         val errors = dfs.failures.map(failureToApiError).toList
         ApiMessage("validation_error", "validation failed", errors)
       case _ => ApiMessage("validation_error", imbf.message)
-    (Status.UnprocessableEntity, msg)
+    (Status.UnprocessableContent, msg)
 
   private def failureToApiError(df: DecodingFailure): ApiError =
     ApiError("field_error", failureToFieldPath(df), df.message)

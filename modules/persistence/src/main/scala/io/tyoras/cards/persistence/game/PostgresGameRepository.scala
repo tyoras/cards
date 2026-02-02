@@ -1,7 +1,6 @@
 package io.tyoras.cards.persistence.game
 
 import cats.{Eq, MonadThrow}
-import cats.data.NonEmptyList
 import cats.effect.{Clock, Resource, Sync}
 import cats.syntax.all.*
 import fs2.{Chunk, Pipe, Stream}
@@ -24,7 +23,7 @@ object PostgresGameRepository:
     new GameRepository[F]:
       override def insert[State : Decoder : Encoder](data: Game.Data[State], withId: Option[FUUID] = None): F[Game.Existing[State]] =
         sessionPool.use { session =>
-          session.transaction.use { xa =>
+          session.transaction.use { _ =>
             for
               inserted <- withId.fold(session.prepareR(Statements.Insert.one).use(_.unique(GameCreationDBModel.fromGameData[State](data)))) { id =>
                 session.prepareR(Statements.Insert.oneWithId).use(_.unique(id -> GameCreationDBModel.fromGameData[State](data)))
@@ -64,7 +63,7 @@ object PostgresGameRepository:
           )
         )
 
-      override def deleteMany(games: List[Game.Existing[_]]): F[Unit] =
+      override def deleteMany(games: List[Game.Existing[?]]): F[Unit] =
         sessionPool.use(_.prepareR(Statements.Delete.many(games.size)).use(_.execute(games.map(_.id)).void))
 
       override def deleteAll: F[Unit] = sessionPool.use(_.execute(Statements.Delete.all).void)

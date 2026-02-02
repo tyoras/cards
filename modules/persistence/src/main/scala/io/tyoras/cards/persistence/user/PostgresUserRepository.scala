@@ -11,7 +11,7 @@ object PostgresUserRepository:
   def of[F[_] : Sync](sessionPool: Resource[F, Session[F]]): F[UserRepository[F]] = Sync[F].delay {
     new UserRepository[F] {
       override def writeMany(users: List[User]): F[List[User.Existing]] = users.traverse {
-        case data: User.Data => insert(data)
+        case data: User.Data     => insert(data)
         case user: User.Existing => updateOne(user)
       }
 

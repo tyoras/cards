@@ -1,12 +1,8 @@
 package io.tyoras.cards.persistence.game
 
-import cats.syntax.all.*
 import io.chrisdavenport.fuuid.FUUID
-import io.tyoras.cards.domain.game.{Game, GameType}
 import io.tyoras.cards.persistence.{fuuid, timestampTZ}
 import skunk.*
-import skunk.codec.all.*
-import skunk.data.Type
 import skunk.circe.codec.all.*
 import skunk.implicits.*
 import skunk.feature.legacyCommandSyntax

@@ -43,7 +43,7 @@ object SchnapsenCli:
         console.println("")
 
     private val initGameContext: F[GameContext] =
-      def initPlayer(name: String): F[PlayerInfo] = FUUID.randomFUUID[F] map {
+      def initPlayer(name: String): F[PlayerInfo] = FUUID.randomFUUID[F].map {
         PlayerInfo(_, name)
       }
 
@@ -72,7 +72,7 @@ object SchnapsenCli:
         game        <- Schnapsen(gameContext)
         exitCode <- game.tailRecM(_.currentState.flatMap {
           case Exit(_) => ExitCode.Success.asRight[Schnapsen[F]].pure[F]
-          case _ => loop(game).map(_.asLeft[ExitCode])
+          case _       => loop(game).map(_.asLeft[ExitCode])
         })
       yield exitCode
 
@@ -117,7 +117,9 @@ object SchnapsenCli:
                       console.println(s"${winner.name} has scored 1 game point by winning the last turn after the talon was exhausted.")
                     case vc: VictoryClaimed =>
                       console.println(
-                        s"${winner.name} has scored ${vc.reward} game point(s) ${if vc.successful then "by successfully" else "because the opponent failed at"} claiming victory."
+                        s"${winner.name} has scored ${vc.reward} game point(s) ${
+                            if vc.successful then "by successfully" else "because the opponent failed at"
+                          } claiming victory."
                       )
                   })
               _ <-
@@ -133,7 +135,7 @@ object SchnapsenCli:
         })
 
     private def displayMarriageChoice(state: ForehandTurn): F[Unit] = state.possibleMarriages match
-      case Nil => ().pure[F]
+      case Nil      => ().pure[F]
       case m :: Nil => console.println(s"\tM : Meld ${m.king} and ${m.queen} for ${m.status.score} points")
       case couples =>
         val choices = couples.zipWithIndex.map { case (m, i) =>
@@ -147,10 +149,10 @@ object SchnapsenCli:
         case "\\r" => F.pure(model.Restart(state.round.forehand.id))
         case _ =>
           state match
-            case _: Init => F.pure(model.Start(state.round.forehand.id))
+            case _: Init                  => F.pure(model.Start(state.round.forehand.id))
             case s: EarlyGameForehandTurn => parseEarlyGameForehandTurnChoice(s, rawInput)
-            case s: DealerTurn => parseCardChoice(s, rawInput)
-            case s: LateGameForehandTurn => parseLateGameForehandTurnChoice(s, rawInput)
+            case s: DealerTurn            => parseCardChoice(s, rawInput)
+            case s: LateGameForehandTurn  => parseLateGameForehandTurnChoice(s, rawInput)
             case s: Finish =>
               F.fromEither(s.player(s.outcome.winner))
                 .map(_.score <= 0)
@@ -159,20 +161,20 @@ object SchnapsenCli:
 
     private def parseEarlyGameForehandTurnChoice(state: EarlyGameForehandTurn, rawInput: String): F[Input] =
       rawInput.toLowerCase match
-        case "c" => F.pure(model.CloseTalon(state.currentPlayer.id))
+        case "c"                               => F.pure(model.CloseTalon(state.currentPlayer.id))
         case "j" if state.canExchangeTrumpJack => F.pure(model.ExchangeTrumpJack(state.currentPlayer.id))
-        case "v" => F.pure(model.ClaimVictory(state.currentPlayer.id))
-        case i if i.startsWith("m") => parseMarriage(state, i)
-        case _ => parseCardChoice(state, rawInput)
+        case "v"                               => F.pure(model.ClaimVictory(state.currentPlayer.id))
+        case i if i.startsWith("m")            => parseMarriage(state, i)
+        case _                                 => parseCardChoice(state, rawInput)
 
     private def parseLateGameForehandTurnChoice(state: LateGameForehandTurn, rawInput: String): F[Input] =
       rawInput.toLowerCase match
         case i if i.startsWith("m") => parseMarriage(state, i)
-        case "v" => F.pure(model.ClaimVictory(state.currentPlayer.id))
-        case _ => parseCardChoice(state, rawInput)
+        case "v"                    => F.pure(model.ClaimVictory(state.currentPlayer.id))
+        case _                      => parseCardChoice(state, rawInput)
 
     private def parseCardChoice(state: PlayerTurn, rawInput: String): F[Input] =
-      val player = state.currentPlayer
+      val player        = state.currentPlayer
       val playableCards = state.playableCards
       for
         choice <-
@@ -190,12 +192,12 @@ object SchnapsenCli:
 
     private def parseMarriage(state: ForehandTurn, rawInput: String): F[Input] =
       rawInput.toCharArray match
-        case Array('m') => parseMarriageChoice(state, none)
+        case Array('m')    => parseMarriageChoice(state, none)
         case Array('m', n) => parseMarriageChoice(state, n.some)
-        case _ => F.raiseError[Input](InvalidInput)
+        case _             => F.raiseError[Input](InvalidInput)
 
     private def parseMarriageChoice(state: ForehandTurn, rawInput: Option[Char]): F[Input] =
-      val player = state.currentPlayer
+      val player         = state.currentPlayer
       val validMarriages = state.possibleMarriages
       for
         choice <-

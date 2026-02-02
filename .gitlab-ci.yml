@@ -1,4 +1,4 @@
-image: "sbtscala/scala-sbt:graalvm-ce-22.3.3-b1-java17_1.9.7_3.3.1"
+image: "sbtscala/scala-sbt:graalvm-community-25.0.1_1.12.0_3.7.4"
 
 stages:
   - test
@@ -25,8 +25,8 @@ unit_test:
   - sbt clean coverage test coverageReport coverageAggregate
   artifacts:
     paths:
-    - target/scala-3.3.1/scoverage-report/
-    - target/scala-3.3.1/coverage-report/
+    - target/scala-3.7.4/scoverage-report/
+    - target/scala-3.7.4/coverage-report/
     when: always
     reports:
       junit:
@@ -36,8 +36,7 @@ unit_test:
 check_format:
   stage: test
   script:
-  - sbt scalafmtCheck
-  - sbt scalafmtSbtCheck
+  - sbt fmtCheck
   allow_failure: true
 
 check_dependency_update:
@@ -53,7 +52,7 @@ pages:
   script:
     - rm -rf public/coverage
     - mkdir -p public/coverage
-    - mv target/scala-3.3.1/scoverage-report/* public/coverage/
+    - mv target/scala-3.7.4/scoverage-report/* public/coverage/
   artifacts:
     paths:
       - public

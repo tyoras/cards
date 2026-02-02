@@ -21,7 +21,7 @@ class ValidationSpec extends AnyFlatSpec with Matchers with EitherValues:
   given IORuntime = cats.effect.unsafe.IORuntime.global
 
   "validateE" should "return the validated object with complex input when input is valid" in {
-    val input = FakeInput("abcd".some, None, None, FakeInputSubObject(1.some, None).some)
+    val input    = FakeInput("abcd".some, None, None, FakeInputSubObject(1.some, None).some)
     val expected = FakeDomainObject("abcd", None, None, FakeDomainSubObject(1, None), optional_with_default_field = false)
 
     import io.tyoras.cards.tests.util.validation.ValidationSpec.fakeInputValidator
@@ -29,7 +29,7 @@ class ValidationSpec extends AnyFlatSpec with Matchers with EitherValues:
   }
 
   it should "return an error when one nested object field is not valid" in {
-    val input = FakeInput("abcd".some, None, None, FakeInputSubObject(None, None).some)
+    val input         = FakeInput("abcd".some, None, None, FakeInputSubObject(None, None).some)
     val expectedError = List(MissingFieldError("mandatory_object.mandatory_object_field"))
 
     import io.tyoras.cards.tests.util.validation.ValidationSpec.fakeInputValidator
@@ -48,7 +48,7 @@ class ValidationSpec extends AnyFlatSpec with Matchers with EitherValues:
   }
 
   "validateF" should "return the validated object when input is valid" in {
-    val input = FakeInput("abcd".some, None, None, FakeInputSubObject(1.some, None).some)
+    val input    = FakeInput("abcd".some, None, None, FakeInputSubObject(1.some, None).some)
     val expected = FakeDomainObject("abcd", None, None, FakeDomainSubObject(1, None), optional_with_default_field = false)
 
     import io.tyoras.cards.tests.util.validation.ValidationSpec.fakeInputValidator
@@ -56,7 +56,7 @@ class ValidationSpec extends AnyFlatSpec with Matchers with EitherValues:
   }
 
   it should "return an error when one nested object field is not valid" in {
-    val input = FakeInput("abcd".some, None, None, FakeInputSubObject(None, None).some)
+    val input         = FakeInput("abcd".some, None, None, FakeInputSubObject(None, None).some)
     val expectedError = List(MissingFieldError("mandatory_object.mandatory_object_field"))
 
     import io.tyoras.cards.tests.util.validation.ValidationSpec.fakeInputValidator
@@ -77,29 +77,29 @@ class ValidationSpec extends AnyFlatSpec with Matchers with EitherValues:
 object ValidationSpec:
 
   case class FakeInput(
-    mandatory_field: Option[String],
-    optional_field: Option[Int],
-    optional_object: Option[FakeInputSubObject],
-    mandatory_object: Option[FakeInputSubObject],
-    optional_with_default_field: Boolean = false
+      mandatory_field: Option[String],
+      optional_field: Option[Int],
+      optional_object: Option[FakeInputSubObject],
+      mandatory_object: Option[FakeInputSubObject],
+      optional_with_default_field: Boolean = false
   )
 
   case class FakeInputSubObject(
-    mandatory_object_field: Option[Int],
-    optional_object_field: Option[String]
+      mandatory_object_field: Option[Int],
+      optional_object_field: Option[String]
   )
 
   case class FakeDomainObject(
-    mandatory_field: String,
-    optional_field: Option[Int],
-    optional_object: Option[FakeDomainSubObject],
-    mandatory_object: FakeDomainSubObject,
-    optional_with_default_field: Boolean
+      mandatory_field: String,
+      optional_field: Option[Int],
+      optional_object: Option[FakeDomainSubObject],
+      mandatory_object: FakeDomainSubObject,
+      optional_with_default_field: Boolean
   )
 
   case class FakeDomainSubObject(
-    mandatory_object_field: Int,
-    optional_object_field: Option[String]
+      mandatory_object_field: Int,
+      optional_object_field: Option[String]
   )
 
   given fakeInputSubObjectValidator: Validator[FakeInputSubObject, FakeDomainSubObject] = new Validator[FakeInputSubObject, FakeDomainSubObject] {

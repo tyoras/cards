@@ -16,10 +16,10 @@ trait GameService[F[_]]:
 
   def readAll[State : Decoder]: F[List[Game.Existing[State]]]
 
-  def delete(game: Game.Existing[_]): F[Unit] =
+  def delete(game: Game.Existing[?]): F[Unit] =
     deleteMany(List(game))
 
-  def deleteMany(games: List[Game.Existing[_]]): F[Unit]
+  def deleteMany(games: List[Game.Existing[?]]): F[Unit]
 
   val deleteAll: F[Unit]
 
@@ -40,7 +40,7 @@ object GameService:
     override def readAll[State : Decoder]: F[List[Game.Existing[State]]] =
       gameRepo.readAll
 
-    override def deleteMany(games: List[Game.Existing[_]]): F[Unit] =
+    override def deleteMany(games: List[Game.Existing[?]]): F[Unit] =
       gameRepo.deleteMany(games)
 
     override val deleteAll: F[Unit] =

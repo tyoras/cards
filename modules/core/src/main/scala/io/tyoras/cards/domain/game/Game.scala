@@ -22,9 +22,9 @@ object Game:
   final case class Existing[State](id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: Data[State]) extends Game[State]:
     override protected type ThisType = Existing[State]
 
-    override def gameType: GameType = data.gameType
+    override def gameType: GameType           = data.gameType
     override def players: NonEmptyList[FUUID] = data.players
-    override def state: State = data.state
+    override def state: State                 = data.state
 
     override def withUpdatedState(newState: State, updateDate: ZonedDateTime): ThisType =
       copy(data = data.withUpdatedState(newState, updateDate), updatedAt = updateDate)

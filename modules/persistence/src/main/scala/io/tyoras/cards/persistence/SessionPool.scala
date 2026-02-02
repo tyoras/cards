@@ -1,7 +1,7 @@
 package io.tyoras.cards.persistence
 
 import cats.effect.std.Console
-import cats.effect.{Concurrent, Resource, Sync, Temporal}
+import cats.effect.{Resource, Sync, Temporal}
 import cats.syntax.all.*
 import fs2.io.net.Network
 import io.tyoras.cards.config.DatabaseConfig

@@ -6,7 +6,7 @@ trait ErrorField:
   def message: Option[String]
 
 case class BasicErrorField(
-  override val code: String,
-  override val field: String,
-  override val message: Option[String]
+    override val code: String,
+    override val field: String,
+    override val message: Option[String]
 ) extends ErrorField

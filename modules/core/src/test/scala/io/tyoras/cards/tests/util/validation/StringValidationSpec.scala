@@ -8,7 +8,7 @@ import org.scalatest.matchers.should.Matchers
 class StringValidationSpec extends AnyFlatSpec with Matchers:
 
   "notEmpty validator" should "return EmptyFieldError when the field is empty" in {
-    val fieldName = "field_name"
+    val fieldName     = "field_name"
     val expectedError = EmptyFieldError(fieldName)
     notEmpty(fieldName, "") should be(expectedError.invalidNec)
   }
@@ -24,7 +24,7 @@ class StringValidationSpec extends AnyFlatSpec with Matchers:
   }
 
   "notBlank validator" should "return BlankFieldError when the field is blank" in {
-    val fieldName = "field_name"
+    val fieldName     = "field_name"
     val expectedError = BlankFieldError(fieldName)
     notBlank(fieldName, "   ") should be(expectedError.invalidNec)
   }
@@ -35,14 +35,14 @@ class StringValidationSpec extends AnyFlatSpec with Matchers:
   }
 
   it should "return BlankFieldError when the field is empty" in {
-    val fieldName = "field_name"
+    val fieldName     = "field_name"
     val expectedError = BlankFieldError(fieldName)
     notBlank(fieldName, "") should be(expectedError.invalidNec)
   }
 
   "max validator" should "return TooLongError when the size of the field is greater than the max length" in {
-    val fieldName = "field_name"
-    val maxLength = 3
+    val fieldName     = "field_name"
+    val maxLength     = 3
     val expectedError = TooLongError(fieldName, maxLength)
     max(maxLength)(fieldName, "abcdefg") should be(expectedError.invalidNec)
   }
@@ -58,8 +58,8 @@ class StringValidationSpec extends AnyFlatSpec with Matchers:
   }
 
   "min validator" should "return TooShortError when the size of the field is lower than the min length" in {
-    val fieldName = "field_name"
-    val minLength = 3
+    val fieldName     = "field_name"
+    val minLength     = 3
     val expectedError = TooShortError(fieldName, minLength)
     min(minLength)(fieldName, "ab") should be(expectedError.invalidNec)
   }

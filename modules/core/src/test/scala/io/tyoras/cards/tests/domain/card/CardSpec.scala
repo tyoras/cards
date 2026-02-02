@@ -10,7 +10,7 @@ class CardSpec extends AnyFlatSpec with Matchers:
 
   val heartKing: Card = Card(Heart, King())
   val spadeKing: Card = Card(Spade, King())
-  val heartTen: Card = Card(Heart, Ten())
+  val heartTen: Card  = Card(Heart, Ten())
 
   "Cards comparison" should "be based on rank only" in {
     heartKing > heartTen should be(true)

@@ -1,7 +1,7 @@
-import scala.util._
-import scala.sys.process._
+import scala.util.*
+import scala.sys.process.*
 
-import sbt._
+import sbt.*
 
 object Utils {
   def styled(in: Any): String =
@@ -37,4 +37,7 @@ object Utils {
 
   private val noopProcessLogger: ProcessLogger =
     ProcessLogger(_ => (), _ => ())
+
+  val Cctt: String =
+    "compile->compile;test->test"
 }

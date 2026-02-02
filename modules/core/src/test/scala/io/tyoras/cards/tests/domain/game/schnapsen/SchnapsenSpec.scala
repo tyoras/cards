@@ -40,8 +40,8 @@ class SchnapsenSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPrope
   "drawFirstCardF" should "return the first card and the remaining deck" in {
     forAll(deckGen -> "deck") { deck =>
       whenever(deck.nonEmpty) {
-        val expectedCard = deck.head
-        val program = drawFirstCardF[IO](deck)
+        val expectedCard          = deck.head
+        val program               = drawFirstCardF[IO](deck)
         val (card, remainingDeck) = program.unsafeRunSync()
         card should be(expectedCard)
         remainingDeck should be(deck.tail)
@@ -51,7 +51,7 @@ class SchnapsenSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPrope
   }
 
   it should "return a DeckError when the deck is empty" in {
-    val deck = Nil
+    val deck    = Nil
     val program = drawFirstCardF[IO](deck)
     a[DeckError] should be thrownBy program.unsafeRunSync()
   }

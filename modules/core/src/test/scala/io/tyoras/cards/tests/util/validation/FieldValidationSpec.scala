@@ -18,16 +18,16 @@ class FieldValidationSpec extends AnyFlatSpec with Matchers:
   }
 
   it should "return an error if it is invalid" in {
-    val fieldName = "optional_field"
-    val fieldValue = "   "
+    val fieldName     = "optional_field"
+    val fieldValue    = "   "
     val expectedError = BlankFieldError(fieldName)
     fieldValue.optionalWithDefault(fieldName, notBlank) should be(expectedError.invalidNec)
   }
 
   it should "return all errors if several validations fail" in {
-    val fieldName = "optional_field"
-    val fieldValue = " "
-    val minLength = 2
+    val fieldName      = "optional_field"
+    val fieldValue     = " "
+    val minLength      = 2
     val expectedErrors = NonEmptyChain(BlankFieldError(fieldName), TooShortError(fieldName, minLength))
     fieldValue.optionalWithDefault(fieldName, notBlank, max(3), min(minLength)) should be(expectedErrors.invalid)
   }
@@ -41,10 +41,10 @@ class FieldValidationSpec extends AnyFlatSpec with Matchers:
   }
 
   it should "return an error if it is invalid" in {
-    val fieldName = "optional_field"
+    val fieldName       = "optional_field"
     val nestedFieldName = "nested_field_name"
-    val fieldValue = "   "
-    val expectedError = BlankFieldError(s"$fieldName.$nestedFieldName")
+    val fieldValue      = "   "
+    val expectedError   = BlankFieldError(s"$fieldName.$nestedFieldName")
     val nestedValidator = new Validator[String, String] {
       override def validate(a: String)(using pf: Option[ParentField]): ValidationResult[String] = a.optionalWithDefault(nestedFieldName, notBlank)
     }
@@ -52,12 +52,12 @@ class FieldValidationSpec extends AnyFlatSpec with Matchers:
   }
 
   it should "return all errors if several validations fail" in {
-    val fieldName = "optional_field"
+    val fieldName       = "optional_field"
     val nestedFieldName = "nested_field_name"
-    val fieldValue = " "
-    val minLength = 2
-    val completeName = s"$fieldName.$nestedFieldName"
-    val expectedErrors = NonEmptyChain(BlankFieldError(completeName), TooShortError(completeName, minLength))
+    val fieldValue      = " "
+    val minLength       = 2
+    val completeName    = s"$fieldName.$nestedFieldName"
+    val expectedErrors  = NonEmptyChain(BlankFieldError(completeName), TooShortError(completeName, minLength))
     val nestedValidator = new Validator[String, String] {
       override def validate(a: String)(using pf: Option[ParentField]): ValidationResult[String] =
         a.optionalWithDefault(nestedFieldName, notBlank, max(3), min(minLength))
@@ -76,23 +76,23 @@ class FieldValidationSpec extends AnyFlatSpec with Matchers:
   }
 
   it should "return an error if value is present and invalid" in {
-    val fieldName = "optional_field"
-    val fieldValue = "   ".some
+    val fieldName     = "optional_field"
+    val fieldValue    = "   ".some
     val expectedError = BlankFieldError(fieldName)
     fieldValue.optional(fieldName, notBlank) should be(expectedError.invalidNec)
   }
 
   it should "return all errors if value is present and several validations fail" in {
-    val fieldName = "optional_field"
-    val fieldValue = " ".some
-    val minLength = 2
+    val fieldName      = "optional_field"
+    val fieldValue     = " ".some
+    val minLength      = 2
     val expectedErrors = NonEmptyChain(BlankFieldError(fieldName), TooShortError(fieldName, minLength))
     fieldValue.optional(fieldName, notBlank, max(3), min(minLength)) should be(expectedErrors.invalid)
   }
 
   "mandatory field validator" should "return MissingFieldError if the value is not present" in {
-    val fieldName = "mandatory_field"
-    val absentField = None
+    val fieldName     = "mandatory_field"
+    val absentField   = None
     val expectedError = MissingFieldError(fieldName)
     absentField.mandatory(fieldName, max(3)) should be(expectedError.invalidNec)
   }
@@ -103,16 +103,16 @@ class FieldValidationSpec extends AnyFlatSpec with Matchers:
   }
 
   it should "return an error if value is present and invalid" in {
-    val fieldName = "mandatory_field"
-    val fieldValue = "   ".some
+    val fieldName     = "mandatory_field"
+    val fieldValue    = "   ".some
     val expectedError = BlankFieldError(fieldName)
     fieldValue.mandatory(fieldName, notBlank) should be(expectedError.invalidNec)
   }
 
   it should "return all errors if value is present and several validations fail" in {
-    val fieldName = "mandatory_field"
-    val fieldValue = " ".some
-    val minLength = 2
+    val fieldName      = "mandatory_field"
+    val fieldValue     = " ".some
+    val minLength      = 2
     val expectedErrors = NonEmptyChain(BlankFieldError(fieldName), TooShortError(fieldName, minLength))
     fieldValue.mandatory(fieldName, notBlank, max(3), min(minLength)) should be(expectedErrors.invalid)
   }

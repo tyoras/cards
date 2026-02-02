@@ -1,9 +1,9 @@
 package io.tyoras.cards.util.validation
 
 import cats.ApplicativeThrow
-import cats.data.Validated._
+import cats.data.Validated.*
 import cats.data.{NonEmptyChain, ValidatedNec}
-import cats.syntax.all._
+import cats.syntax.all.*
 
 import io.tyoras.cards.util.validation.BasicValidation.isMandatory
 import io.tyoras.cards.util.validation.error.{ErrorField, ValidationError}
@@ -16,9 +16,8 @@ trait Validator[A, B]:
 
 object Validator:
   def apply[A, B](v: Validator[A, B])(
-    pf: Option[ParentField] = None
+      pf: Option[ParentField] = None
   ): Validator[A, B] =
-    given parent: Option[ParentField] = pf
     v
 
 object syntax:
@@ -45,7 +44,7 @@ object syntax:
       *   ValidationResult containing all the failed validations in case of failures or the value itself in case of success
       */
     def optionalWithDefault(field: String, validators: ((String, A) => ValidationResult[A])*): ValidationResult[A] =
-      validateField(field, a, validators: _*)
+      validateField(field, a, validators*)
 
     def nestedOptionalWithDefault[B](field: String)(using v: Validator[A, B]): ValidationResult[B] =
       val fullFieldName = completeFieldName(field)
@@ -62,8 +61,8 @@ object syntax:
       *   ValidationResult containing all the failed validations in case of failures or the value itself in case of success
       */
     def mandatory(field: String, validators: ((String, A) => ValidationResult[A])*): ValidationResult[A] =
-      isMandatory(completeFieldName(field), a) andThen { v =>
-        validateField(field, v, validators: _*)
+      isMandatory(completeFieldName(field), a).andThen { v =>
+        validateField(field, v, validators*)
       }
 
     /** Apply validators on an optional field if it present. Use it for optional field without default value.
@@ -76,11 +75,11 @@ object syntax:
       *   ValidationResult containing all the failed validations in case of failures or the value itself in case of success
       */
     def optional(field: String, validators: ((String, A) => ValidationResult[A])*): ValidationResult[Option[A]] =
-      a.fold(none[A].valid[NonEmptyChain[ErrorField]])(v => validateField(field, v, validators: _*).map(_.some))
+      a.fold(none[A].valid[NonEmptyChain[ErrorField]])(v => validateField(field, v, validators*).map(_.some))
 
     def nestedMandatory[B](field: String)(using v: Validator[A, B]): ValidationResult[B] =
       val fullFieldName = completeFieldName(field)
-      isMandatory(fullFieldName, a) andThen {
+      isMandatory(fullFieldName, a).andThen {
         _.validate(ParentField(fullFieldName).some)
       }
 
@@ -90,7 +89,7 @@ object syntax:
       )
 
 private def validateField[A](field: String, value: A, validators: ((String, A) => ValidationResult[A])*)(using pf: Option[ParentField]) =
-  validators.toList.map(_.apply(completeFieldName(field), value)).sequence_.map { _ => value }
+  validators.toList.map(_.apply(completeFieldName(field), value)).sequence_.map(_ => value)
 
 private def completeFieldName(field: String)(using parentField: Option[ParentField]) =
   parentField.map(pf => s"${pf.name}.$field").getOrElse(field)

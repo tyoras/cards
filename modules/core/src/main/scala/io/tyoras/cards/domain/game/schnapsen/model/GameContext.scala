@@ -10,10 +10,10 @@ case class PlayerInfo(id: PlayerId, name: String, score: Int = 7):
   override def toString: String = s"$name score $score"
 
 case class GameContext(
-  player1: PlayerInfo,
-  player2: PlayerInfo,
-  startedAt: ZonedDateTime,
-  previousFirstDealer: Option[PlayerId] = None
+    player1: PlayerInfo,
+    player2: PlayerInfo,
+    startedAt: ZonedDateTime,
+    previousFirstDealer: Option[PlayerId] = None
 ):
   private lazy val playersById: Map[PlayerId, PlayerInfo] = Map(player1.id -> player1, player2.id -> player2)
 

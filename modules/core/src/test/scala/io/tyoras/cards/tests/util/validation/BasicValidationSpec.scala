@@ -9,7 +9,7 @@ import org.scalatest.matchers.should.Matchers
 class BasicValidationSpec extends AnyFlatSpec with Matchers:
 
   "isMandatory validator" should "return MissingFieldError if the field is absent" in {
-    val fieldName = "field_name"
+    val fieldName     = "field_name"
     val expectedError = MissingFieldError(fieldName)
     isMandatory(fieldName, None) should be(expectedError.invalidNec)
   }

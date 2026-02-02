@@ -3,17 +3,17 @@ package io.tyoras.cards.persistence.user
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.user.User
 import io.tyoras.cards.persistence.{fuuid, timestampTZ}
-import skunk._
-import skunk.codec.all._
-import skunk.implicits._
+import skunk.*
+import skunk.codec.all.*
+import skunk.implicits.*
 import skunk.feature.legacyCommandSyntax
 
 import java.time.ZonedDateTime
 
 object Statements:
-  extension (data: User.Data.type) def codec: Codec[User.Data] = (varchar(100) ~ varchar).gimap[User.Data]
+  extension (data: User.Data.type) def codec: Codec[User.Data] = (varchar(100) *: varchar).to[User.Data]
 
-  extension (user: User.Existing.type) def codec: Codec[User.Existing] = (fuuid ~ timestampTZ ~ timestampTZ ~ User.Data.codec).gimap[User.Existing]
+  extension (user: User.Existing.type) def codec: Codec[User.Existing] = (fuuid *: timestampTZ *: timestampTZ *: User.Data.codec).to[User.Existing]
 
   object Insert:
     val one: Query[User.Data, User.Existing] =

@@ -7,7 +7,7 @@ sealed trait GameState:
   def name: String
   def round: GameRound
   def playableCards: Hand = Nil
-  override def toString = s"$name$round\n\tPlayable cards \t${if playableCards.isEmpty then "None" else playableCards.mkString(" ")}"
+  override def toString   = s"$name$round\n\tPlayable cards \t${if playableCards.isEmpty then "None" else playableCards.mkString(" ")}"
   def player(id: PlayerId): Either[SchnapsenError, PlayerInfo] = round.context.player(id)
 
 sealed trait PlayerTurn extends GameState:
@@ -27,21 +27,21 @@ sealed abstract class EarlyGame(game: GameRound, currentRole: Role) extends Play
   def playableCards: Hand
 
 case class EarlyGameForehandTurn(round: GameRound, ongoingMarriage: Option[Marriage] = None) extends EarlyGame(round, Forehand) with ForehandTurn:
-  override val name: String = "Early game - forehand turn"
-  lazy val trumpJack: Card = Card(round.trumpSuit, Jack(2))
+  override val name: String              = "Early game - forehand turn"
+  lazy val trumpJack: Card               = Card(round.trumpSuit, Jack(2))
   lazy val canExchangeTrumpJack: Boolean = currentPlayer.hand.contains(trumpJack)
-  override lazy val playableCards: Hand = ongoingMarriage.fold(currentPlayer.hand)(m => List(m.king, m.queen))
+  override lazy val playableCards: Hand  = ongoingMarriage.fold(currentPlayer.hand)(m => List(m.king, m.queen))
 
 case class EarlyGameDealerTurn(round: GameRound, forehandCard: Card) extends EarlyGame(round, Dealer) with DealerTurn:
-  override val name: String = "Early game - dealer turn"
-  override def toString = s"${super.toString}\n\tForehand card\t$forehandCard"
+  override val name: String        = "Early game - dealer turn"
+  override def toString            = s"${super.toString}\n\tForehand card\t$forehandCard"
   override val playableCards: Hand = currentPlayer.hand
 
 sealed abstract class LateGame(game: GameRound, currentRole: Role) extends PlayerTurn:
   val currentPlayer: Player = game.roles(currentRole)
 
 case class LateGameForehandTurn(round: GameRound, ongoingMarriage: Option[Marriage] = None) extends LateGame(round, Forehand) with ForehandTurn:
-  override val name: String = "Late game - forehand turn"
+  override val name: String             = "Late game - forehand turn"
   override lazy val playableCards: Hand = ongoingMarriage.fold(currentPlayer.hand)(m => List(m.king, m.queen))
 
 case class LateGameDealerTurn(round: GameRound, forehandCard: Card) extends LateGame(round, Dealer) with DealerTurn:
@@ -50,11 +50,11 @@ case class LateGameDealerTurn(round: GameRound, forehandCard: Card) extends Late
     currentPlayer.hand.filter(_.suit == forehandCard.suit) match
       case Nil =>
         currentPlayer.hand.filter(_.suit == round.trumpSuit) match
-          case Nil => currentPlayer.hand
+          case Nil            => currentPlayer.hand
           case trumpSuitCards => trumpSuitCards
       case sameSuit =>
         sameSuit.filter(_.value > forehandCard.value) match
-          case Nil => sameSuit
+          case Nil         => sameSuit
           case higherCards => higherCards
   override def toString = s"${super.toString}\n\tForehand card\t$forehandCard"
 

@@ -20,9 +20,9 @@ package object schnapsen:
 
   private[schnapsen] type InternalGameState[F[_], A] = StateT[F, GameRound, A]
 
-  private[schnapsen] def forehand[F[_] : Applicative]: InternalGameState[F, Player] = StateT.inspect { _.forehand }
+  private[schnapsen] def forehand[F[_] : Applicative]: InternalGameState[F, Player] = StateT.inspect(_.forehand)
 
-  private[schnapsen] def dealer[F[_] : Applicative]: InternalGameState[F, Player] = StateT.inspect { _.dealer }
+  private[schnapsen] def dealer[F[_] : Applicative]: InternalGameState[F, Player] = StateT.inspect(_.dealer)
 
   def drawFirstCardF[F[_] : ApplicativeThrow](deck: Deck): F[(Card, Deck)] =
     val (drawnCard, updatedDeck) = drawFirstCard(deck)
@@ -34,7 +34,7 @@ package object schnapsen:
       .foldLeft[(List[Card], List[Marriage])]((Nil, Nil)) {
         case ((candidates, couples), card) if card.rank.isInstanceOf[King] || card.rank.isInstanceOf[Queen] =>
           candidates.partition(_.suit == card.suit) match
-            case (Nil, _) => (candidates :+ card, couples)
+            case (Nil, _)                 => (candidates :+ card, couples)
             case (_, remainingCandidates) => (remainingCandidates, couples :+ Marriage(card.suit, Status.of(trumpSuit, card.suit)))
         case (res, _) => res
       }
@@ -47,15 +47,15 @@ package object schnapsen:
 
       def decide(d: Deck): F[(PlayerId, PlayerId)] = F.tailRecM(d) {
         case h1 :: h2 :: t if h1.rank.value == h2.rank.value => t.asLeft[(PlayerId, PlayerId)].pure[F]
-        case h1 :: h2 :: _ => (if h1.rank.value > h2.rank.value then (p1, p2) else (p2, p1)).asRight[Deck].pure[F]
-        case Nil => decideFirstDealer(context).asRight[Deck].traverse(identity)
-        case _ => F.raiseError(DeckError("Impossible to select first player : odd deck size"))
+        case h1 :: h2 :: _                                   => (if h1.rank.value > h2.rank.value then (p1, p2) else (p2, p1)).asRight[Deck].pure[F]
+        case Nil                                             => decideFirstDealer(context).asRight[Deck].traverse(identity)
+        case _                                               => F.raiseError(DeckError("Impossible to select first player : odd deck size"))
       }
 
       def swapDealer(previousDealerId: PlayerId): F[(PlayerId, PlayerId)] = previousDealerId match
         case context.player1.id => (p2, p1).pure[F]
         case context.player2.id => (p1, p2).pure[F]
-        case _ => F.raiseError(DeckError("Impossible to select first player : previous dealer is neither player 1 nor player 2"))
+        case _                  => F.raiseError(DeckError("Impossible to select first player : previous dealer is neither player 1 nor player 2"))
 
       for
         deck <- F.delay {
@@ -66,13 +66,13 @@ package object schnapsen:
 
     def dealing(deck: Deck): Either[DeckError, (Hand, Hand, Deck, Card)] =
       def deal(n: Int, talon: Deck): (Hand, Hand, Deck) =
-        val (fhDraw, t) = drawNCard(n, talon)
+        val (fhDraw, t)              = drawNCard(n, talon)
         val (dlDraw, remainingTalon) = drawNCard(n, t)
         (fhDraw, dlDraw, remainingTalon)
 
-      val t0 = shuffle(deck)
-      val (fhFirstDraw, dlFirstDraw, t1) = deal(3, t0)
-      val (trumpCard, t2) = drawFirstCard(t1)
+      val t0                               = shuffle(deck)
+      val (fhFirstDraw, dlFirstDraw, t1)   = deal(3, t0)
+      val (trumpCard, t2)                  = drawFirstCard(t1)
       val (fhSndDraw, dlSecondDraw, talon) = deal(2, t2)
 
       val dlHand = dlFirstDraw ++ dlSecondDraw
@@ -83,7 +83,7 @@ package object schnapsen:
       _        <- logger.debug("Starting new Schnapsen round")
       decision <- decideFirstDealer(ctx)
       (dealerId, forehandId) = decision
-      updatedContext = ctx.copy(previousFirstDealer = dealerId.some)
+      updatedContext         = ctx.copy(previousFirstDealer = dealerId.some)
       dealt <- F.defer {
         F.fromEither(dealing(baseDeck))
       }

@@ -1,6 +1,5 @@
 package io.tyoras.cards
 
-import cats.implicits.toBifunctorOps
 import cats.syntax.all.*
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.game.GameType

@@ -14,14 +14,14 @@ sealed trait Suit:
   def symbol: String
   override lazy val toString: String = color.colorize(symbol)
 case object Heart extends Suit:
-  override val color: Color = Red
+  override val color: Color   = Red
   override val symbol: String = "♥"
 case object Diamond extends Suit:
-  override val color: Color = Red
+  override val color: Color   = Red
   override val symbol: String = "♦"
 case object Club extends Suit:
-  override val color: Color = Black
+  override val color: Color   = Black
   override val symbol: String = "♣"
 case object Spade extends Suit:
-  override val color: Color = Black
+  override val color: Color   = Black
   override val symbol: String = "♠"

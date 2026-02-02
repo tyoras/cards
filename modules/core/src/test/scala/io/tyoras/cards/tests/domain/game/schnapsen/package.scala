@@ -12,10 +12,10 @@ import cats.effect.unsafe.implicits.global
 import java.time.{ZoneId, ZonedDateTime}
 
 package object schnapsen:
-  val suitGen: Gen[Suit] = Gen.oneOf(schnapsenSuits)
+  val suitGen: Gen[Suit]       = Gen.oneOf(schnapsenSuits)
   val suitsGen: Gen[Set[Suit]] = Gen.containerOf[Set, Suit](suitGen)
 
-  val rankGen: Gen[Rank] = Gen.oneOf(schnapsenRanks)
+  val rankGen: Gen[Rank]       = Gen.oneOf(schnapsenRanks)
   val ranksGen: Gen[Set[Rank]] = Gen.containerOf[Set, Rank](rankGen)
 
   val deckGen: Gen[Deck] = Gen.delay(shuffle(baseDeck))
@@ -28,7 +28,7 @@ package object schnapsen:
 
   def marriageGen(trumpSuit: Option[Suit] = None): Gen[Marriage] = for
     suit <- suitGen
-    king = Card(suit, King(4))
+    king  = Card(suit, King(4))
     queen = Card(suit, Queen(3))
     ts <- trumpSuit.fold(suitGen)(ts => Gen.const(ts))
     status = Marriage.Status.of(trumpSuit.getOrElse(ts), suit)

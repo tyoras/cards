@@ -5,10 +5,10 @@ import io.tyoras.cards.domain.card._
 
 package object tests:
 
-  val suitGen: Gen[Suit] = Gen.oneOf(allSuits)
+  val suitGen: Gen[Suit]       = Gen.oneOf(allSuits)
   val suitsGen: Gen[Set[Suit]] = Gen.containerOf[Set, Suit](suitGen)
 
-  val defaultRankGen: Gen[Rank] = Gen.oneOf(defaultRanks)
+  val defaultRankGen: Gen[Rank]       = Gen.oneOf(defaultRanks)
   val defaultRanksGen: Gen[Set[Rank]] = Gen.containerOf[Set, Rank](defaultRankGen)
 
   val international52DeckGen: Gen[Deck] = Gen.delay(shuffle(international52Deck))

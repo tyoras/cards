@@ -10,14 +10,12 @@ import io.tyoras.cards.domain.game.{Game, GameType}
 import io.tyoras.cards.persistence.{fuuid, gameType, timestampTZ}
 import skunk.Codec
 import skunk.circe.codec.all.*
-import skunk.codec.all.*
-import skunk.implicits.*
 
 import java.time.ZonedDateTime
 
 final case class GameCreationDBModel(game: GameType, state: Json)
 object GameCreationDBModel:
-  val codec: Codec[GameCreationDBModel] = (gameType ~ jsonb).gimap[GameCreationDBModel]
+  val codec: Codec[GameCreationDBModel] = (gameType *: jsonb).to[GameCreationDBModel]
 
   def fromGameData[State : Encoder](data: Game.Data[State]): GameCreationDBModel = GameCreationDBModel(data.gameType, data.state.asJson)
 
@@ -33,4 +31,4 @@ final case class GameReadDBModel(id: FUUID, createdAt: ZonedDateTime, updatedAt:
 object GameReadDBModel:
   given Eq[GameReadDBModel] = Eq.fromUniversalEquals
 
-  val codec: Codec[GameReadDBModel] = (fuuid ~ timestampTZ ~ timestampTZ ~ GameCreationDBModel.codec).gimap[GameReadDBModel]
+  val codec: Codec[GameReadDBModel] = (fuuid *: timestampTZ *: timestampTZ *: GameCreationDBModel.codec).to[GameReadDBModel]
