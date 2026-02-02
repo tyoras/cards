@@ -1,4 +1,4 @@
-package io.tyoras.cards
+package io.tyoras.cards.config
 
 import cats.effect.Sync
 //import pureconfig.generic.ProductHint
@@ -8,24 +8,23 @@ import cats.effect.Sync
 
 import java.nio.file.Path
 
-package object config:
 //  implicit def hint[T]: ProductHint[T] = ProductHint[T](ConfigFieldMapping(CamelCase, SnakeCase))
 
-  def parseConfig[F[_] : Sync](configPath: Path): F[CardsConfig] =
+def parseConfig[F[_] : Sync](configPath: Path): F[CardsConfig] =
 //    ConfigSource.default(ConfigSource.file(configPath)).loadF[F, CardsConfig]()
-    Sync[F].pure(
-      CardsConfig(
-        ServerConfig(
-          host = "0.0.0.0",
-          port = 8080
-        ),
-        DatabaseConfig(
-          host = "localhost",
-          port = 5432,
-          user = "cards",
-          password = "password",
-          db = "cards",
-          maxSession = 10
-        )
+  Sync[F].pure(
+    CardsConfig(
+      ServerConfig(
+        host = "0.0.0.0",
+        port = 8080
+      ),
+      DatabaseConfig(
+        host = "localhost",
+        port = 5432,
+        user = "cards",
+        password = "password",
+        db = "cards",
+        maxSession = 10
       )
     )
+  )
