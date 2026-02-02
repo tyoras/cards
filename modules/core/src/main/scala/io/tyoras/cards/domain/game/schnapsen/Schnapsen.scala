@@ -11,6 +11,9 @@ import io.tyoras.cards.domain.game.schnapsen.model.*
 import io.tyoras.cards.util.fsm.FinalStateMachine
 import io.tyoras.cards.util.fsm.concurrent.SynchronizedConcurrentFSM
 import io.tyoras.cards.domain.card.*
+import io.tyoras.cards.domain.game.schnapsen.model.GameInput.*
+import io.tyoras.cards.domain.game.schnapsen.model.MetaInput.*
+import io.tyoras.cards.domain.game.schnapsen.model.RoundOutcome.*
 
 trait Schnapsen[F[_]]:
   def currentState: F[GameState]

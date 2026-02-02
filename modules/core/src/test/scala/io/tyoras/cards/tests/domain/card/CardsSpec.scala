@@ -1,6 +1,7 @@
 package io.tyoras.cards.tests.domain.card
 
 import io.tyoras.cards.domain.card.*
+import io.tyoras.cards.domain.card.Suit.*
 import io.tyoras.cards.tests.*
 import org.scalacheck.Gen
 import org.scalatest.OptionValues.*

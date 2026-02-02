@@ -1,9 +1,12 @@
 package io.tyoras.cards.tests.domain.game.schnapsen
 
 import io.chrisdavenport.fuuid.FUUID
-import io.tyoras.cards.domain.card.{Card, Diamond, Jack, King, Queen, Spade, Ten}
+import io.tyoras.cards.domain.card.Rank.*
+import io.tyoras.cards.domain.card.Suit.*
+import io.tyoras.cards.domain.card.Card
 import io.tyoras.cards.domain.game.schnapsen.model.Marriage.{Common, Royal}
 import io.tyoras.cards.domain.game.schnapsen.model.*
+import io.tyoras.cards.domain.game.schnapsen.model.Role.*
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

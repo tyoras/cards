@@ -4,35 +4,19 @@ import io.tyoras.cards.domain.game.schnapsen.PlayerId
 import io.tyoras.cards.domain.card.{Card, Suit}
 
 sealed trait Input:
-  def name: String
-
+  def label: String
   def playerId: PlayerId
 
-  override def toString = s"$name"
+  override def toString = s"$label"
 
-sealed trait MetaInput extends Input
+enum MetaInput(override val label: String) extends Input:
+  case Start(override val playerId: PlayerId)   extends MetaInput("Start game")
+  case Restart(override val playerId: PlayerId) extends MetaInput("Restart game")
+  case End(override val playerId: PlayerId)     extends MetaInput("Quit game")
 
-case class Start(playerId: PlayerId) extends MetaInput:
-  val name: String = "Start game"
-case class Restart(playerId: PlayerId) extends MetaInput:
-  val name: String = "Restart game"
-
-case class End(playerId: PlayerId) extends MetaInput:
-  val name: String = "Quit game"
-
-sealed trait GameInput extends Input
-
-case class PlayCard(playerId: PlayerId, card: Card) extends GameInput:
-  val name: String = s"Play card $card"
-
-case class ExchangeTrumpJack(playerId: PlayerId) extends GameInput:
-  val name: String = "Exchange trump jack"
-
-case class CloseTalon(playerId: PlayerId) extends GameInput:
-  val name: String = "Close the talon"
-
-case class Meld(playerId: PlayerId, suit: Suit) extends GameInput:
-  val name: String = s"Meld $suit King and $suit Queen"
-
-case class ClaimVictory(playerId: PlayerId) extends GameInput:
-  override def name: String = "Claim victory"
+enum GameInput(override val label: String) extends Input:
+  case PlayCard(override val playerId: PlayerId, card: Card) extends GameInput(s"Play card $card")
+  case ExchangeTrumpJack(override val playerId: PlayerId)    extends GameInput("Exchange trump jack")
+  case CloseTalon(override val playerId: PlayerId)           extends GameInput("Close the talon")
+  case Meld(override val playerId: PlayerId, suit: Suit)     extends GameInput(s"Meld $suit King and $suit Queen")
+  case ClaimVictory(override val playerId: PlayerId)         extends GameInput("Claim victory")

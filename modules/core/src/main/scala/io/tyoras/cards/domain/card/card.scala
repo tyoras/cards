@@ -1,5 +1,9 @@
 package io.tyoras.cards.domain.card
 
+import Rank.*
+import Color.*
+import Suit.*
+
 lazy val allSuits: Set[Suit]   = Set(Heart, Diamond, Club, Spade)
 lazy val blackSuits: Set[Suit] = allSuits.filter(_.color == Black)
 lazy val redSuits: Set[Suit]   = allSuits.filter(_.color == Red)

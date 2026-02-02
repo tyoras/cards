@@ -11,6 +11,9 @@ import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
 import io.tyoras.cards.cli.{displayCardChoice, displayDeck, lineSeparator}
 import io.tyoras.cards.domain.game.schnapsen.{model, *}
 import io.tyoras.cards.domain.game.schnapsen.model.*
+import io.tyoras.cards.domain.game.schnapsen.model.GameInput.*
+import io.tyoras.cards.domain.game.schnapsen.model.MetaInput.*
+import io.tyoras.cards.domain.game.schnapsen.model.RoundOutcome.*
 
 import scala.util.Try
 
@@ -145,32 +148,30 @@ object SchnapsenCli:
 
     private def parseInput(state: GameState, rawInput: String): F[Input] =
       rawInput match
-        case "\\q" => F.pure(model.End(state.round.forehand.id))
-        case "\\r" => F.pure(model.Restart(state.round.forehand.id))
+        case "\\q" => End(state.round.forehand.id).pure
+        case "\\r" => Restart(state.round.forehand.id).pure
         case _ =>
           state match
-            case _: Init                  => F.pure(model.Start(state.round.forehand.id))
+            case _: Init                  => Start(state.round.forehand.id).pure
             case s: EarlyGameForehandTurn => parseEarlyGameForehandTurnChoice(s, rawInput)
             case s: DealerTurn            => parseCardChoice(s, rawInput)
             case s: LateGameForehandTurn  => parseLateGameForehandTurnChoice(s, rawInput)
             case s: Finish =>
-              F.fromEither(s.player(s.outcome.winner))
-                .map(_.score <= 0)
-                .ifM(F.pure(model.End(state.round.forehand.id)), F.pure(model.Start(state.round.forehand.id)))
+              F.fromEither(s.player(s.outcome.winner)).map(_.score <= 0).ifM(End(state.round.forehand.id).pure, Start(state.round.forehand.id).pure)
             case _: Exit => F.raiseError(InvalidState) // Exit state is handled exclusively by the main game loop
 
     private def parseEarlyGameForehandTurnChoice(state: EarlyGameForehandTurn, rawInput: String): F[Input] =
       rawInput.toLowerCase match
-        case "c"                               => F.pure(model.CloseTalon(state.currentPlayer.id))
-        case "j" if state.canExchangeTrumpJack => F.pure(model.ExchangeTrumpJack(state.currentPlayer.id))
-        case "v"                               => F.pure(model.ClaimVictory(state.currentPlayer.id))
+        case "c"                               => CloseTalon(state.currentPlayer.id).pure
+        case "j" if state.canExchangeTrumpJack => ExchangeTrumpJack(state.currentPlayer.id).pure
+        case "v"                               => ClaimVictory(state.currentPlayer.id).pure
         case i if i.startsWith("m")            => parseMarriage(state, i)
         case _                                 => parseCardChoice(state, rawInput)
 
     private def parseLateGameForehandTurnChoice(state: LateGameForehandTurn, rawInput: String): F[Input] =
       rawInput.toLowerCase match
         case i if i.startsWith("m") => parseMarriage(state, i)
-        case "v"                    => F.pure(model.ClaimVictory(state.currentPlayer.id))
+        case "v"                    => ClaimVictory(state.currentPlayer.id).pure
         case _                      => parseCardChoice(state, rawInput)
 
     private def parseCardChoice(state: PlayerTurn, rawInput: String): F[Input] =
@@ -186,7 +187,7 @@ object SchnapsenCli:
           if validChoice then
             val card = playableCards(choice - 1)
             Logger[F].debug(s"Player ${player.name} has played $card") >>
-              model.PlayCard(player.id, card).pure[F]
+              PlayCard(player.id, card).pure
           else F.raiseError[Input](InvalidInput)
       yield c
 
@@ -209,7 +210,7 @@ object SchnapsenCli:
           if validChoice then
             val m = validMarriages(choice - 1)
             Logger[F].debug(s"Player ${player.name} has meld ${m.king} and ${m.queen} for ${m.status.score} points") >>
-              model.Meld(player.id, m.king.suit).pure[F]
+              Meld(player.id, m.king.suit).pure[F]
           else F.raiseError[Input](InvalidInput)
       yield c
   }

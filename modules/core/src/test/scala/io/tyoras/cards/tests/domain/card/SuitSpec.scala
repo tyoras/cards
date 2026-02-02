@@ -1,6 +1,7 @@
 package io.tyoras.cards.tests.domain.card
 
-import io.tyoras.cards.domain.card.{Black, Club, Diamond, Heart, Red, Spade}
+import io.tyoras.cards.domain.card.Color.*
+import io.tyoras.cards.domain.card.Suit.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

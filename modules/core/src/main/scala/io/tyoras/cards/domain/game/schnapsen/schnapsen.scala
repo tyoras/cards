@@ -6,6 +6,7 @@ import cats.syntax.all.*
 import cats.{Applicative, ApplicativeThrow}
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.card.*
+import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.game.schnapsen.model.Marriage.Status
 import io.tyoras.cards.domain.game.schnapsen.model.*
 import org.typelevel.log4cats.StructuredLogger

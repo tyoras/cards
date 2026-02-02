@@ -1,11 +1,12 @@
 package io.tyoras.cards.domain.game.schnapsen.model
 
+import io.tyoras.cards.domain.card.Rank.{King, Queen}
 import io.tyoras.cards.domain.game.schnapsen.PlayerId
-import io.tyoras.cards.domain.card.{Card, Deck, Hand, King, Queen, Suit}
+import io.tyoras.cards.domain.card.{Card, Deck, Hand, Suit}
+import io.tyoras.cards.domain.game.schnapsen.model.Role.*
 
-sealed trait Role
-case object Forehand extends Role
-case object Dealer   extends Role
+enum Role:
+  case Forehand, Dealer
 
 case class Player(id: PlayerId, name: String, hand: Hand = Nil, score: Int = 0, wonCards: Hand = Nil, marriages: List[Marriage] = Nil):
   override def toString                 = s"name = $name ($id) \t| score = $score \t| hand = ${hand.mkString(" ")}"
@@ -58,13 +59,8 @@ object Marriage:
 
 case class TalonClosing(closedBy: PlayerId, opponentScore: Int)
 
-sealed trait RoundOutcome:
+enum RoundOutcome(val reward: Int):
   def winner: PlayerId
-
   def loser: PlayerId
-
-  def reward: Int
-case class VictoryClaimed(override val winner: PlayerId, override val loser: PlayerId, override val reward: Int, successful: Boolean = true)
-    extends RoundOutcome
-case class TalonExhausted(override val winner: PlayerId, override val loser: PlayerId) extends RoundOutcome:
-  override val reward: Int = 1
+  case VictoryClaimed(override val winner: PlayerId, override val loser: PlayerId, rwrd: Int, successful: Boolean = true) extends RoundOutcome(rwrd)
+  case TalonExhausted(override val winner: PlayerId, override val loser: PlayerId)                                        extends RoundOutcome(reward = 1)

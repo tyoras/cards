@@ -1,6 +1,8 @@
 package io.tyoras.cards.tests.domain.card
 
-import io.tyoras.cards.domain.card.{Card, Heart, King, Spade, Ten}
+import io.tyoras.cards.domain.card.Rank.{King, Ten}
+import io.tyoras.cards.domain.card.Suit.*
+import io.tyoras.cards.domain.card.Card
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
