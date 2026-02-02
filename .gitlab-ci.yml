@@ -33,6 +33,14 @@ unit_test:
         - modules/core/target/test-reports/TEST-*.xml
   coverage: '/Statement coverage[A-Za-z\.*]\s*:\s*([^%]+)/'
 
+scapegoat_analysis:
+  stage: test
+  script:
+    - sbt scapegoat
+  artifacts:
+    paths:
+      - target/scala-3.7.4/scapegoat-report/
+
 check_format:
   stage: test
   script:
@@ -49,10 +57,12 @@ pages:
   stage: deploy
   dependencies:
     - unit_test
+    - scapegoat_analysis
   script:
-    - rm -rf public/coverage
-    - mkdir -p public/coverage
+    - rm -rf public/coverage public/scapegoat
+    - mkdir -p public/coverage public/scapegoat
     - mv target/scala-3.7.4/scoverage-report/* public/coverage/
+    - mv target/scala-3.7.4/scapegoat-report/scapegoat.html public/scapegoat/index.html
   artifacts:
     paths:
       - public
