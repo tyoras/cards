@@ -12,6 +12,8 @@ lazy val defaultRanks: Set[Rank] = Set(Ace(), King(), Queen(), Jack(), Ten(), Ni
 
 type Deck = List[Card]
 type Hand = List[Card]
+object Hand:
+  val empty: Hand = List.empty
 
 lazy val international52Deck: Deck = createDeck(allSuits, defaultRanks)
 
@@ -44,3 +46,5 @@ def drawNCard(n: Int, deck: Deck): (Hand, Deck) =
   val takenCards    = deck.take(n)
   val remainingDeck = deck.drop(n)
   (takenCards, remainingDeck)
+
+def divideN(cards: Deck, n: Int): Iterator[Hand] = cards.grouped(cards.length / n)

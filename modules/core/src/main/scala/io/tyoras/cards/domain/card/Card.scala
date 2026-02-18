@@ -1,5 +1,7 @@
 package io.tyoras.cards.domain.card
 
+import cats.{Order, Show}
+
 case class Card(suit: Suit, rank: Rank) extends Ordered[Card]:
   override def toString: String = s"$rank$suit"
 
@@ -8,3 +10,7 @@ case class Card(suit: Suit, rank: Rank) extends Ordered[Card]:
   val color: Color = suit.color
 
   val value: Int = rank.value
+
+object Card:
+  given Show[Card]  = Show.fromToString
+  given Order[Card] = Order.fromOrdering

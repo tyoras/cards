@@ -6,6 +6,7 @@ import cats.effect.{Async, Clock, ExitCode}
 import cats.syntax.all.*
 import io.chrisdavenport.cats.effect.time.implicits.*
 import io.chrisdavenport.fuuid.FUUID
+import io.tyoras.cards.cli.game.schnapsen.SchnapsenCliError.*
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
 import io.tyoras.cards.cli.{displayCardChoice, displayDeck, lineSeparator}
@@ -33,8 +34,8 @@ object SchnapsenCli:
       |                             | |
       |                             |_|                   """.stripMargin
 
-  def apply[F[_]](using F: Async[F], console: Console[F]): SchnapsenCli[F] = new SchnapsenCli[F] {
-    given unsafeLogger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
+  def apply[F[_]](using F: Async[F], console: Console[F]): SchnapsenCli[F] = new SchnapsenCli[F]:
+    given SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
 
     private val displayIntro: F[Unit] =
       console.println(banner) >>
@@ -134,7 +135,7 @@ object SchnapsenCli:
                     console.println(s"You can use \\q to quit the game or \\r to restart a new game.")
                 else console.println(s"Press 'Enter' when you are ready to start the next round.")
             yield ()
-          case _: Exit => F.raiseError(InvalidState) // Exit state is handled exclusively by the main game loop
+          case _: Exit => InvalidState.raiseError // Exit state is handled exclusively by the main game loop
         })
 
     private def displayMarriageChoice(state: ForehandTurn): F[Unit] = state.possibleMarriages match
@@ -158,7 +159,7 @@ object SchnapsenCli:
             case s: LateGameForehandTurn  => parseLateGameForehandTurnChoice(s, rawInput)
             case s: Finish =>
               F.fromEither(s.player(s.outcome.winner)).map(_.score <= 0).ifM(End(state.round.forehand.id).pure, Start(state.round.forehand.id).pure)
-            case _: Exit => F.raiseError(InvalidState) // Exit state is handled exclusively by the main game loop
+            case _: Exit => InvalidState.raiseError // Exit state is handled exclusively by the main game loop
 
     private def parseEarlyGameForehandTurnChoice(state: EarlyGameForehandTurn, rawInput: String): F[Input] =
       rawInput.toLowerCase match
@@ -213,4 +214,3 @@ object SchnapsenCli:
               Meld(player.id, m.king.suit).pure[F]
           else F.raiseError[Input](InvalidInput)
       yield c
-  }

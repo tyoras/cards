@@ -1,0 +1,83 @@
+@startuml
+'https://plantuml.com/state-diagram
+
+'scale 500 width
+[*] --> fork_menu
+fork_menu --> Init
+Init --> initReady : <font color=blue><b>Ready
+initReady --> Init : [not all ready]
+initReady --> Game : [all ready]
+fork_menu --> Menu
+Menu -> Init : <font color=blue><b>Restart
+Menu --> join_menu : <font color=blue><b>End
+join_menu --> Exit
+Exit --> [*]
+
+state fork_menu <<fork>>
+state join_menu <<join>>
+state Init {
+  Init : context
+  Init: ready
+}
+
+state initReady <<choice>>
+state Game ##[dotted] {
+  [*] --> BattleTurn
+  BattleTurn --> battleTurnPlayCard : <font color=blue><b>PlayCard
+  battleTurnPlayCard --> BattleTurn : [not all cards played]
+  battleTurnPlayCard --> battleTurnAllCardPlayed : [all cards played]
+  battleTurnAllCardPlayed --> PlayerWinTurn : [only one winner]
+  battleTurnAllCardPlayed --> WarTurn : [several players have the highest]
+  WarTurn -[hidden]-> BattleTurn
+  WarTurn --> warTurnPlayCard : <font color=blue><b>PlayCard
+  warTurnPlayCard --> WarTurn : [not all cards played]
+  warTurnPlayCard --> warTurnAllCardPlayed : [all cards played]
+  warTurnAllCardPlayed --> PlayerWinTurn : [only one winner]
+  warTurnAllCardPlayed --> WarTurn : [several players have the highest]
+  PlayerWinTurn --> playerWinReady : <font color=blue><b>Ready
+  playerWinReady --> PlayerWinTurn : [not all acked]
+  playerWinReady --> playerWinAllReady : [all acked]
+  playerWinAllReady --> BattleTurn : [players with cards > 1]
+  playerWinAllReady --> Finish : [players with cards == 1]
+  Finish --> join_menu
+  Game --> Game : <font color=blue><b>Invalid input
+
+  state BattleTurn {
+    BattleTurn : context
+    BattleTurn : playedCards
+  }
+
+  state battleTurnPlayCard <<choice>>
+  state battleTurnAllCardPlayed <<choice>>
+
+  state WarTurn {
+    WarTurn : context
+    WarTurn : battles
+  }
+
+  state warTurnPlayCard <<choice>>
+  state warTurnAllCardPlayed <<choice>>
+
+  state PlayerWinTurn {
+    PlayerWinTurn : context
+    PlayerWinTurn : winnerId
+    PlayerWinTurn : wonCards
+    PlayerWinTurn : acked
+    PlayerWinTurn : eliminated
+  }
+
+  state playerWinReady <<choice>>
+  state playerWinAllReady <<choice>>
+
+  state Finish {
+    Finish : context
+  }
+}
+
+state Menu ##[dotted]
+
+state Exit {
+  Exit : context
+}
+
+@enduml

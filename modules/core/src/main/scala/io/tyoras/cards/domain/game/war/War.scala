@@ -1,38 +1,172 @@
 package io.tyoras.cards.domain.game.war
 
+import cats.data.{NonEmptyList, NonEmptySet}
+import cats.effect.Async
+import cats.effect.kernel.{Clock, Sync}
 import io.tyoras.cards.domain.card.*
 import io.tyoras.cards.domain.game.war.War.BattleResult.*
+import io.tyoras.cards.domain.game.war.model.*
+import org.typelevel.log4cats.LoggerFactory
+import cats.syntax.all.*
+import io.tyoras.cards.util.fsm.concurrent.SynchronizedConcurrentFSM
+import io.chrisdavenport.cats.effect.time.implicits.*
+import io.chrisdavenport.fuuid.FUUID
+import io.tyoras.cards.domain.game.war.model.GameInput.*
+import io.tyoras.cards.domain.game.war.model.GameState.*
+import io.tyoras.cards.domain.game.war.model.MetaInput.*
+import io.tyoras.cards.util.collection.syntax.*
+import io.tyoras.cards.util.logging.syntax.*
 
-import scala.annotation.tailrec
+trait War[F[_]]:
+  def currentState: F[GameState]
+  def submitInput(input: Input): F[GameState]
 
 object War:
 
-  def divide(cards: Deck): (Hand, Hand) = cards.splitAt(cards.length / 2)
+  private def initGameContext[F[_] : Sync](playerNames: List[String]): F[GameContext] =
+    for
+      startAt <- Clock[F].getZonedDateTimeUTC
+      deck    <- Sync[F].delay(shuffle(warDeck))
+      hands = divideN(deck, playerNames.size)
+      players <- playerNames.zip(hands).traverse((name, hand) => FUUID.randomFUUID.map(id => id -> Player(id, name, hand)))
+    yield GameContext(players.toMap, startAt, Turn.firstTurn)
+
+  def apply[F[_] : Async : LoggerFactory](playerNames: List[String]): F[War[F]] =
+    for
+      logger  <- LoggerFactory.create[F]
+      context <- initGameContext(playerNames)
+      _       <- logger.debug(s"Starting new War game with initial game context : $context")
+      fsm     <- SynchronizedConcurrentFSM.create[F, GameState](Init(context))
+    yield new War[F]:
+      override def currentState: F[GameState] = fsm.getCurrentState
+
+      override def submitInput(input: Input): F[GameState] = fsm.transition { s =>
+        val logCtx = input.playerId.ctx(playerIdKey)
+        logger.debug(logCtx)(s"Submitting input [$input] on current state : $s") >>
+          menu
+            .orElse(game)
+            .applyOrElse(
+              s -> input,
+              _ => logger.debug(logCtx)(s"Ignoring wrong input [$input]").as(s)
+            )
+      }
+
+      private def menu: PartialFunction[(GameState, Input), F[GameState]] =
+        case (s, restart: Restart) =>
+          logger.debug(restart.playerId.ctx(playerIdKey))("Player has asked to restart a new game") >>
+            initGameContext(s.context.players.values.map(_.name).toList).map(Init(_))
+        case (s, end: End) =>
+          logger.debug(end.playerId.ctx(playerIdKey))("Player has asked to exit the game").as(Exit(s.context))
+
+      private def game: PartialFunction[(GameState, Input), F[GameState]] =
+        case (s: Init, i: Ready)          => playerReady(s, i)
+        case (s: BattleTurn, i: PlayCard) => playCard(s, i)
+        case (s: WarTurn, i: PlayCard)    => playCard(s, i)
+        case (s: PlayerWinTurn, i: Ready) => ackTurnWin(s, i)
+
+      private def playerReady(state: Init, input: Ready): F[GameState] =
+        for
+          _ <- checkPlayer(state.notReady, input.playerId)
+          readyPlayers = state.ready + input.playerId
+          updated      = state.copy(ready = readyPlayers)
+          nextState    = if updated.notReady.isEmpty then BattleTurn(state.context) else updated
+          _ <- logger.debug(input.playerId.ctx(playerIdKey))("Player ready for next turn")
+        yield nextState
+
+      private def ackTurnWin(state: PlayerWinTurn, input: Ready): F[GameState] =
+        for
+          _ <- checkPlayer(state.notAcked, input.playerId)
+          ackedPlayers = state.acked + input.playerId
+          updated      = state.copy(acked = ackedPlayers)
+          nextState <-
+            if updated.notAcked.nonEmpty then updated.pure
+            else if updated.context.allEliminated then
+              updated.context.players.values.filter(!_.eliminated).map(_.id) match
+                case winnerId :: Nil => Finish(updated.context, winnerId).pure
+                case _               => InvalidState("Finish state without a unique winner").raiseError
+            else BattleTurn(state.context).pure
+          playerReadyLog = logger.debug(input.playerId.ctx(playerIdKey))("Player ready for next turn")
+        yield nextState
+
+      private def checkPlayer(expectedPlayers: Set[PlayerId], playerId: PlayerId): F[Unit] =
+        WrongPlayer.raiseError.unlessA(expectedPlayers.contains(playerId))
+
+      private def checkPlayedCard(input: PlayCard)(context: GameContext): F[Unit] =
+        InvalidCard(s"${input.playerId} has played an invalid card ${input.card}").raiseError
+          .unlessA(context.pickFirstCard(input.playerId).contains(input.card))
+
+      private def playCard(state: BattleTurn, input: PlayCard): F[GameState] =
+        for
+          _ <- checkPlayer(state.missingPlays, input.playerId)
+          _ <- checkPlayedCard(input)(state.context)
+          newCtx            = state.context.updatePlayer(input.playerId)(p => p.copy(hand = p.hand.tail))
+          updatedBattleTurn = BattleTurn(newCtx, playedCards = state.playedCards.updated(input.playerId, input.card))
+          nextState         = if updatedBattleTurn.missingPlays.isEmpty then resolveBattle(updatedBattleTurn) else updatedBattleTurn
+          _ <- logger.debug(input.playerId.ctx(playerIdKey))(s"Card played: ${input.card}")
+        yield nextState
+
+      private def resolveBattle(battleTurn: BattleTurn): GameState =
+        val highestRank = battleTurn.playedCards.values.maxBy(_.value)
+        val winners     = battleTurn.playedCards.filter(_._2.value == highestRank.value).keySet.toNes
+        winners.toList match
+          case winnerId :: Nil =>
+            val wonCards = battleTurn.playedCards.values.toList
+            winTurn(winnerId, wonCards)(battleTurn.context)
+          case _ => initWarTurn(battleTurn, winners)
+
+      private def winTurn(winnerId: PlayerId, wonCards: List[Card])(context: GameContext): PlayerWinTurn =
+        val allEliminated = context.players.values.toSet
+          .filter(_.eliminated)
+          .map(_.id) - winnerId // removing winner in case he does not have cards anymore before getting the ones he just won
+        val alreadyEliminated = context.eliminations.map(_.playerId).toSet
+        val newlyEliminated   = allEliminated.diff(alreadyEliminated)
+        val updatedCtx =
+          newlyEliminated.foldLeft(context)(_.eliminatePlayer(_)).updatePlayer(winnerId)(p => p.copy(hand = p.hand ::: wonCards)).incrementTurnNumber
+        PlayerWinTurn(updatedCtx, winnerId, wonCards.toSet, newlyEliminated)
+
+      private def initWarTurn(battleTurn: BattleTurn, involvedPlayers: NonEmptySet[PlayerId]): WarTurn =
+        val firstRound = WarTurn.BattleRound(
+          involvedPlayers = battleTurn.playedCards.keySet.toNes,
+          hiddenPlayedCards = Map.empty,
+          fightingCards = battleTurn.playedCards
+        )
+        val nextRound = WarTurn.BattleRound(
+          involvedPlayers = involvedPlayers,
+          hiddenPlayedCards = Map.empty,
+          fightingCards = Map.empty
+        )
+        WarTurn(battleTurn.context, NonEmptyList.of(firstRound, nextRound))
+
+      private def playCard(state: WarTurn, input: PlayCard): F[GameState] =
+        for
+          _ <- checkPlayer(state.missingPlays, input.playerId)
+          _ <- checkPlayedCard(input)(state.context)
+          newCtx         = state.context.updatePlayer(input.playerId)(p => p.copy(hand = p.hand.tail))
+          updatedWarTurn = state.copy(context = newCtx).playCard(input.playerId, input.card)
+          nextState      = if updatedWarTurn.allCardPlayed then resolveWarRound(updatedWarTurn) else updatedWarTurn
+          _ <- logger.debug(input.playerId.ctx(playerIdKey))(s"Card played: ${input.card}")
+        yield nextState
+
+      private def resolveWarRound(warTurn: WarTurn): GameState =
+        // in case both players don't have enough cards we use the hidden cards instead
+        val fightingCards = if warTurn.currentRound.fightingCards.nonEmpty then warTurn.currentRound.fightingCards else warTurn.currentRound.hiddenPlayedCards
+        val highestRank   = fightingCards.values.maxBy(_.value)
+        val winners       = fightingCards.filter(_._2.value == highestRank.value).keySet.toNes
+        winners.toList match
+          case winnerId :: Nil =>
+            val wonCards = warTurn.heap.toList
+            winTurn(winnerId, wonCards)(warTurn.context)
+          case _ => initNewWarRound(warTurn, winners)
+
+      private def initNewWarRound(warTurn: WarTurn, involvedPlayers: NonEmptySet[PlayerId]): WarTurn =
+        val nextRound = WarTurn.BattleRound(
+          involvedPlayers = involvedPlayers,
+          hiddenPlayedCards = Map.empty,
+          fightingCards = Map.empty
+        )
+        warTurn.copy(battles = warTurn.battles :+ nextRound)
 
   enum BattleResult:
     case Player1Wins(cards: List[Card])
     case Player2Wins(cards: List[Card])
     case Battle(cards: List[Card])
-
-  def score(player1Card: Card, player2Card: Card, previousTurnCards: List[Card] = List()): BattleResult =
-    player1Card.rank.value - player2Card.rank.value match
-      case s if s == 0 => Battle(player1Card :: player2Card :: previousTurnCards)
-      case s if s > 0  => Player1Wins(player1Card :: player2Card :: previousTurnCards)
-      case s if s < 0  => Player2Wins(player2Card :: player1Card :: previousTurnCards)
-
-  @tailrec
-  def battle(player1Hand: Hand, player2Hand: Hand, previousTurnCards: List[Card] = List()): (Hand, Hand) =
-    (player1Hand, player2Hand) match
-      case h @ (_, Nil) => h
-      case h @ (Nil, _) => h
-      case (nextCard1 :: remainingCards1, nextCard2 :: remainingCards2) =>
-        score(nextCard1, nextCard2, previousTurnCards) match
-          case Player1Wins(cards) => (remainingCards1 ::: cards, remainingCards2)
-          case Player2Wins(cards) => (remainingCards1, remainingCards2 ::: cards)
-          case Battle(cards)      => battle(remainingCards1, remainingCards2, cards)
-
-  @tailrec
-  def play(hands: (Hand, Hand)): (Hand, Hand) = hands match
-    case (h, Nil)                       => (h, Nil)
-    case (Nil, h)                       => (Nil, h)
-    case (player1: Hand, player2: Hand) => play(battle(player1, player2))
