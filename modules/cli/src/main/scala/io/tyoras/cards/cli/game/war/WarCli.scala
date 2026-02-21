@@ -15,7 +15,7 @@ trait WarCli[F[_]]:
   def run: F[ExitCode]
 
 object WarCli:
-  final case class Config(defaultPlayerCount: Int, autoNamePlayers: Boolean, autoPlay: Boolean)
+  final case class Config(defaultPlayerCount: PlayerCount, autoNamePlayers: Boolean, autoPlay: Boolean)
 
   val banner: String =
     """ __          __
@@ -38,21 +38,24 @@ object WarCli:
           console.println("At any moment you can use \\q to quit the game or \\r to restart it.") >>
           console.println(lineSeparator)
 
-      private val readPlayerCount: F[Int] =
+      private val readPlayerCount: F[PlayerCount] =
         console.readLine.flatMap {
           case "" => config.defaultPlayerCount.pure
           case str =>
-            Sync[F].delay(str.toInt).handleErrorWith { err =>
-              logger.warn(err)(s"Incorrect player count input $str") *>
-                console.println(s"$str is not a valid number! Please try again:") >> readPlayerCount
-            }
+            Sync[F]
+              .fromEither(PlayerCount.from(str))
+              .handleErrorWith { err =>
+                logger.warn(err)(s"Incorrect player count input $str") *>
+                  console.println(s"$str is not a valid number! Please try again:") >> readPlayerCount
+              }
+              .flatTap(c => console.println(s"Incorrect player count, it must be a number between 2 and 52. You entered $c"))
         }
 
       private val askPlayerInfos: F[List[String]] =
         for
           _           <- console.println(s"How many players for this game? (default : ${config.defaultPlayerCount})")
           playerCount <- readPlayerCount <* console.println(lineSeparator)
-          names       <- (1 to playerCount).toList.traverse(i => askPlayerName(s"Player $i"))
+          names       <- (1 to playerCount.value).toList.traverse(i => askPlayerName(s"Player $i"))
         yield names
 
       private def askPlayerName(defaultName: String): F[String] =

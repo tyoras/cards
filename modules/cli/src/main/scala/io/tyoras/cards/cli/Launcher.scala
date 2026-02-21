@@ -9,6 +9,7 @@ import io.tyoras.cards.cli.game.schnapsen.SchnapsenCli
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 import cats.syntax.all.*
+import io.tyoras.cards.domain.game.war.PlayerCount
 
 object Launcher extends CommandIOApp(name = "cards", header = banner, version = s"cards version ${BuildInfo.version} built at ${BuildInfo.builtAtString}"):
   given LoggerFactory[IO] = Slf4jFactory.create[IO]
@@ -20,7 +21,18 @@ object Launcher extends CommandIOApp(name = "cards", header = banner, version = 
     }
 
   case class WarCommand(config: WarCli.Config)
-  val playerCount: Opts[Int]         = Opts.option("player-count", "How many player for this game").withDefault(2)
+  private val playerCountRaw: Opts[Int] = Opts.option("player-count", "How many player for this game (min. 2 - max. 52)").withDefault(2)
+  val playerCount: Opts[PlayerCount] = playerCountRaw.mapValidated(
+    PlayerCount
+      .from(_)
+      .leftMap {
+        case PlayerCount.ValidationError.InvalidNumber(str) =>
+          s"Invalid number format for player count: $str"
+        case PlayerCount.ValidationError.OutOfBounds(count) =>
+          s"Player count must be between 2 and 52, you entered $count"
+      }
+      .toValidatedNel
+  )
   val autoNamePlayers: Opts[Boolean] = Opts.flag("auto-name", "Automatically use default name for players").orFalse
   val autoPlay: Opts[Boolean]        = Opts.flag("auto-play", "Automatically play").orFalse
   val warCommandOpts: Opts[WarCommand] =
