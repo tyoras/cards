@@ -6,16 +6,21 @@ The goal is to both have fun implementing these games and experimenting function
 ## Architecture
 The project is designed around a set of modules :
 - `core` contains basic concepts useful modeling a card game and games logic implementations.
-- `persistence` contains the details related to the postgresql persistence of the games.
-- `cli` contains a [cli](https://en.wikipedia.org/wiki/Command-line_interface) oriented UI for the games.
-- `server` (Work in progress) contains a web server for playing the games via restful apis.
+- `persistence` (Work in progress) contains the details related to the PostgreSQL persistence of the games.
+- `cli` contains [CLI](https://en.wikipedia.org/wiki/Command-line_interface) oriented UIs for the games.
+- `server` (Work in progress) contains a web server for playing the games via restful APIs.
 
 ## Finished games
 None yet.
 
 ## Work in progress
+| Game                    | Logic | Local CLI | Web API | Remote CLI | persistence |
+|-------------------------|---|-----------|---------|------------|-------------|
+| [Schnapsen](#schnapsen) | ✅ | ✅ | ❌ | ❌ | ❌ |
+| [War](#war)             | ✅ | ✅ | ❌ | ❌ | ❌ |
+
 ### Schnapsen
-[Schnapsen](https://en.wikipedia.org/wiki/Schnapsen) is an austrian game, it is the first game I have decided to implement because of its medium complexity which is a good first challenge.
+[Schnapsen](https://en.wikipedia.org/wiki/Schnapsen) is an Austrian game, it is the first game I have decided to implement because of its medium complexity which is a good first challenge.
 
 Its game logic implementation is designed as a [FSM](https://en.wikipedia.org/wiki/Finite-state_machine).
 #### Game rules references
