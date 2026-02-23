@@ -5,5 +5,10 @@ services:
       POSTGRES_USER: cards
       POSTGRES_PASSWORD: password
       POSTGRES_DB: cards
+    volumes:
+      - pgdata:/var/lib/postgresql
     ports:
       - 5432:5432
+
+volumes:
+  pgdata:
