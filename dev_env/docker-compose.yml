@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   db:
-    image: postgres:13
+    image: postgres:18
     environment:
       POSTGRES_USER: cards
       POSTGRES_PASSWORD: password

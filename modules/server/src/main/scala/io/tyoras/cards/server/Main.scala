@@ -21,7 +21,9 @@ object Main extends IOApp:
   private val defaultConfigPath = Paths.get("cards-server.conf")
   override def run(args: List[String]): IO[ExitCode] =
     val configPath = args.headOption.fold(defaultConfigPath)(Paths.get(_))
-    init[IO](configPath).useForever.as(ExitCode.Success).handleErrorWith(t => IO.println(s"Service has failed to start ${t.getMessage}").as(ExitCode.Error))
+    init[IO](configPath).useForever
+      .as(ExitCode.Success)
+      .handleErrorWith(t => Console[IO].errorln(s"Service has failed to start ${t.getMessage}").as(ExitCode.Error))
 
   private def init[F[_] : Async : Console : Network : natchez.Trace](configPath: Path): Resource[F, Unit] = for
     config        <- Resource.eval(parseConfig(configPath))

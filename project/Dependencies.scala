@@ -5,7 +5,7 @@ object Dependencies {
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.5.27"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.5.32"
       }
     }
   }
@@ -20,7 +20,7 @@ object Dependencies {
 //    }
 
     case object monovore {
-      val declineVersion   = "2.5.0"
+      val declineVersion   = "2.6.0"
       val decline          = "com.monovore" %% "decline"        % declineVersion
       val `decline-effect` = "com.monovore" %% "decline-effect" % declineVersion
     }
@@ -49,7 +49,7 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-core` = "org.flywaydb" % "flyway-core" % "12.0.0"
+      val `flyway-core` = "org.flywaydb" % "flyway-database-postgresql" % "12.0.2"
     }
 
     case object http4s {
@@ -62,7 +62,7 @@ object Dependencies {
     }
 
     case object postgresql {
-      val postgresql = "org.postgresql" % "postgresql" % "42.7.9"
+      val postgresql = "org.postgresql" % "postgresql" % "42.7.10"
     }
 
     case object scalacheck {
