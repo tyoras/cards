@@ -124,18 +124,14 @@ object War:
           newlyEliminated.foldLeft(context)(_.eliminatePlayer(_)).updatePlayer(winnerId)(p => p.copy(hand = p.hand ::: wonCards)).incrementTurnNumber
         PlayerWinTurn(updatedCtx, winnerId, wonCards.toSet, newlyEliminated)
 
-      private def initWarTurn(battleTurn: BattleTurn, involvedPlayers: NonEmptySet[PlayerId]): WarTurn =
+      private def initWarTurn(battleTurn: BattleTurn, involvedPlayers: NonEmptySet[PlayerId]): GameState =
         val firstRound = WarTurn.BattleRound(
           involvedPlayers = battleTurn.playedCards.keySet.toNes,
           hiddenPlayedCards = Map.empty,
           fightingCards = battleTurn.playedCards
         )
-        val nextRound = WarTurn.BattleRound(
-          involvedPlayers = involvedPlayers,
-          hiddenPlayedCards = Map.empty,
-          fightingCards = Map.empty
-        )
-        WarTurn(battleTurn.context, NonEmptyList.of(firstRound, nextRound))
+        val warTurn = WarTurn(battleTurn.context, NonEmptyList.one(firstRound))
+        initNewWarRound(warTurn, involvedPlayers)
 
       private def playCard(state: WarTurn, input: PlayCard): F[GameState] =
         for
@@ -149,22 +145,27 @@ object War:
 
       private def resolveWarRound(warTurn: WarTurn): GameState =
         // in case both players don't have enough cards we use the hidden cards instead
-        val fightingCards = if warTurn.currentRound.fightingCards.nonEmpty then warTurn.currentRound.fightingCards else warTurn.currentRound.hiddenPlayedCards
-        val highestRank   = fightingCards.values.maxBy(_.value)
-        val winners       = fightingCards.filter(_._2.value == highestRank.value).keySet.toNes
+        val fightingCards =
+          if warTurn.currentRound.fightingCards.nonEmpty then warTurn.currentRound.fightingCards
+          // in case does not happen to have hidden cards we draw cards from a second deck instead
+          else if warTurn.currentRound.hiddenPlayedCards.nonEmpty then warTurn.currentRound.hiddenPlayedCards
+          else warTurn.currentRound.involvedPlayers.foldLeft(Map.empty[PlayerId, Card])((cards, id) => cards.updated(id, shuffle(warDeck).head))
+        val highestRank = fightingCards.values.maxBy(_.value)
+        val winners     = fightingCards.filter(_._2.value == highestRank.value).keySet.toNes
         winners.toList match
           case winnerId :: Nil =>
             val wonCards = warTurn.heap.toList
             winTurn(winnerId, wonCards)(warTurn.context)
           case _ => initNewWarRound(warTurn, winners)
 
-      private def initNewWarRound(warTurn: WarTurn, involvedPlayers: NonEmptySet[PlayerId]): WarTurn =
+      private def initNewWarRound(warTurn: WarTurn, involvedPlayers: NonEmptySet[PlayerId]): GameState =
         val nextRound = WarTurn.BattleRound(
           involvedPlayers = involvedPlayers,
           hiddenPlayedCards = Map.empty,
           fightingCards = Map.empty
         )
-        warTurn.copy(battles = warTurn.battles :+ nextRound)
+        val newWarTurn = warTurn.copy(battles = warTurn.battles :+ nextRound)
+        if newWarTurn.allCardPlayed then resolveWarRound(newWarTurn) else newWarTurn
 
   enum BattleResult:
     case Player1Wins(cards: List[Card])

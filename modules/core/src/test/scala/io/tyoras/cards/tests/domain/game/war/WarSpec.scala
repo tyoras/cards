@@ -3,13 +3,13 @@ package io.tyoras.cards.tests.domain.game.war
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import io.chrisdavenport.fuuid.FUUID
-import io.tyoras.cards.domain.card.Rank.{Ace, King}
+import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.card.Suit.{Heart, Spade}
 import io.tyoras.cards.domain.card.{Card, Rank}
 import io.tyoras.cards.domain.game.war.War
+import io.tyoras.cards.domain.game.war.model.GameState.*
 import io.tyoras.cards.domain.game.war.model.*
 import io.tyoras.cards.domain.game.war.model.GameInput.Ready
-import io.tyoras.cards.domain.game.war.model.GameState.{BattleTurn, Init}
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.typelevel.log4cats.LoggerFactory
@@ -123,7 +123,7 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
       card2   = context.players(playerIds.last).hand.head
       _     <- war.submitInput(GameInput.PlayCard(playerIds.head, card1))
       state <- war.submitInput(GameInput.PlayCard(playerIds.last, card2))
-    } yield if card1.value != card2.value then state shouldBe a[GameState.PlayerWinTurn] else state shouldBe a[GameState.WarTurn]
+    } yield if card1.value != card2.value then state shouldBe a[PlayerWinTurn] else state shouldBe a[WarTurn]
   }
 
   it should "accept ready input in PlayerWinTurn" in {
@@ -140,9 +140,9 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
       _       <- war.submitInput(GameInput.PlayCard(playerIds.head, card1))
       winTurn <- war.submitInput(GameInput.PlayCard(playerIds.last, card2))
       result <-
-        if winTurn.isInstanceOf[GameState.PlayerWinTurn] then war.submitInput(Ready(playerIds.head))
+        if winTurn.isInstanceOf[PlayerWinTurn] then war.submitInput(Ready(playerIds.head))
         else IO.pure(winTurn)
-    } yield if winTurn.isInstanceOf[GameState.PlayerWinTurn] then result shouldBe a[GameState.PlayerWinTurn] else succeed
+    } yield if winTurn.isInstanceOf[PlayerWinTurn] then result shouldBe a[PlayerWinTurn] else succeed
   }
 
   it should "transition from PlayerWinTurn to BattleTurn when all players acked" in {
@@ -159,13 +159,13 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
       _       <- war.submitInput(GameInput.PlayCard(playerIds.head, card1))
       winTurn <- war.submitInput(GameInput.PlayCard(playerIds.last, card2))
       result <-
-        if winTurn.isInstanceOf[GameState.PlayerWinTurn] then
+        if winTurn.isInstanceOf[PlayerWinTurn] then
           for {
             _     <- war.submitInput(Ready(playerIds.head))
             state <- war.submitInput(Ready(playerIds.last))
           } yield state
         else IO.pure(winTurn)
-    } yield if winTurn.isInstanceOf[GameState.PlayerWinTurn] then result shouldBe a[BattleTurn] else succeed
+    } yield if winTurn.isInstanceOf[PlayerWinTurn] then result shouldBe a[BattleTurn] else succeed
   }
 
   it should "restart game when Restart input received" in {
@@ -186,7 +186,7 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
       init <- war.currentState
       playerId = init.context.players.keys.head
       state <- war.submitInput(MetaInput.End(playerId))
-    } yield state shouldBe a[GameState.Exit]
+    } yield state shouldBe a[Exit]
   }
 
   it should "ignore wrong input in any state" in {
