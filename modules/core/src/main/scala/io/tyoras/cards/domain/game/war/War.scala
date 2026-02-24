@@ -23,18 +23,19 @@ trait War[F[_]]:
 
 object War:
 
-  private def initGameContext[F[_] : Sync](playerNames: List[String]): F[GameContext] =
+  private def initGameContext[F[_] : Sync](playerIds: NonEmptyList[PlayerId]): F[GameContext] =
     for
       startAt <- Clock[F].getZonedDateTimeUTC
       deck    <- Sync[F].delay(shuffle(warDeck))
-      hands = divideN(deck, playerNames.size)
-      players <- playerNames.zip(hands).traverse((name, hand) => FUUID.randomFUUID.map(id => id -> Player(id, name, hand)))
-    yield GameContext(players.toMap, startAt, Turn.firstTurn)
+      hands   = divideN(deck, playerIds.size)
+      players = playerIds.toList.zip(hands).map((id, hand) => id -> Player(id, hand)).toMap
+    yield GameContext(players, startAt, Turn.firstTurn)
 
-  def apply[F[_] : Async : LoggerFactory](playerNames: List[String]): F[War[F]] =
+  def apply[F[_] : Async : LoggerFactory](playerIds: NonEmptyList[PlayerId]): F[War[F]] =
     for
-      logger  <- LoggerFactory.create[F]
-      context <- initGameContext(playerNames)
+      logger <- LoggerFactory.create[F]
+      // TODO Validate playerIds
+      context <- initGameContext(playerIds)
       _       <- logger.debug(s"Starting new War game with initial game context : $context")
       fsm     <- SynchronizedConcurrentFSM.create[F, GameState](Init(context))
     yield new War[F]:
@@ -54,7 +55,7 @@ object War:
       private def menu: PartialFunction[(GameState, Input), F[GameState]] =
         case (s, restart: Restart) =>
           logger.debug(restart.playerId.ctx(playerIdKey))("Player has asked to restart a new game") >>
-            initGameContext(s.context.players.values.map(_.name).toList).map(Init(_))
+            initGameContext(NonEmptyList.fromListUnsafe(s.context.players.keys.toList)).map(Init(_))
         case (s, end: End) =>
           logger.debug(end.playerId.ctx(playerIdKey))("Player has asked to exit the game").as(Exit(s.context))
 

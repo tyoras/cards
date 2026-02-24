@@ -6,15 +6,18 @@ import cats.syntax.all.*
 import io.tyoras.cards.domain.game.war.model.GameState.WarTurn.BattleRound
 
 sealed trait GameState:
+  def code: String
   def label: String
   def context: GameContext
 
 object GameState:
   final case class Init(override val context: GameContext, ready: Set[PlayerId] = Set.empty) extends GameState:
+    override val code: String        = "init"
     override val label: String       = "Initialisation"
     lazy val notReady: Set[PlayerId] = context.players.keySet.diff(ready)
 
   final case class BattleTurn(override val context: GameContext, playedCards: Map[PlayerId, Card] = Map.empty) extends GameState:
+    override val code: String = "battle-turn"
     lazy val missingPlays: Set[PlayerId] =
       // only expect cards from players who still have cards to plays
       context.players.filterNot(_._2.eliminated).keySet.diff(playedCards.keySet)
@@ -22,6 +25,7 @@ object GameState:
     override val label: String = s"Waiting for players [${missingPlays.mkString(", ")}] to play"
 
   final case class WarTurn(override val context: GameContext, battles: NonEmptyList[WarTurn.BattleRound]) extends GameState:
+    override val code: String                              = "war-turn"
     val currentRound: BattleRound                          = battles.last
     private val currentRoundPlayers: NonEmptySet[PlayerId] = currentRound.involvedPlayers
     private val playersWithCardsInCurrentRound             = currentRoundPlayers.filter(id => context.player(id).exists(!_.eliminated))
@@ -51,11 +55,14 @@ object GameState:
       eliminated: Set[PlayerId],
       acked: Set[PlayerId] = Set.empty
   ) extends GameState:
+    override val code: String        = "player-win-turn"
     override val label: String       = s"Player $winnerId has won the turn and won ${wonCards.size} cards."
     lazy val notAcked: Set[PlayerId] = context.players.keySet.diff(acked)
 
   final case class Finish(override val context: GameContext, winnerId: PlayerId) extends GameState:
+    override val code: String  = "finish"
     override val label: String = "Finish"
 
   final case class Exit(override val context: GameContext) extends GameState:
+    override val code: String  = "exit"
     override val label: String = "Exit"

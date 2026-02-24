@@ -19,9 +19,9 @@ class GameContextSpec extends AnyFlatSpec with Matchers {
 
   val player1FirstCard: Card = Card(Spade, Ten())
 
-  val player1: Player             = Player(playerId1, "Elodie", List(player1FirstCard, Card(Heart, Jack())))
-  val player2: Player             = Player(playerId2, "Yoan", List(Card(Club, Ace())))
-  val playerWithEmptyHand: Player = Player(playerId3, "Julio", Hand.empty)
+  val player1: Player             = Player(playerId1, List(player1FirstCard, Card(Heart, Jack())))
+  val player2: Player             = Player(playerId2, List(Card(Club, Ace())))
+  val playerWithEmptyHand: Player = Player(playerId3, Hand.empty)
 
   val startedAt: ZonedDateTime = ZonedDateTime.now()
 
@@ -44,17 +44,6 @@ class GameContextSpec extends AnyFlatSpec with Matchers {
     context.player(playerId2) shouldBe None
   }
 
-  "GameContext.playerName" should "return player name when player exists" in {
-    val context = GameContext(Map(playerId1 -> player1), startedAt, Turn.firstTurn)
-    context.playerName(playerId1) shouldBe "Elodie"
-  }
-
-  it should "return unknown player message when player does not exist" in {
-    val context = GameContext(Map(playerId1 -> player1), startedAt, Turn.firstTurn)
-    context.playerName(playerId2) should include("Unknown player")
-    context.playerName(playerId2) should include(playerId2.toString)
-  }
-
   "GameContext.pickFirstCard" should "return Some(Card) when player has cards" in {
     val context = GameContext(Map(playerId1 -> player1), startedAt, Turn.firstTurn)
     context.pickFirstCard(playerId1) shouldBe Some(player1FirstCard)
@@ -68,24 +57,6 @@ class GameContextSpec extends AnyFlatSpec with Matchers {
   it should "return None when player does not exist" in {
     val context = GameContext(Map(playerId1 -> player1), startedAt, Turn.firstTurn)
     context.pickFirstCard(playerId2) shouldBe None
-  }
-
-  "GameContext.updatePlayer" should "update existing player" in {
-    val context = GameContext(Map(playerId1 -> player1), startedAt, Turn.firstTurn)
-    val updated = context.updatePlayer(playerId1)(p => p.copy(name = "Elodie Updated"))
-    updated.player(playerId1).map(_.name) shouldBe Some("Elodie Updated")
-  }
-
-  it should "not modify other players" in {
-    val context = GameContext(Map(playerId1 -> player1, playerId2 -> player2), startedAt, Turn.firstTurn)
-    val updated = context.updatePlayer(playerId1)(p => p.copy(name = "Elodie Updated"))
-    updated.player(playerId2) shouldBe Some(player2)
-  }
-
-  it should "handle non-existing player gracefully" in {
-    val context = GameContext(Map(playerId1 -> player1), startedAt, Turn.firstTurn)
-    val updated = context.updatePlayer(playerId2)(p => p.copy(name = "Yoan"))
-    updated.player(playerId2) shouldBe None
   }
 
   "GameContext.eliminatePlayer" should "add elimination record" in {

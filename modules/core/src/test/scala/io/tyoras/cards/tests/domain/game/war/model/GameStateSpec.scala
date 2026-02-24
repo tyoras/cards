@@ -23,9 +23,9 @@ class GameStateSpec extends AnyFlatSpec with Matchers {
   val p2c1: Card = Card(Spade, Ace())
   val card: Card = Card(Diamond, Five())
 
-  val player1: Player             = Player(pId1, "Elodie", List(p1c1, p1c2))
-  val player2: Player             = Player(pId2, "Yoan", List(p2c1))
-  val playerWithEmptyHand: Player = Player(pId3, "Charlie", Hand.empty)
+  val player1: Player             = Player(pId1, List(p1c1, p1c2))
+  val player2: Player             = Player(pId2, List(p2c1))
+  val playerWithEmptyHand: Player = Player(pId3, Hand.empty)
 
   val context: GameContext = GameContext(Map(pId1 -> player1, pId2 -> player2), ZonedDateTime.now(), Turn.firstTurn)
   val firstWarRound        = GameState.WarTurn.BattleRound(NonEmptySet.of(pId1, pId2), Map.empty, Map(pId1 -> Card(Club, Two()), pId2 -> Card(Heart, Two())))

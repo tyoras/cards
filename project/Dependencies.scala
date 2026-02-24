@@ -96,6 +96,7 @@ object Dependencies {
   lazy val coreDeps = Seq(
     io.chrisdavenport.`cats-effect-time`,
     io.chrisdavenport.fuuid,
+    io.chrisdavenport.`fuuid-circe`,
     io.circe.`circe-core`,
     org.typelevel.`cats-core`,
     org.typelevel.`cats-effect`,

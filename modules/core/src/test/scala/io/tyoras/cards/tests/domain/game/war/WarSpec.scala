@@ -1,5 +1,6 @@
 package io.tyoras.cards.tests.domain.game.war
 
+import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import io.chrisdavenport.fuuid.FUUID
@@ -15,19 +16,23 @@ import org.scalatest.matchers.should.Matchers
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
+import java.util.UUID
+
 class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
-  implicit val loggerFactory: LoggerFactory[IO] = Slf4jFactory.create[IO]
+  given LoggerFactory[IO] = Slf4jFactory.create[IO]
+  private val playerIds   = NonEmptyList.of(FUUID.fromUUID(UUID.randomUUID()), FUUID.fromUUID(UUID.randomUUID()))
+  // private val playerIds = NonEmptyList.of(FUUID.fromUUID(UUID.randomUUID()), FUUID.fromUUID(UUID.randomUUID()), FUUID.fromUUID(UUID.randomUUID()))
 
   "War.apply" should "initialize game with Init state" in {
-    War[IO](List("Yoan", "Elodie", "Julio")).flatMap(_.currentState).asserting {
+    War[IO](playerIds).flatMap(_.currentState).asserting {
       case _: Init => succeed
       case state   => fail(s"Expected Init state but got $state")
     }
   }
 
   it should "distribute cards evenly among players" in {
-    War[IO](List("Yoan", "Elodie")).flatMap(_.currentState).asserting {
+    War[IO](playerIds).flatMap(_.currentState).asserting {
       case init: Init =>
         val handSizes = init.context.players.values.map(_.hand.size).toList
         handSizes shouldBe List(26, 26)
@@ -35,20 +40,10 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
     }
   }
 
-  it should "create unique player IDs" in {
-    War[IO](List("Yoan", "Elodie", "Julio")).flatMap(_.currentState).asserting {
-      case init: Init =>
-        val playerIds = init.context.players.keys.toList
-        playerIds.distinct.size shouldBe 3
-      case state => fail(s"Expected Init state but got $state")
-    }
-  }
-
   "War.submitInput" should "transition from Init to BattleTurn when all players ready" in {
     for {
-      war  <- War[IO](List("Yoan", "Elodie"))
-      init <- war.currentState
-      playerIds = init.context.players.keys.toList
+      war   <- War[IO](playerIds)
+      init  <- war.currentState
       _     <- war.submitInput(Ready(playerIds.head))
       state <- war.submitInput(Ready(playerIds.last))
     } yield state shouldBe a[BattleTurn]
@@ -56,16 +51,15 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   it should "keep Init state when not all players ready" in {
     for {
-      war  <- War[IO](List("Yoan", "Elodie", "Julio"))
-      init <- war.currentState
-      playerId = init.context.players.keys.head
-      state <- war.submitInput(Ready(playerId))
+      war   <- War[IO](playerIds)
+      init  <- war.currentState
+      state <- war.submitInput(Ready(playerIds.head))
     } yield state shouldBe a[Init]
   }
 
   it should "reject ready input from non-existing player in Init state" in {
     for {
-      war      <- War[IO](List("Yoan", "Elodie"))
+      war      <- War[IO](playerIds)
       randomId <- FUUID.randomFUUID[IO]
       result   <- war.submitInput(Ready(randomId)).attempt
     } yield result.isLeft shouldBe true
@@ -73,9 +67,8 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   it should "accept first card play in BattleTurn" in {
     for {
-      war  <- War[IO](List("Yoan", "Elodie"))
-      init <- war.currentState
-      playerIds = init.context.players.keys.toList
+      war        <- War[IO](playerIds)
+      init       <- war.currentState
       _          <- war.submitInput(Ready(playerIds.head))
       battleTurn <- war.submitInput(Ready(playerIds.last))
       context   = battleTurn.context
@@ -86,9 +79,8 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   it should "reject invalid card play in BattleTurn" in {
     for {
-      war  <- War[IO](List("Yoan", "Elodie"))
-      init <- war.currentState
-      playerIds = init.context.players.keys.toList
+      war        <- War[IO](playerIds)
+      init       <- war.currentState
       _          <- war.submitInput(Ready(playerIds.head))
       battleTurn <- war.submitInput(Ready(playerIds.last))
       invalidCard = Card(Spade, Ace())
@@ -98,9 +90,8 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   it should "reject card play from wrong player in BattleTurn" in {
     for {
-      war  <- War[IO](List("Yoan", "Elodie"))
-      init <- war.currentState
-      playerIds = init.context.players.keys.toList
+      war        <- War[IO](playerIds)
+      init       <- war.currentState
       _          <- war.submitInput(Ready(playerIds.head))
       battleTurn <- war.submitInput(Ready(playerIds.last))
       context   = battleTurn.context
@@ -112,9 +103,8 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   it should "transition to either PlayerWinTurn or WarTurn when battle resolved depending on if there is a unique winner" in {
     for {
-      war  <- War[IO](List("Yoan", "Elodie"))
-      init <- war.currentState
-      playerIds = init.context.players.keys.toList
+      war        <- War[IO](playerIds)
+      init       <- war.currentState
       _          <- war.submitInput(Ready(playerIds.head))
       battleTurn <- war.currentState
       _          <- war.submitInput(Ready(playerIds.last))
@@ -128,9 +118,8 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   it should "accept ready input in PlayerWinTurn" in {
     for {
-      war  <- War[IO](List("Yoan", "Elodie"))
-      init <- war.currentState
-      playerIds = init.context.players.keys.toList
+      war        <- War[IO](playerIds)
+      init       <- war.currentState
       _          <- war.submitInput(Ready(playerIds.head))
       _          <- war.submitInput(Ready(playerIds.last))
       battleTurn <- war.currentState
@@ -147,9 +136,8 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   it should "transition from PlayerWinTurn to BattleTurn when all players acked" in {
     for {
-      war  <- War[IO](List("Yoan", "Elodie"))
-      init <- war.currentState
-      playerIds = init.context.players.keys.toList
+      war        <- War[IO](playerIds)
+      init       <- war.currentState
       _          <- war.submitInput(Ready(playerIds.head))
       _          <- war.submitInput(Ready(playerIds.last))
       battleTurn <- war.currentState
@@ -170,7 +158,7 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   it should "restart game when Restart input received" in {
     for {
-      war  <- War[IO](List("Yoan", "Elodie", "Julio"))
+      war  <- War[IO](playerIds)
       init <- war.currentState
       playerId = init.context.players.keys.head
       state <- war.submitInput(MetaInput.Restart(playerId))
@@ -182,7 +170,7 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   it should "transition to Exit when End input received" in {
     for {
-      war  <- War[IO](List("Yoan", "Elodie"))
+      war  <- War[IO](playerIds)
       init <- war.currentState
       playerId = init.context.players.keys.head
       state <- war.submitInput(MetaInput.End(playerId))
@@ -191,7 +179,7 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   it should "ignore wrong input in any state" in {
     for {
-      war  <- War[IO](List("Yoan", "Elodie"))
+      war  <- War[IO](playerIds)
       init <- war.currentState
       playerId    = init.context.players.keys.head
       invalidCard = Card(Heart, King())

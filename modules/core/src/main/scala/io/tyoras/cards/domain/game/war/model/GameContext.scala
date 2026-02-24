@@ -10,7 +10,7 @@ type Turn     = Int
 object Turn:
   val firstTurn: Turn = 1
 
-case class Player(id: PlayerId, name: String, hand: Hand = Nil):
+case class Player(id: PlayerId, hand: Hand = Nil):
   lazy val eliminated: Boolean = hand.isEmpty
 
 case class Elimination(playerId: PlayerId, turn: Turn)
@@ -19,9 +19,6 @@ case class GameContext(players: Map[PlayerId, Player], startedAt: ZonedDateTime,
   override def toString: String = s"War game started at $startedAt | turn $turnNumber | players: [${players.values.mkString(", ")}]"
 
   def player(playerId: PlayerId): Option[Player] = players.get(playerId)
-
-  def playerName(playerId: PlayerId): String =
-    player(playerId).map(_.name).getOrElse(s"Unknown player ($playerId)")
 
   def pickFirstCard(playerId: PlayerId): Option[Card] = player(playerId).flatMap(_.hand.headOption)
 

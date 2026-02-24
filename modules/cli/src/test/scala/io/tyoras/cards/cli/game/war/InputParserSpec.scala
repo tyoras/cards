@@ -29,8 +29,8 @@ class InputParserSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   val card1: Card = Card(Spade, Ace())
 
-  val player1: Player = Player(playerId1, "Yoan", List(card1, Card(Heart, King())))
-  val player2: Player = Player(playerId2, "Elodie", List(Card(Diamond, Queen())))
+  val player1: Player = Player(playerId1, List(card1, Card(Heart, King())))
+  val player2: Player = Player(playerId2, List(Card(Diamond, Queen())))
 
   val context: GameContext = GameContext(Map(playerId1 -> player1, playerId2 -> player2), ZonedDateTime.now(), Turn.firstTurn)
 
@@ -84,7 +84,7 @@ class InputParserSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
   }
 
   it should "fail with InvalidState when player has no cards in BattleTurn state" in {
-    val emptyHandPlayer      = Player(playerId1, "Yoan", Hand.empty)
+    val emptyHandPlayer      = Player(playerId1, Hand.empty)
     val contextWithEmptyHand = context.copy(players = Map(playerId1 -> emptyHandPlayer, playerId2 -> player2))
     val battleTurn           = GameState.BattleTurn(contextWithEmptyHand)
     parser.parse(battleTurn, playerId1, "").attempt.asserting { result =>
@@ -103,7 +103,7 @@ class InputParserSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
   }
 
   it should "fail with InvalidState when player has no cards in WarTurn state" in {
-    val emptyHandPlayer      = Player(playerId1, "Yoan", Nil)
+    val emptyHandPlayer      = Player(playerId1, Nil)
     val contextWithEmptyHand = context.copy(players = Map(playerId1 -> emptyHandPlayer, playerId2 -> player2))
     val round                = WarTurn.BattleRound(NonEmptySet.of(playerId1, playerId2), Map.empty, Map.empty)
     val warTurn              = WarTurn(contextWithEmptyHand, NonEmptyList.one(round))

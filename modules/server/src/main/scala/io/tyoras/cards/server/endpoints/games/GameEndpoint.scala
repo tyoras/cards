@@ -15,7 +15,7 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import org.http4s.{HttpRoutes, Response}
 import io.scalaland.chimney.dsl.*
-import io.tyoras.cards.server.endpoints.games.Payloads.Response.Game.fromExisting
+import io.tyoras.cards.server.endpoints.games.Payloads.Response.Game.given
 
 import scala.util.chaining.scalaUtilChainingOps
 

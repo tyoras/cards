@@ -14,10 +14,14 @@ import io.tyoras.cards.server.endpoints.games.GameEndpoint
 import io.tyoras.cards.server.endpoints.games.war.WarEndpoint
 import io.tyoras.cards.server.endpoints.users.UserEndpoint
 import natchez.Trace.Implicits.noop
+import org.typelevel.log4cats.LoggerFactory
+import org.typelevel.log4cats.slf4j.Slf4jFactory
 
 import java.nio.file.{Path, Paths}
 
 object Main extends IOApp:
+  given LoggerFactory[IO] = Slf4jFactory.create[IO]
+
   private val defaultConfigPath = Paths.get("cards-server.conf")
   override def run(args: List[String]): IO[ExitCode] =
     val configPath = args.headOption.fold(defaultConfigPath)(Paths.get(_))
@@ -25,7 +29,7 @@ object Main extends IOApp:
       .as(ExitCode.Success)
       .handleErrorWith(t => Console[IO].errorln(s"Service has failed to start ${t.getMessage}").as(ExitCode.Error))
 
-  private def init[F[_] : Async : Console : Network : natchez.Trace](configPath: Path): Resource[F, Unit] = for
+  private def init[F[_] : Async : Console : Network : natchez.Trace : LoggerFactory](configPath: Path): Resource[F, Unit] = for
     config        <- Resource.eval(parseConfig(configPath))
     dbSessionPool <- SessionPool.of(config.database)
     userRepo      <- Resource.eval(PostgresUserRepository.of[F](dbSessionPool))

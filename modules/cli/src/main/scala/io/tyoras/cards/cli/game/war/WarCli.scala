@@ -1,5 +1,6 @@
 package io.tyoras.cards.cli.game.war
 
+import cats.data.NonEmptyList
 import cats.effect.std.Console
 import cats.effect.{Async, ExitCode, Sync}
 import cats.syntax.all.*
@@ -10,6 +11,7 @@ import io.tyoras.cards.domain.game.war.*
 import io.tyoras.cards.domain.game.war.model.GameState
 import io.tyoras.cards.domain.game.war.model.GameState.*
 import org.typelevel.log4cats.*
+import io.chrisdavenport.fuuid.FUUID
 
 trait WarCli[F[_]]:
   def run: F[ExitCode]
@@ -28,7 +30,6 @@ object WarCli:
   def apply[F[_] : Async : LoggerFactory](config: Config)(using console: Console[F]): WarCli[F] =
     val logger      = LoggerFactory.getLogger
     val inputParser = InputParser[F]
-    val rendering   = Rendering[F]
 
     new WarCli[F]:
       private val displayIntro: F[Unit] =
@@ -51,12 +52,13 @@ object WarCli:
               .flatTap(c => console.println(s"Incorrect player count, it must be a number between 2 and 52. You entered $c"))
         }
 
-      private val askPlayerInfos: F[List[String]] =
+      private val askPlayerInfos: F[Map[PlayerId, String]] =
         for
           _           <- console.println(s"How many players for this game? (default : ${config.defaultPlayerCount})")
           playerCount <- readPlayerCount <* console.println(lineSeparator)
           names       <- (1 to playerCount.value).toList.traverse(i => askPlayerName(s"Player $i"))
-        yield names
+          infos       <- names.traverse(name => FUUID.randomFUUID.map(_ -> name))
+        yield infos.toMap
 
       private def askPlayerName(defaultName: String): F[String] =
         if config.autoNamePlayers then defaultName.pure
@@ -73,7 +75,7 @@ object WarCli:
         case _                    => console.readLine
 
       override val run: F[ExitCode] =
-        def loop(game: War[F]): F[War[F]] =
+        def loop(game: War[F], rendering: Rendering[F]): F[War[F]] =
           (for
             state      <- game.currentState
             playerId   <- Sync[F].fromEither(currentPlayer(state).left.map(UnexpectedError(_)))
@@ -90,10 +92,11 @@ object WarCli:
         for
           _           <- displayIntro
           playerNames <- askPlayerInfos
-          game        <- War(playerNames)
+          rendering = Rendering[F](playerNames)
+          game <- War(NonEmptyList.fromListUnsafe(playerNames.keys.toList))
           exitCode <- game.tailRecM(_.currentState.flatMap {
             case Exit(_) => ExitCode.Success.asRight.pure
-            case _       => loop(game).map(_.asLeft)
+            case _       => loop(game, rendering).map(_.asLeft)
           })
         yield exitCode
 
