@@ -4,25 +4,32 @@ import cats.effect.Sync
 import cats.implicits.catsSyntaxApplicativeId
 import io.circe.generic.semiauto.deriveEncoder
 import io.circe.{CursorOp, DecodingFailure, Encoder}
+import io.tyoras.cards.server.endpoints.ErrorHandling.ApiError.ResourceNotFound
 import io.tyoras.cards.util.validation.error.ValidationError
 import org.http4s.*
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.circe.DecodingFailures
-import org.log4s.{getLogger, Logger}
+import org.log4s.{Logger, getLogger}
+
+import scala.util.control.NoStackTrace
 
 object ErrorHandling:
   val logger: Logger = getLogger
 
-  final case class ApiMessage(code: String, message: String, errors: List[ApiError] = Nil)
+  enum ApiError extends NoStackTrace:
+    case ResourceNotFound(resource: String)
+
+  final case class ApiMessage(code: String, message: String, errors: List[ApiFieldError] = Nil)
   object ApiMessage:
     given Encoder[ApiMessage] = deriveEncoder
-  final case class ApiError(code: String, field: String, message: String)
-  object ApiError:
-    given Encoder[ApiError] = deriveEncoder
+  final case class ApiFieldError(code: String, field: String, message: String)
+  object ApiFieldError:
+    given Encoder[ApiFieldError] = deriveEncoder
 
   val default: PartialFunction[Throwable, (Status, ApiMessage)] =
+    case e: ResourceNotFound => (Status.NotFound, ApiMessage("not_found", s"${e.resource} not found"))
     case ve: ValidationError =>
-      (Status.UnprocessableContent, ApiMessage(ve.code, ve.message, ve.errors.map(e => ApiError(e.code, e.field, e.message.getOrElse("")))))
+      (Status.UnprocessableContent, ApiMessage(ve.code, ve.message, ve.errors.map(e => ApiFieldError(e.code, e.field, e.message.getOrElse("")))))
     case pf: ParseFailure =>
       (Status.BadRequest, ApiMessage("parse_failure", pf.message))
     case mmbf: MalformedMessageBodyFailure =>
@@ -56,8 +63,8 @@ object ErrorHandling:
       case _ => ApiMessage("validation_error", imbf.message)
     (Status.UnprocessableContent, msg)
 
-  private def failureToApiError(df: DecodingFailure): ApiError =
-    ApiError("field_error", failureToFieldPath(df), df.message)
+  private def failureToApiError(df: DecodingFailure): ApiFieldError =
+    ApiFieldError("field_error", failureToFieldPath(df), df.message)
 
   private def failureToFieldPath(df: DecodingFailure): String =
     val path = CursorOp.opsToPath(df.history)

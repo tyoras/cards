@@ -10,6 +10,7 @@ import io.tyoras.cards.domain.user.UserService
 import io.tyoras.cards.persistence.game.PostgresGameRepository
 import io.tyoras.cards.persistence.user.PostgresUserRepository
 import io.tyoras.cards.persistence.SessionPool
+import io.tyoras.cards.server.endpoints.Endpoint
 import io.tyoras.cards.server.endpoints.games.GameEndpoint
 import io.tyoras.cards.server.endpoints.games.war.WarEndpoint
 import io.tyoras.cards.server.endpoints.users.UserEndpoint
@@ -39,6 +40,6 @@ object Main extends IOApp:
     userEndpoint <- Resource.eval(UserEndpoint.of(userService))
     gameEndpoint <- Resource.eval(GameEndpoint.of(gameService))
     warEndpoint  <- Resource.eval(WarEndpoint.of(gameService))
-    httpApp = Server.HttpApp.of(userEndpoint, gameEndpoint, warEndpoint)
-    _ <- Server.of(config.http, httpApp).serve
+    httpWsApp = Server.HttpWsApp.of(userEndpoint, gameEndpoint, warEndpoint)
+    _ <- Server.of(config.http, httpWsApp).serve
   yield ()
