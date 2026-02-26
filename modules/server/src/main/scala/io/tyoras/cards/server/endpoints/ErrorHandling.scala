@@ -16,8 +16,8 @@ import scala.util.control.NoStackTrace
 object ErrorHandling:
   val logger: Logger = getLogger
 
-  enum ApiError extends NoStackTrace:
-    case ResourceNotFound(resource: String)
+  enum ApiError(val message: String) extends Exception(message) with NoStackTrace:
+    case ResourceNotFound(resource: String) extends ApiError(s"$resource not found")
 
   final case class ApiMessage(code: String, message: String, errors: List[ApiFieldError] = Nil)
   object ApiMessage:
@@ -27,7 +27,7 @@ object ErrorHandling:
     given Encoder[ApiFieldError] = deriveEncoder
 
   val default: PartialFunction[Throwable, (Status, ApiMessage)] =
-    case e: ResourceNotFound => (Status.NotFound, ApiMessage("not_found", s"${e.resource} not found"))
+    case e: ResourceNotFound => (Status.NotFound, ApiMessage("not_found", e.getMessage))
     case ve: ValidationError =>
       (Status.UnprocessableContent, ApiMessage(ve.code, ve.message, ve.errors.map(e => ApiFieldError(e.code, e.field, e.message.getOrElse("")))))
     case pf: ParseFailure =>
