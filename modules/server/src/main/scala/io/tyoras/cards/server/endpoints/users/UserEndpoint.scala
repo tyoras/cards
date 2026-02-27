@@ -4,7 +4,7 @@ import cats.effect.{Async, Sync}
 import cats.syntax.all.*
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
-import io.tyoras.cards.domain.user.UserService
+import io.tyoras.cards.domain.user.{User, UserService}
 import io.tyoras.cards.server.endpoints.Endpoint
 import io.tyoras.cards.server.endpoints.ErrorHandling.ApiMessage
 import io.tyoras.cards.server.endpoints.users.Payloads.Request.Creation
@@ -13,9 +13,8 @@ import org.http4s.circe.CirceEntityEncoder.*
 import org.http4s.circe.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
-import org.http4s.{EntityDecoder, HttpRoutes, Response, Status}
+import org.http4s.{AuthedRoutes, EntityDecoder, HttpRoutes, Response, Status}
 import io.tyoras.cards.util.validation.syntax.*
-
 import io.scalaland.chimney.dsl.transformInto
 
 import scala.util.chaining.scalaUtilChainingOps
@@ -29,12 +28,15 @@ object UserEndpoint:
       override val routes: HttpRoutes[F] = Router {
         "users" -> HttpRoutes.of {
           case r @ POST -> Root                 => r.as[Creation].flatMap(create)
-          case r @ PUT -> Root / FUUIDVar(id)   => r.as[Creation].flatMap(createOrUpdate(id))
           case GET -> Root :? PartialName(name) => searchByName(name)
           case GET -> Root                      => listAll
           case GET -> Root / FUUIDVar(id)       => searchById(id)
-          case DELETE -> Root / FUUIDVar(id)    => deleteById(id)
         }
+      }
+
+      override def authedRoutes: AuthedRoutes[User.Existing, F] = AuthedRoutes.of {
+        case r @ PUT -> Root / "users" / FUUIDVar(id) as u => r.req.as[Creation].flatMap(createOrUpdate(id))
+        case DELETE -> Root / "users" / FUUIDVar(id) as u  => deleteById(id)
       }
 
       object PartialName extends QueryParamDecoderMatcher[String]("name")
@@ -57,7 +59,7 @@ object UserEndpoint:
       yield response
 
       private def searchByName(name: String): F[Response[F]] =
-        userService.readManyByName(name).map(_.transformInto[List[Payloads.Response.User]]).flatMap(Ok(_))
+        userService.readManyByPartialName(name).map(_.transformInto[List[Payloads.Response.User]]).flatMap(Ok(_))
 
       private val listAll: F[Response[F]] =
         userService.readAll.map(_.transformInto[List[Payloads.Response.User]]).flatMap(Ok(_))

@@ -5,7 +5,8 @@ import cats.syntax.all.*
 import io.chrisdavenport.cats.effect.time.implicits.*
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.user.{User, UserRepository}
-import skunk.Session
+import io.tyoras.cards.persistence.PersistenceError
+import skunk.{Session, SqlState}
 
 object PostgresUserRepository:
   def of[F[_] : Sync](sessionPool: Resource[F, Session[F]]): F[UserRepository[F]] = Sync[F].delay {
@@ -17,9 +18,13 @@ object PostgresUserRepository:
 
       override def insert(data: User.Data, withId: Option[FUUID] = None): F[User.Existing] =
         sessionPool.use { session =>
-          withId.fold(session.prepareR(Statements.Insert.one).use(_.unique(data))) { id =>
-            session.prepareR(Statements.Insert.oneWithId).use(_.unique(id -> data))
-          }
+          withId
+            .fold(session.prepareR(Statements.Insert.one).use(_.unique(data))) { id =>
+              session.prepareR(Statements.Insert.oneWithId).use(_.unique(id -> data))
+            }
+            .adaptErr { case SqlState.UniqueViolation(ex) =>
+              PersistenceError("already_exist", "User already exist")
+            }
         }
 
       private def updateOne(user: User.Existing): F[User.Existing] =
@@ -34,7 +39,10 @@ object PostgresUserRepository:
         sessionPool.use(_.prepareR(Statements.Select.many(ids.size)).use(_.stream(ids, chunkSize).compile.toList))
 
       override def readManyByPartialName(name: String): F[List[User.Existing]] =
-        sessionPool.use(_.prepareR(Statements.Select.byName).use(_.stream(name, chunkSize).compile.toList))
+        sessionPool.use(_.prepareR(Statements.Select.byPartialName).use(_.stream(name, chunkSize).compile.toList))
+
+      override def readManyByName(names: List[String]): F[List[User.Existing]] =
+        sessionPool.use(_.prepareR(Statements.Select.manyByName(names.size)).use(_.stream(names, chunkSize).compile.toList))
 
       override def readAll: F[List[User.Existing]] =
         sessionPool.use(_.execute(Statements.Select.all))

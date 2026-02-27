@@ -4,13 +4,14 @@ import cats.effect.*
 import cats.effect.kernel.Resource
 import cats.effect.std.Console
 import fs2.io.net.Network
+import io.tyoras.cards.domain.auth.{AuthService, JWTGenerator, JwtExpiration}
 import io.tyoras.cards.server.config.*
 import io.tyoras.cards.domain.game.GameService
 import io.tyoras.cards.domain.user.UserService
 import io.tyoras.cards.persistence.game.PostgresGameRepository
 import io.tyoras.cards.persistence.user.PostgresUserRepository
 import io.tyoras.cards.persistence.SessionPool
-import io.tyoras.cards.server.endpoints.Endpoint
+import io.tyoras.cards.server.endpoints.auth.AuthEndpoint
 import io.tyoras.cards.server.endpoints.games.GameEndpoint
 import io.tyoras.cards.server.endpoints.games.war.WarEndpoint
 import io.tyoras.cards.server.endpoints.users.UserEndpoint
@@ -35,11 +36,16 @@ object Main extends IOApp:
     dbSessionPool <- SessionPool.of(config.database)
     userRepo      <- Resource.eval(PostgresUserRepository.of[F](dbSessionPool))
     userService = UserService.of(userRepo)
+    jwtExpiration <- Resource.eval(JwtExpiration.make)
+    jwtGenerator = JWTGenerator.make(jwtExpiration, config.auth)
     gameRepo <- Resource.eval(PostgresGameRepository.of[F](dbSessionPool))
     gameService = GameService.of(gameRepo)
+    // FIXME usage of insecure naive auth
+    authService  <- Resource.eval(AuthService.naive(userService, jwtGenerator))
     userEndpoint <- Resource.eval(UserEndpoint.of(userService))
     gameEndpoint <- Resource.eval(GameEndpoint.of(gameService))
     warEndpoint  <- Resource.eval(WarEndpoint.of(gameService))
-    httpWsApp = Server.HttpWsApp.of(userEndpoint, gameEndpoint, warEndpoint)
+    authEndpoint <- Resource.eval(AuthEndpoint.of(authService))
+    httpWsApp = Server.HttpWsApp.of(config.auth, authService)(authEndpoint, userEndpoint, gameEndpoint, warEndpoint, authEndpoint)
     _ <- Server.of(config.http, httpWsApp).serve
   yield ()

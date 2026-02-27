@@ -13,9 +13,11 @@ trait UserService[F[_]]:
 
   def readById(id: FUUID): F[Option[User.Existing]]
 
+  def readByName(name: String): F[Option[User.Existing]]
+
   def readManyById(ids: List[FUUID]): F[List[User.Existing]]
 
-  def readManyByName(name: String): F[List[User.Existing]]
+  def readManyByPartialName(name: String): F[List[User.Existing]]
 
   def readAll: F[List[User.Existing]]
 
@@ -47,10 +49,14 @@ object UserService:
     override def readById(id: FUUID): F[Option[User.Existing]] =
       readManyById(List(id)).map(_.headOption)
 
+    override def readByName(name: String): F[Option[User.Existing]] =
+      if name.isEmpty then none.pure
+      else userRepo.readManyByName(List(name)).map(_.headOption)
+
     override def readManyById(ids: List[FUUID]): F[List[User.Existing]] =
       userRepo.readManyById(ids)
 
-    override def readManyByName(name: String): F[List[User.Existing]] =
+    override def readManyByPartialName(name: String): F[List[User.Existing]] =
       if name.isEmpty then List.empty.pure[F]
       else userRepo.readManyByPartialName(name.trim)
 

@@ -6,7 +6,7 @@ import fs2.{Pipe, Stream}
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
 import io.tyoras.cards.domain.game.{Game, GameService, GameType}
-import io.tyoras.cards.server.endpoints.WsEndpoint
+import io.tyoras.cards.server.endpoints.Endpoint
 import io.tyoras.cards.server.endpoints.games.Payloads
 import io.tyoras.cards.server.endpoints.games.Payloads.Response.Game.given
 import io.tyoras.cards.server.endpoints.games.war.Payloads.Request.Creation
@@ -14,27 +14,25 @@ import org.http4s.circe.*
 import org.http4s.circe.CirceEntityEncoder.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
-import org.http4s.{EntityDecoder, HttpRoutes, Response}
+import org.http4s.{AuthedRoutes, EntityDecoder, HttpRoutes, Response}
 import io.scalaland.chimney.dsl.*
 import io.tyoras.cards.domain.game.war.War
 import io.tyoras.cards.domain.game.war.given
 import io.tyoras.cards.domain.game.war.model.GameState
+import io.tyoras.cards.domain.user.User
 import io.tyoras.cards.server.endpoints.ErrorHandling.ApiError.ResourceNotFound
-import io.tyoras.cards.server.endpoints.ErrorHandling.ApiMessage
 import org.http4s.server.websocket.WebSocketBuilder2
 import org.http4s.websocket.WebSocketFrame
 import org.typelevel.log4cats.LoggerFactory
 
 object WarEndpoint:
-  def of[F[_] : Async : LoggerFactory](gameService: GameService[F]): F[WsEndpoint[F]] = Sync[F].delay {
-    new WsEndpoint[F] with Http4sDsl[F]:
+  def of[F[_] : Async : LoggerFactory](gameService: GameService[F]): F[Endpoint[F]] = Sync[F].delay {
+    new Endpoint[F] with Http4sDsl[F]:
 
       given EntityDecoder[F, Creation] = accumulatingJsonOf[F, Creation]
 
-      override val routes: HttpRoutes[F] = Router {
-        "games/war" -> HttpRoutes.of { case r @ POST -> Root =>
-          r.as[Creation].flatMap(create)
-        }
+      override val authedRoutes: AuthedRoutes[User.Existing, F] = AuthedRoutes.of { case r @ POST -> Root / "games" / "war" as user =>
+        r.req.as[Creation].flatMap(create)
       }
 
       override val wsRoutes: WebSocketBuilder2[F] => HttpRoutes[F] = wsBuilder =>

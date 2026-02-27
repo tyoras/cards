@@ -1,7 +1,10 @@
 package io.tyoras.cards.server.config
 
 import cats.effect.Sync
+import io.tyoras.cards.domain.auth.AuthConfig
 import io.tyoras.cards.persistence.DatabaseConfig
+
+import scala.concurrent.duration.DurationInt
 //import pureconfig.generic.ProductHint
 //import pureconfig.generic.auto.*
 //import pureconfig.module.catseffect.syntax.CatsEffectConfigSource
@@ -26,6 +29,11 @@ def parseConfig[F[_] : Sync](configPath: Path): F[ServerConfig] =
         password = "password",
         db = "cards",
         maxSession = 10
+      ),
+      AuthConfig(
+        // TODO security improvement : read secret key from env
+        secretKey = "SECRET_KEY_REPLACE_ME!!!",
+        exp = 1.hour
       )
     )
   )

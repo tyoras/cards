@@ -12,9 +12,9 @@ import io.tyoras.cards.server.endpoints.ErrorHandling.ApiMessage
 import org.http4s.circe.*
 import org.http4s.circe.CirceEntityEncoder.*
 import org.http4s.dsl.Http4sDsl
-import org.http4s.server.Router
-import org.http4s.{HttpRoutes, Response}
+import org.http4s.{AuthedRoutes, Response}
 import io.scalaland.chimney.dsl.*
+import io.tyoras.cards.domain.user.User
 import io.tyoras.cards.server.endpoints.games.Payloads.Response.Game.given
 
 import scala.util.chaining.scalaUtilChainingOps
@@ -23,14 +23,13 @@ object GameEndpoint:
   def of[F[_] : Async](gameService: GameService[F]): F[Endpoint[F]] = Sync[F].delay {
     new Endpoint[F] with Http4sDsl[F] {
 
-      override val routes: HttpRoutes[F] = Router {
-        "games" -> HttpRoutes.of {
-          case GET -> Root :? UserIdParam(userId) => listByUser(userId)
-          case GET -> Root                        => listAll
-          case GET -> Root / FUUIDVar(id)         => searchById(id)
-          case DELETE -> Root / FUUIDVar(id)      => deleteById(id)
+      override val authedRoutes: AuthedRoutes[User.Existing, F] =
+        AuthedRoutes.of {
+          case GET -> Root / "games" :? UserIdParam(userId) as u => listByUser(userId)
+          case GET -> Root / "games" as u                        => listAll
+          case GET -> Root / "games" / FUUIDVar(id) as u         => searchById(id)
+          case DELETE -> Root / "games" / FUUIDVar(id) as u      => deleteById(id)
         }
-      }
 
       object UserIdParam extends QueryParamDecoderMatcher[FUUID]("user_id")
 

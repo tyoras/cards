@@ -11,18 +11,31 @@ object Dependencies {
   }
 
   case object com {
-//    case object github {
+    case object github {
+      case object `jwt-scala` {
+        val jwtScalaVersion = "11.0.3"
+        val `jwt-core`      = "com.github.jwt-scala" %% "jwt-core"  % jwtScalaVersion
+        val `jwt-circe`     = "com.github.jwt-scala" %% "jwt-circe" % jwtScalaVersion
+
+      }
 //      case object pureconfig {
 //        val pureconfigVersion = "0.17.0"
 //        val pureconfig = "com.github.pureconfig" %% "pureconfig"                           % pureconfigVersion
 //        val `pureconfig-cats-effect` = "com.github.pureconfig" %% "pureconfig-cats-effect" % pureconfigVersion
 //      }
-//    }
+    }
 
     case object monovore {
       val declineVersion   = "2.6.0"
       val decline          = "com.monovore" %% "decline"        % declineVersion
       val `decline-effect` = "com.monovore" %% "decline-effect" % declineVersion
+    }
+  }
+
+  case object dev {
+    case object profunktor {
+      val http4sJwtAuthVersion = "2.0.13"
+      val `http4s-jwt-auth`    = "dev.profunktor" %% "http4s-jwt-auth" % http4sJwtAuthVersion
     }
   }
 
@@ -94,6 +107,9 @@ object Dependencies {
   }
 
   lazy val coreDeps = Seq(
+    com.github.`jwt-scala`.`jwt-core`,
+    com.github.`jwt-scala`.`jwt-circe`,
+    dev.profunktor.`http4s-jwt-auth`,
     io.chrisdavenport.`cats-effect-time`,
     io.chrisdavenport.fuuid,
     io.chrisdavenport.`fuuid-circe`,
@@ -147,6 +163,9 @@ object Dependencies {
 
   lazy val serverDeps = Seq(
     ch.qos.logback.`logback-classic`,
+    com.github.`jwt-scala`.`jwt-core`,
+    com.github.`jwt-scala`.`jwt-circe`,
+    dev.profunktor.`http4s-jwt-auth`,
     io.chrisdavenport.fuuid,
     io.chrisdavenport.`fuuid-circe`,
     io.chrisdavenport.`fuuid-http4s`,

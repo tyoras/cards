@@ -50,11 +50,14 @@ object Statements:
     val all: Query[Void, User.Existing] =
       sql"""SELECT * FROM users ORDER BY created_at""".query(User.Existing.codec)
 
-    val byName: Query[String, User.Existing] =
+    val byPartialName: Query[String, User.Existing] =
       sql"""SELECT * FROM users WHERE name ~ ${varchar(100)} ORDER BY created_at""".query(User.Existing.codec)
 
     def many(size: Int): Query[List[FUUID], User.Existing] =
       sql"""SELECT * FROM users WHERE id IN (${fuuid.list(size)}) ORDER BY created_at""".query(User.Existing.codec)
+
+    def manyByName(size: Int): Query[List[String], User.Existing] =
+      sql"""SELECT * FROM users WHERE name IN (${varchar(100).list(size)}) ORDER BY created_at""".query(User.Existing.codec)
 
   object Delete:
     val all: Command[Void] =
