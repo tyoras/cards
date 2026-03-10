@@ -12,8 +12,8 @@ import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
 import io.tyoras.cards.cli.{displayCardChoice, displayDeck, lineSeparator}
 import io.tyoras.cards.domain.game.schnapsen.{model, *}
 import io.tyoras.cards.domain.game.schnapsen.model.*
-import io.tyoras.cards.domain.game.schnapsen.model.GameInput.*
-import io.tyoras.cards.domain.game.schnapsen.model.MetaInput.*
+import io.tyoras.cards.domain.game.schnapsen.model.SchnapsenInput.GameInput.*
+import io.tyoras.cards.domain.game.schnapsen.model.SchnapsenInput.MetaInput.*
 import io.tyoras.cards.domain.game.schnapsen.model.RoundOutcome.*
 
 import scala.util.Try
@@ -147,7 +147,7 @@ object SchnapsenCli:
         }
         console.println(s"${choices.mkString("\n")}")
 
-    private def parseInput(state: GameState, rawInput: String): F[Input] =
+    private def parseInput(state: GameState, rawInput: String): F[SchnapsenInput] =
       rawInput match
         case "\\q" => End(state.round.forehand.id).pure
         case "\\r" => Restart(state.round.forehand.id).pure
@@ -161,7 +161,7 @@ object SchnapsenCli:
               F.fromEither(s.player(s.outcome.winner)).map(_.score <= 0).ifM(End(state.round.forehand.id).pure, Start(state.round.forehand.id).pure)
             case _: Exit => InvalidState.raiseError // Exit state is handled exclusively by the main game loop
 
-    private def parseEarlyGameForehandTurnChoice(state: EarlyGameForehandTurn, rawInput: String): F[Input] =
+    private def parseEarlyGameForehandTurnChoice(state: EarlyGameForehandTurn, rawInput: String): F[SchnapsenInput] =
       rawInput.toLowerCase match
         case "c"                               => CloseTalon(state.currentPlayer.id).pure
         case "j" if state.canExchangeTrumpJack => ExchangeTrumpJack(state.currentPlayer.id).pure
@@ -169,13 +169,13 @@ object SchnapsenCli:
         case i if i.startsWith("m")            => parseMarriage(state, i)
         case _                                 => parseCardChoice(state, rawInput)
 
-    private def parseLateGameForehandTurnChoice(state: LateGameForehandTurn, rawInput: String): F[Input] =
+    private def parseLateGameForehandTurnChoice(state: LateGameForehandTurn, rawInput: String): F[SchnapsenInput] =
       rawInput.toLowerCase match
         case i if i.startsWith("m") => parseMarriage(state, i)
         case "v"                    => ClaimVictory(state.currentPlayer.id).pure
         case _                      => parseCardChoice(state, rawInput)
 
-    private def parseCardChoice(state: PlayerTurn, rawInput: String): F[Input] =
+    private def parseCardChoice(state: PlayerTurn, rawInput: String): F[SchnapsenInput] =
       val player        = state.currentPlayer
       val playableCards = state.playableCards
       for
@@ -189,16 +189,16 @@ object SchnapsenCli:
             val card = playableCards(choice - 1)
             Logger[F].debug(s"Player ${player.name} has played $card") >>
               PlayCard(player.id, card).pure
-          else F.raiseError[Input](InvalidInput)
+          else F.raiseError[SchnapsenInput](InvalidInput)
       yield c
 
-    private def parseMarriage(state: ForehandTurn, rawInput: String): F[Input] =
+    private def parseMarriage(state: ForehandTurn, rawInput: String): F[SchnapsenInput] =
       rawInput.toCharArray match
         case Array('m')    => parseMarriageChoice(state, none)
         case Array('m', n) => parseMarriageChoice(state, n.some)
-        case _             => F.raiseError[Input](InvalidInput)
+        case _             => F.raiseError[SchnapsenInput](InvalidInput)
 
-    private def parseMarriageChoice(state: ForehandTurn, rawInput: Option[Char]): F[Input] =
+    private def parseMarriageChoice(state: ForehandTurn, rawInput: Option[Char]): F[SchnapsenInput] =
       val player         = state.currentPlayer
       val validMarriages = state.possibleMarriages
       for
@@ -212,5 +212,5 @@ object SchnapsenCli:
             val m = validMarriages(choice - 1)
             Logger[F].debug(s"Player ${player.name} has meld ${m.king} and ${m.queen} for ${m.status.score} points") >>
               Meld(player.id, m.king.suit).pure[F]
-          else F.raiseError[Input](InvalidInput)
+          else F.raiseError[SchnapsenInput](InvalidInput)
       yield c

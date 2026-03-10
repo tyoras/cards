@@ -42,7 +42,7 @@ object Server:
         authService: AuthService[F]
     )(authEndpoint: Endpoint[F], first: Endpoint[F], remaining: Endpoint[F]*): HttpWsApp[F] = wsBuilder =>
       val jwtAuth        = JwtAuth.hmac(authConfig.secretKey.toCharArray, authConfig.hmacAlgo)
-      val authMiddleware = JwtAuthMiddleware[F, User.Existing](jwtAuth, authService.authenticate)
+      val authMiddleware = JwtAuthMiddleware[F, User.Existing](jwtAuth, authService.authenticator)
       val all            = first +: remaining
       val authedRoutes   = all.map(_.authedRoutes).reduceLeft(_ <+> _).pipe(authMiddleware)
       val httpRoutes     = all.map(_.routes).reduceLeft(_ <+> _) <+> authedRoutes

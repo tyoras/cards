@@ -20,4 +20,5 @@ final case class UserClaim(userId: FUUID) derives Codec
 final case class LoginAttempt(userName: UserName, password: Password)
 
 enum AuthError(val message: String) extends Exception(message) with NoStackTrace:
-  case UnknownUser(userName: UserName) extends AuthError(s"$userName does not exist")
+  case InvalidToken(detail: String)    extends AuthError(s"Invalid token: $detail")
+  case UnknownUser(userName: UserName) extends AuthError(s"$userName is unknown")

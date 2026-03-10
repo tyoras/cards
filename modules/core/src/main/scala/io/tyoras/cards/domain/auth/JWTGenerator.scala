@@ -4,7 +4,6 @@ import cats.effect.Sync
 import pdi.jwt.*
 import dev.profunktor.auth.jwt.*
 import cats.syntax.all.*
-import io.chrisdavenport.fuuid.circe.*
 import io.circe.syntax.*
 import io.tyoras.cards.domain.user.User
 

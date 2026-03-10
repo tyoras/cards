@@ -3,6 +3,7 @@ package io.tyoras.cards.persistence
 import cats.syntax.all.*
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.game.GameType
+import io.tyoras.cards.domain.game.GameType.*
 import io.tyoras.cards.util.error.TechnicalError
 import skunk.Codec
 import skunk.codec.all.*
@@ -21,6 +22,14 @@ val timestampTZ: Codec[ZonedDateTime] = timestamptz.imap(
   _.withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime
 )
 
-val gameType: Codec[GameType] = `enum`[GameType](_.toString.toLowerCase, s => GameType.valueOf(s.capitalize).some, Type("game_type"))
+val gameType: Codec[GameType[?, ?]] = `enum`[GameType[?, ?]](
+  _.label,
+  {
+    case Schnapsen.label => Some(Schnapsen)
+    case War.label       => Some(War)
+    case _               => None
+  },
+  Type("game_type")
+)
 
 case class PersistenceError(override val code: String, msg: String) extends TechnicalError(code, msg)

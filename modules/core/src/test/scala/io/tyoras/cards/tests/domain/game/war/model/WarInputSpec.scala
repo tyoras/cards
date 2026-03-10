@@ -5,12 +5,12 @@ import io.tyoras.cards.domain.card.Card
 import io.tyoras.cards.domain.card.Rank.Ace
 import io.tyoras.cards.domain.card.Suit.Spade
 import io.tyoras.cards.domain.game.war.model.*
-import io.tyoras.cards.domain.game.war.model.GameInput.{PlayCard, Ready}
-import io.tyoras.cards.domain.game.war.model.MetaInput.{End, Restart}
+import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.{PlayCard, Ready}
+import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.{End, Restart}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class InputSpec extends AnyFlatSpec with Matchers {
+class WarInputSpec extends AnyFlatSpec with Matchers {
 
   val playerId: PlayerId = FUUID.randomFUUID[cats.effect.SyncIO].unsafeRunSync()
   val card: Card         = Card(Spade, Ace())

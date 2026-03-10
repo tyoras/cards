@@ -10,17 +10,18 @@ import cats.syntax.all.*
 import io.tyoras.cards.util.fsm.concurrent.SynchronizedConcurrentFSM
 import io.chrisdavenport.cats.effect.time.implicits.*
 import io.chrisdavenport.fuuid.FUUID
-import io.tyoras.cards.domain.game.war.model.GameInput.*
+import io.tyoras.cards.domain.game.GameError.NoPlayersError
+import io.tyoras.cards.domain.game.{ActiveGame, GameType}
+import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.*
 import io.tyoras.cards.domain.game.war.model.GameState.*
-import io.tyoras.cards.domain.game.war.model.MetaInput.*
+import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.*
 import io.tyoras.cards.util.collection.syntax.*
 import io.tyoras.cards.util.fsm.FinalStateMachine
 import io.tyoras.cards.util.logging.syntax.*
 import org.typelevel.log4cats.LoggerFactory
 
-trait War[F[_]]:
-  def currentState: F[GameState]
-  def submitInput(input: Input): F[GameState]
+trait War[F[_]] extends ActiveGame[F, GameState, WarInput]:
+  override val gameType: GameType[GameState, WarInput] = GameType.War
 
 object War:
 
@@ -34,8 +35,7 @@ object War:
 
   def apply[F[_] : Async : LoggerFactory](playerIds: NonEmptyList[PlayerId]): F[War[F]] =
     for
-      logger <- LoggerFactory.create[F]
-      // TODO Validate playerIds
+      logger  <- LoggerFactory.create[F]
       context <- initGameContext(playerIds)
       _       <- logger.debug(s"Starting new War game with initial game context : $context")
       fsm     <- SynchronizedConcurrentFSM.create[F, GameState](Init(context))
@@ -51,8 +51,10 @@ object War:
   private class WarFSM[F[_] : Async : LoggerFactory](fsm: FinalStateMachine[F, GameState]) extends War[F]:
     private val logger                      = LoggerFactory.getLogger
     override def currentState: F[GameState] = fsm.getCurrentState
+    override val playerIds: F[NonEmptyList[FUUID]] =
+      currentState.map(_.context.players.keys.toList).flatMap(ids => Sync[F].fromOption(NonEmptyList.fromList(ids), NoPlayersError))
 
-    override def submitInput(input: Input): F[GameState] = fsm.transition { s =>
+    override def submitInput(input: WarInput): F[GameState] = fsm.transition { s =>
       val logCtx = input.playerId.ctx(playerIdKey)
       logger.debug(logCtx)(s"Submitting input [$input] on current state : $s") >>
         menu
@@ -63,14 +65,14 @@ object War:
           )
     }
 
-    private def menu: PartialFunction[(GameState, Input), F[GameState]] =
+    private def menu: PartialFunction[(GameState, WarInput), F[GameState]] =
       case (s, restart: Restart) =>
         logger.debug(restart.playerId.ctx(playerIdKey))("Player has asked to restart a new game") >>
           initGameContext(NonEmptyList.fromListUnsafe(s.context.players.keys.toList)).map(Init(_))
       case (s, end: End) =>
         logger.debug(end.playerId.ctx(playerIdKey))("Player has asked to exit the game").as(Exit(s.context))
 
-    private def game: PartialFunction[(GameState, Input), F[GameState]] =
+    private def game: PartialFunction[(GameState, WarInput), F[GameState]] =
       case (s: Init, i: Ready)          => playerReady(s, i)
       case (s: BattleTurn, i: PlayCard) => playCard(s, i)
       case (s: WarTurn, i: PlayCard)    => playCard(s, i)

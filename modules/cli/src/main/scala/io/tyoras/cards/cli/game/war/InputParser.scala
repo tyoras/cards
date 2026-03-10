@@ -5,16 +5,16 @@ import cats.effect.*
 import io.tyoras.cards.cli.game.war.WarCliError.{InvalidInput, InvalidState}
 import io.tyoras.cards.domain.game.schnapsen.PlayerId
 import io.tyoras.cards.domain.game.war.model.GameState.*
-import io.tyoras.cards.domain.game.war.model.MetaInput.*
+import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.*
 import io.tyoras.cards.domain.game.war.model.*
 import io.tyoras.cards.domain.game.war.*
 import io.tyoras.cards.util.logging.syntax.*
 import org.typelevel.log4cats.LoggerFactory
 import cats.syntax.all.*
-import io.tyoras.cards.domain.game.war.model.GameInput.*
+import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.*
 
 trait InputParser[F[_]]:
-  def parse(state: GameState, playerId: PlayerId, rawInput: String): F[NonEmptyList[Input]]
+  def parse(state: GameState, playerId: PlayerId, rawInput: String): F[NonEmptyList[WarInput]]
 
 object InputParser:
   def apply[F[_] : Sync : LoggerFactory]: InputParser[F] =

@@ -40,7 +40,7 @@ object GameEndpoint:
         gameService.readAll[Json].map(_.map(Payloads.Response.Game.fromExistingGame)).flatMap(Ok(_))
 
       private def searchById(id: FUUID): F[Response[F]] =
-        gameService.readById[Json](id).flatMap(_.fold(notFoundResponse)(_.transformInto[Payloads.Response.Game](using fromExisting).pipe(Ok(_))))
+        gameService.readById[Json](id).flatMap(_.fold(notFoundResponse)(Payloads.Response.Game.fromExistingGame(_).pipe(Ok(_))))
 
       private def deleteById(id: FUUID): F[Response[F]] =
         gameService.readById[Json](id).flatMap(_.fold(notFoundResponse)(gameService.delete(_) >> NoContent()))

@@ -102,6 +102,7 @@ object Dependencies {
       val `cats-core`                     = "org.typelevel" %% "cats-core"                     % "2.13.0"
       val `cats-effect`                   = "org.typelevel" %% "cats-effect"                   % "3.6.3"
       val `cats-effect-testing-scalatest` = "org.typelevel" %% "cats-effect-testing-scalatest" % "1.7.0"
+      val `cats-parse`                    = "org.typelevel" %% "cats-parse"                    % "1.1.0"
       val `log4cats-slf4j`                = "org.typelevel" %% "log4cats-slf4j"                % "2.7.1"
     }
   }
@@ -116,6 +117,7 @@ object Dependencies {
     io.circe.`circe-core`,
     org.typelevel.`cats-core`,
     org.typelevel.`cats-effect`,
+    org.typelevel.`cats-parse`,
     org.typelevel.`log4cats-slf4j`
   )
 

@@ -3,6 +3,7 @@ package io.tyoras.cards.domain.game.schnapsen.model
 import io.tyoras.cards.domain.card.Rank.{King, Queen}
 import io.tyoras.cards.domain.game.schnapsen.PlayerId
 import io.tyoras.cards.domain.card.{Card, Deck, Hand, Suit}
+import io.tyoras.cards.domain.game.schnapsen.model.Marriage.Status.Common
 import io.tyoras.cards.domain.game.schnapsen.model.Role.*
 
 enum Role:
@@ -47,15 +48,12 @@ object Marriage:
   def apply(suit: Suit, status: Status = Common): Marriage =
     Marriage(Card(suit, King(4)), Card(suit, Queen(3)), status)
 
-  trait Status:
-    def score: Int
+  enum Status(val score: Int):
+    case Royal  extends Status(40)
+    case Common extends Status(20)
   object Status:
     def of(trumpSuit: Suit, suit: Suit): Status =
       if suit == trumpSuit then Royal else Common
-  case object Royal extends Status:
-    override val score = 40
-  case object Common extends Status:
-    override val score = 20
 
 case class TalonClosing(closedBy: PlayerId, opponentScore: Int)
 

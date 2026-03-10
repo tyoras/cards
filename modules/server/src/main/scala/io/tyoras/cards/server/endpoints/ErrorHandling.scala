@@ -5,7 +5,7 @@ import cats.implicits.catsSyntaxApplicativeId
 import io.circe.generic.semiauto.deriveEncoder
 import io.circe.{CursorOp, DecodingFailure, Encoder}
 import io.tyoras.cards.persistence.PersistenceError
-import io.tyoras.cards.server.endpoints.ErrorHandling.ApiError.ResourceNotFound
+import io.tyoras.cards.server.endpoints.ErrorHandling.ApiError.{InvalidRequest, ResourceNotFound}
 import io.tyoras.cards.util.validation.error.ValidationError
 import org.http4s.*
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
@@ -19,6 +19,7 @@ object ErrorHandling:
 
   enum ApiError(val message: String) extends Exception(message) with NoStackTrace:
     case ResourceNotFound(resource: String) extends ApiError(s"$resource not found")
+    case InvalidRequest(detail: String)     extends ApiError(s"Bad request: $detail")
 
   final case class ApiMessage(code: String, message: String, errors: List[ApiFieldError] = Nil)
   object ApiMessage:
@@ -29,6 +30,7 @@ object ErrorHandling:
 
   val default: PartialFunction[Throwable, (Status, ApiMessage)] =
     case e: ResourceNotFound                        => (Status.NotFound, ApiMessage("not_found", e.getMessage))
+    case e: InvalidRequest                          => (Status.BadRequest, ApiMessage("invalid_request", e.getMessage))
     case PersistenceError("already_exist", message) => (Status.Conflict, ApiMessage("already_exist", message))
     case ve: ValidationError =>
       (Status.UnprocessableContent, ApiMessage(ve.code, ve.message, ve.errors.map(e => ApiFieldError(e.code, e.field, e.message.getOrElse("")))))

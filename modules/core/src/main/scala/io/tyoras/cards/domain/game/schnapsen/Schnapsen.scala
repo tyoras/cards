@@ -1,9 +1,10 @@
 package io.tyoras.cards.domain.game.schnapsen
 
-import cats.data.StateT
+import cats.data.{NonEmptyList, StateT}
 import cats.effect.{Async, Clock, Sync}
 import cats.syntax.all.*
 import io.chrisdavenport.cats.effect.time.implicits.ClockOps
+import io.chrisdavenport.fuuid.FUUID
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.{Logger, StructuredLogger}
 import io.tyoras.cards.domain.game.schnapsen.model.Marriage.Status
@@ -11,13 +12,13 @@ import io.tyoras.cards.domain.game.schnapsen.model.*
 import io.tyoras.cards.util.fsm.FinalStateMachine
 import io.tyoras.cards.util.fsm.concurrent.SynchronizedConcurrentFSM
 import io.tyoras.cards.domain.card.*
-import io.tyoras.cards.domain.game.schnapsen.model.GameInput.*
-import io.tyoras.cards.domain.game.schnapsen.model.MetaInput.*
+import io.tyoras.cards.domain.game.{ActiveGame, GameType}
+import io.tyoras.cards.domain.game.schnapsen.model.SchnapsenInput.GameInput.*
+import io.tyoras.cards.domain.game.schnapsen.model.SchnapsenInput.MetaInput.*
 import io.tyoras.cards.domain.game.schnapsen.model.RoundOutcome.*
 
-trait Schnapsen[F[_]]:
-  def currentState: F[GameState]
-  def submitInput(input: Input): F[GameState]
+trait Schnapsen[F[_]] extends ActiveGame[F, GameState, SchnapsenInput]:
+  override val gameType: GameType[GameState, SchnapsenInput] = GameType.Schnapsen
 
 object Schnapsen:
 
@@ -34,17 +35,19 @@ object Schnapsen:
 private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: StructuredLogger[F])(using F: Sync[F]) extends Schnapsen[F]:
   given logger: StructuredLogger[F] = l
 
-  override def submitInput(input: Input): F[GameState] = fsm.transition { s =>
+  override val playerIds: F[NonEmptyList[FUUID]] = currentState.map(state => NonEmptyList.of(state.round.context.player1.id, state.round.context.player2.id))
+
+  override def submitInput(input: SchnapsenInput): F[GameState] = fsm.transition { s =>
     Logger[F].debug(s"Submitting input $input on current state : $s") >>
       menu
         .orElse(game)
         .applyOrElse(
           s -> input,
-          (_: (GameState, Input)) => Logger[F].debug(s"Ignoring wrong input : $input") *> s.pure[F]
+          (_: (GameState, SchnapsenInput)) => Logger[F].debug(s"Ignoring wrong input : $input") *> s.pure[F]
         )
   }
 
-  private def menu: PartialFunction[(GameState, Input), F[GameState]] =
+  private def menu: PartialFunction[(GameState, SchnapsenInput), F[GameState]] =
     case (s, restart: Restart) =>
       Logger[F].debug(s"Player ${restart.playerId} has asked to restart a new game") >>
         Clock[F].getZonedDateTimeUTC
@@ -53,7 +56,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
     case (s, end: End) =>
       Logger[F].debug(s"Player ${end.playerId} has asked to exit the game").as(Exit(s.round))
 
-  private def game: PartialFunction[(GameState, Input), F[GameState]] =
+  private def game: PartialFunction[(GameState, SchnapsenInput), F[GameState]] =
     case (Init(g), _: Start) => Sync[F].pure(EarlyGameForehandTurn(g))
     case (s: ForehandTurn, i: PlayCard) =>
       forehandTurn(s, i).handleErrorWith { case se: SchnapsenError =>

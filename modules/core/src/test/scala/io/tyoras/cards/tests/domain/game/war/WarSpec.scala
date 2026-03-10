@@ -10,7 +10,8 @@ import io.tyoras.cards.domain.card.{Card, Rank}
 import io.tyoras.cards.domain.game.war.War
 import io.tyoras.cards.domain.game.war.model.GameState.*
 import io.tyoras.cards.domain.game.war.model.*
-import io.tyoras.cards.domain.game.war.model.GameInput.Ready
+import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.Ready
+import io.tyoras.cards.domain.game.war.model.WarInput.{GameInput, MetaInput}
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.typelevel.log4cats.LoggerFactory

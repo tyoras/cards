@@ -1,0 +1,82 @@
+<!Doctype html>
+
+<body>
+<div>
+  <div id="output" style="height: 500px;
+            width: 500px;
+            text-align: left;
+            overflow-y: scroll;
+            border-radius: 5px;
+            padding: 3px;
+            border: solid purple 2px;">
+  </div>
+  <br/>
+  <form id="chatform">
+    <input type="text" name="entry" id="entry"/>
+    <button type="submit">Send</button>
+  </form>
+</div>
+<script>
+  const output = document.getElementById("output");
+  const form = document.getElementById("chatform");
+
+  function colorText(txt, color) {
+    let pre = document.createElement("pre");
+    pre.style.color = color
+    pre.textContent = txt
+    return pre
+  }
+
+  output.append(colorText("Send a message to get started!", "purple"));
+
+  const socket = new WebSocket("ws://localhost:8080/ws/chat");
+
+  socket.onmessage = function (event) {
+    let obj = JSON.parse(event.data);
+    switch(obj.message_type) {
+      case "Register":
+        output.append(colorText(obj.msg, "green"))
+        break;
+      case "ParsingError":
+        output.append(colorText("Registration failed: " + obj.msg, "red"))
+        break;
+      case "SuccessfulRegistration":
+        output.append(colorText(obj.msg, "purple"))
+        break;
+      case "UnsupportedCommand":
+        output.append(colorText(obj.msg, "red"))
+        break;
+      case "SendToUser":
+        output.append(colorText(obj.msg, "green"))
+        break;
+      case "ChatMsg":
+        output.append(colorText(obj.from.name + " : " + obj.msg, "purple"));
+        break;
+      default:
+        console.error("Unknown message type: " + obj.message_type);
+    }
+
+    output.scrollTop = output.scrollHeight;
+  };
+
+  socket.onclose = function (event) {
+    output.append(colorText("[closed] server connection ended", "red"));
+    output.scrollTop = output.scrollHeight;
+  };
+  socket.onerror = function (error) {
+    output.append(colorText("[Error] An error occurred while processing data", "red"));
+    console.log("[error]" + error.data + "\n");
+    output.scrollTop = output.scrollHeight;
+  };
+
+  form.addEventListener('submit', (event) => {
+    // prevent the form from submitting and refreshing the page
+    event.preventDefault();
+    const message = document.getElementById('entry').value;
+    socket.send(message);
+    document.getElementById('entry').value = '';
+  });
+</script>
+</body>
+
+</html>
