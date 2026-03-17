@@ -10,7 +10,7 @@ import pdi.jwt.exceptions.JwtException
 // TODO implement logout
 trait AuthService[F[_]]:
   // TODO implement proper login
-  def login(attempt: LoginAttempt): F[JwtToken]
+  def login(attempt: LoginAttempt): F[LoginSuccess]
   def authenticator(jwt: JwtToken): JwtClaim => F[Option[User.Existing]]
   def authenticate(jwt: JwtToken): F[User.Existing]
 
@@ -20,12 +20,12 @@ object AuthService:
   def naive[F[_] : Sync](userService: UserService[F], jwtGenerator: JWTGenerator[F], authConfig: AuthConfig): F[AuthService[F]] = Sync[F].delay {
     val jwtAuth = JwtAuth.hmac(authConfig.secretKey.toCharArray, authConfig.hmacAlgo)
     new AuthService[F]:
-      override def login(attempt: LoginAttempt): F[JwtToken] =
+      override def login(attempt: LoginAttempt): F[LoginSuccess] =
         for
           read  <- userService.readByName(attempt.userName.trim)
           user  <- Sync[F].fromOption(read, AuthError.UnknownUser(attempt.userName))
           token <- jwtGenerator.create(user)
-        yield token
+        yield LoginSuccess(token, user)
 
       override def authenticator(jwt: JwtToken): JwtClaim => F[Option[User.Existing]] =
         (claim: JwtClaim) => decode[UserClaim](claim.content).fold(_ => none[User.Existing].pure, c => userService.readById(c.userId))

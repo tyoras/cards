@@ -6,9 +6,8 @@ import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
 import io.tyoras.cards.domain.user.{User, UserService}
 import io.tyoras.cards.server.endpoints.Endpoint
-import io.tyoras.cards.server.endpoints.ErrorHandling.ApiMessage
-import io.tyoras.cards.server.endpoints.users.Payloads.Request.Creation
-import io.tyoras.cards.server.endpoints.users.Payloads.Response.User.given
+import io.tyoras.cards.shared.endpoint.users.Payloads.Request.Creation
+import io.tyoras.cards.shared.endpoint.users.Payloads.Response.User.given
 import org.http4s.circe.CirceEntityEncoder.*
 import org.http4s.circe.*
 import org.http4s.dsl.Http4sDsl
@@ -16,6 +15,8 @@ import org.http4s.server.Router
 import org.http4s.{AuthedRoutes, EntityDecoder, HttpRoutes, Response, Status}
 import io.tyoras.cards.util.validation.syntax.*
 import io.scalaland.chimney.dsl.transformInto
+import io.tyoras.cards.shared.endpoint.ErrorPayloads.Response.ApiMessage
+import io.tyoras.cards.shared.endpoint.users.Payloads
 
 import scala.util.chaining.scalaUtilChainingOps
 

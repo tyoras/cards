@@ -2,10 +2,10 @@ package io.tyoras.cards.server.endpoints
 
 import cats.effect.Sync
 import cats.implicits.catsSyntaxApplicativeId
-import io.circe.generic.semiauto.deriveEncoder
-import io.circe.{CursorOp, DecodingFailure, Encoder}
+import io.circe.{CursorOp, DecodingFailure}
 import io.tyoras.cards.persistence.PersistenceError
 import io.tyoras.cards.server.endpoints.ErrorHandling.ApiError.{InvalidRequest, ResourceNotFound}
+import io.tyoras.cards.shared.endpoint.ErrorPayloads.Response.{ApiFieldError, ApiMessage}
 import io.tyoras.cards.util.validation.error.ValidationError
 import org.http4s.*
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
@@ -15,18 +15,11 @@ import org.log4s.{Logger, getLogger}
 import scala.util.control.NoStackTrace
 
 object ErrorHandling:
-  val logger: Logger = getLogger
+  private val logger: Logger = getLogger
 
   enum ApiError(val message: String) extends Exception(message) with NoStackTrace:
     case ResourceNotFound(resource: String) extends ApiError(s"$resource not found")
     case InvalidRequest(detail: String)     extends ApiError(s"Bad request: $detail")
-
-  final case class ApiMessage(code: String, message: String, errors: List[ApiFieldError] = Nil)
-  object ApiMessage:
-    given Encoder[ApiMessage] = deriveEncoder
-  final case class ApiFieldError(code: String, field: String, message: String)
-  object ApiFieldError:
-    given Encoder[ApiFieldError] = deriveEncoder
 
   val default: PartialFunction[Throwable, (Status, ApiMessage)] =
     case e: ResourceNotFound                        => (Status.NotFound, ApiMessage("not_found", e.getMessage))

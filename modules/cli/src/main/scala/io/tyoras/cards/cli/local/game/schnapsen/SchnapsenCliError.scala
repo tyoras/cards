@@ -1,4 +1,4 @@
-package io.tyoras.cards.cli.game.schnapsen
+package io.tyoras.cards.cli.local.game.schnapsen
 
 import io.tyoras.cards.domain.game.GameError
 

@@ -1,8 +1,8 @@
-package io.tyoras.cards.cli.game.war
+package io.tyoras.cards.cli.local.game.war
 
 import cats.data.NonEmptyList
 import cats.effect.*
-import io.tyoras.cards.cli.game.war.WarCliError.{InvalidInput, InvalidState}
+import WarCliError.{InvalidInput, InvalidState}
 import io.tyoras.cards.domain.game.schnapsen.PlayerId
 import io.tyoras.cards.domain.game.war.model.GameState.*
 import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.*

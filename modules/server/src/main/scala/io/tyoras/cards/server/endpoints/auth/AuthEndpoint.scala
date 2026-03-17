@@ -4,9 +4,9 @@ import cats.effect.*
 import cats.syntax.all.*
 import io.tyoras.cards.domain.auth.AuthService
 import io.tyoras.cards.server.endpoints.Endpoint
-import io.tyoras.cards.server.endpoints.auth.Payloads.Request
-import io.tyoras.cards.server.endpoints.auth.Payloads.Request.Login.given
-import io.tyoras.cards.server.endpoints.auth.Payloads.Response.given
+import io.tyoras.cards.shared.endpoint.auth.Payloads
+import io.tyoras.cards.shared.endpoint.auth.Payloads.Request
+import io.tyoras.cards.shared.endpoint.auth.Payloads.Request.Login.given
 import org.http4s.{HttpRoutes, Response}
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
@@ -26,8 +26,11 @@ object AuthEndpoint:
 
       private def login(loginRequest: Request.Login): F[Response[F]] =
         for
-          attempt  <- loginRequest.validateF
-          response <- authService.login(attempt).flatMap(Ok(_)).handleErrorWith(_ => Forbidden())
+          attempt <- loginRequest.validateF
+          response <- authService
+            .login(attempt)
+            .flatMap(result => Ok(Payloads.Response.SuccessfulLogin(result.token, result.user.id)))
+            .handleErrorWith(_ => Forbidden())
         yield response
     }
   }

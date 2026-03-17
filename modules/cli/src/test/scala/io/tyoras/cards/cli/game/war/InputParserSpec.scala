@@ -4,8 +4,8 @@ import cats.data.{NonEmptyList, NonEmptySet}
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import io.chrisdavenport.fuuid.FUUID
-import io.tyoras.cards.cli.game.war.InputParser
-import io.tyoras.cards.cli.game.war.WarCliError.{InvalidInput, InvalidState}
+import io.tyoras.cards.cli.local.game.war.WarCliError.{InvalidInput, InvalidState}
+import io.tyoras.cards.cli.local.game.war.InputParser
 import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.card.Suit.*
 import io.tyoras.cards.domain.card.{Card, Hand, Rank}

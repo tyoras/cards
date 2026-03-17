@@ -12,18 +12,16 @@ import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.circe.given
 import io.tyoras.cards.domain.game.{Game, GameService, GameType}
 import io.tyoras.cards.server.endpoints.Endpoint
-import io.tyoras.cards.server.endpoints.games.Payloads
-import io.tyoras.cards.server.endpoints.games.Payloads.Response.Game.given
-import io.tyoras.cards.server.endpoints.games.war.Payloads.Request.Creation
+import io.tyoras.cards.shared.endpoint.games.Payloads.Response.Game.given
+import io.tyoras.cards.shared.endpoint.games.war.Payloads.Request.Creation
 import org.http4s.circe.*
 import org.http4s.circe.CirceEntityEncoder.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import org.http4s.{AuthedRoutes, EntityDecoder, HttpRoutes, Response}
-import io.scalaland.chimney.dsl.*
-import io.tyoras.cards.server.protocol.game.OutputMessage.{DiscardMessage, KeepAlive, PlayerConnectionSuccess, PlayerDisconnected}
+import io.tyoras.cards.shared.protocol.game.OutputMessage.{DiscardMessage, KeepAlive, PlayerConnectionSuccess, PlayerDisconnected}
 import io.tyoras.cards.domain.game.war.War
-import io.tyoras.cards.domain.game.war.given
+import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.war.model.GameState
 import io.tyoras.cards.domain.user.{User, UserService}
 import io.tyoras.cards.server.endpoints.ErrorHandling.ApiError.InvalidRequest
@@ -34,7 +32,9 @@ import org.typelevel.log4cats.LoggerFactory
 import scala.concurrent.duration.DurationInt
 import io.circe.syntax.given
 import io.tyoras.cards.server.protocol.chat.{ChatProtocol, ChatUser, Room}
-import io.tyoras.cards.server.protocol.game.{ConnectedPlayer, GameProtocol, InputParser, OutputMessage}
+import io.tyoras.cards.server.protocol.game.{ConnectedPlayer, GameProtocol, InputParser}
+import io.tyoras.cards.shared.endpoint.games.Payloads
+import io.tyoras.cards.shared.protocol.game.OutputMessage
 
 object WarEndpoint:
   def make[F[_] : Async : Concurrent : Temporal : LoggerFactory](
@@ -157,6 +157,7 @@ object WarEndpoint:
           outputMessage <- Stream.evalSeq(
             frame match
               case WebSocketFrame.Text(text, _) => inputParser.parse(playerRef, text)
-              case WebSocketFrame.Close(_)      => gameProtocol.disconnect(playerRef).map(List(_))
+              // at the moment there is a known bug in ember-server that prevent the stream to know about the close frame (see https://github.com/http4s/http4s/issues/6806)
+              case WebSocketFrame.Close(_) => gameProtocol.disconnect(playerRef).map(List(_))
           )
         yield outputMessage

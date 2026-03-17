@@ -1,4 +1,4 @@
-package io.tyoras.cards.cli.game.schnapsen
+package io.tyoras.cards.cli.local.game.schnapsen
 
 import cats.*
 import cats.effect.std.Console
@@ -6,7 +6,7 @@ import cats.effect.{Async, Clock, ExitCode}
 import cats.syntax.all.*
 import io.chrisdavenport.cats.effect.time.implicits.*
 import io.chrisdavenport.fuuid.FUUID
-import io.tyoras.cards.cli.game.schnapsen.SchnapsenCliError.*
+import SchnapsenCliError.*
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
 import io.tyoras.cards.cli.{displayCardChoice, displayDeck, lineSeparator}

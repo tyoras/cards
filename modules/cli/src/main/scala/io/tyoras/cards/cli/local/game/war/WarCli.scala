@@ -1,10 +1,10 @@
-package io.tyoras.cards.cli.game.war
+package io.tyoras.cards.cli.local.game.war
 
 import cats.data.NonEmptyList
 import cats.effect.std.Console
 import cats.effect.{Async, ExitCode, Sync}
 import cats.syntax.all.*
-import io.tyoras.cards.cli.game.war.WarCliError.*
+import WarCliError.*
 import io.tyoras.cards.cli.lineSeparator
 import io.tyoras.cards.domain.game.schnapsen.PlayerId
 import io.tyoras.cards.domain.game.war.*

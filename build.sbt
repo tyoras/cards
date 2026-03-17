@@ -17,7 +17,7 @@ ThisBuild / coverageFailOnMinimum    := false
 
 Global / lintUnusedKeysOnLoad := false
 
-lazy val cards = (project in file(".")).aggregate(core, persistence, cli, server)
+lazy val cards = (project in file(".")).aggregate(core, persistence, cli, server, shared)
 
 lazy val core = (project in file("modules/core"))
   .settings(
@@ -44,7 +44,7 @@ lazy val cli = (project in file("modules/cli"))
     libraryDependencies ++= cliDeps ++ cliTestDeps
   )
   .enablePlugins(NativeImagePlugin)
-  .dependsOn(core)
+  .dependsOn(core, shared)
 
 lazy val server = (project in file("modules/server"))
   .settings(
@@ -53,7 +53,13 @@ lazy val server = (project in file("modules/server"))
     libraryDependencies ++= serverDeps ++ serverTestDeps
   )
   .enablePlugins(NativeImagePlugin)
-  .dependsOn(core, persistence)
+  .dependsOn(core, persistence, shared)
+
+lazy val shared = (project in file("modules/shared"))
+  .settings(
+    commonSettings,
+    libraryDependencies ++= sharedDeps ++ sharedTestDeps
+  ).dependsOn(core)
 
 lazy val cliPackagingSettings = Seq(
   Compile / mainClass := Some("io.tyoras.cards.cli.Launcher")

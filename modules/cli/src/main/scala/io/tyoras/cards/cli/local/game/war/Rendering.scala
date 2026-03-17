@@ -1,8 +1,8 @@
-package io.tyoras.cards.cli.game.war
+package io.tyoras.cards.cli.local.game.war
 
 import cats.effect.Sync
 import cats.effect.std.Console
-import io.tyoras.cards.cli.game.war.WarCliError.InvalidState
+import WarCliError.InvalidState
 import io.tyoras.cards.cli.lineSeparator
 import io.tyoras.cards.domain.game.war.model.GameState
 import io.tyoras.cards.domain.game.war.model.GameState.*

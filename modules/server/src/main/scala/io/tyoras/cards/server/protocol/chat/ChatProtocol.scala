@@ -6,6 +6,7 @@ import cats.data.Validated.*
 import dev.profunktor.auth.jwt.JwtToken
 import io.tyoras.cards.domain.auth.{AuthError, AuthService}
 import OutputMessage.{ChatMsg, DiscardMessage, ParsingError, SendToUser, SuccessfulRegistration}
+import org.typelevel.log4cats.LoggerFactory
 
 trait ChatProtocol[F[_]]:
   def currentState: F[ChatState]
@@ -20,9 +21,10 @@ trait ChatProtocol[F[_]]:
   def disconnect(userRef: Ref[F, Option[ChatUser]]): F[List[OutputMessage]]
 
 object ChatProtocol:
-  def make[F[_] : Sync](authService: AuthService[F]): F[ChatProtocol[F]] =
+  def make[F[_] : Sync : LoggerFactory](authService: AuthService[F]): F[ChatProtocol[F]] =
     Ref.of(ChatState.empty).map { chatState =>
       new ChatProtocol[F]:
+        private val logger                      = LoggerFactory.getLogger
         override def currentState: F[ChatState] = chatState.get
 
         override def register(name: String): F[OutputMessage] =
@@ -130,6 +132,6 @@ object ChatProtocol:
 
         override def disconnect(userRef: Ref[F, Option[ChatUser]]): F[List[OutputMessage]] =
           userRef.get.flatMap:
-            case Some(user) => removeFromCurrentRoom(chatState, user)
+            case Some(user) => logger.info(s"Disconnecting user $user from chat") *> removeFromCurrentRoom(chatState, user)
             case None       => List.empty.pure
     }

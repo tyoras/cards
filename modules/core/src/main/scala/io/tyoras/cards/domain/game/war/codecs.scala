@@ -2,22 +2,18 @@ package io.tyoras.cards.domain.game.war
 
 import io.circe.{Decoder, Encoder}
 import io.chrisdavenport.fuuid.circe.given
-import io.circe.derivation.{ConfiguredDecoder, ConfiguredEncoder}
-import io.tyoras.cards.domain.game.war.model.{Elimination, GameContext, GameState, WarInput, Player}
+import io.circe.derivation.{Configuration, ConfiguredCodec, ConfiguredDecoder, ConfiguredEncoder, renaming}
+import io.tyoras.cards.domain.game.war.model.{Elimination, GameContext, GameState, Player, WarInput}
 import io.tyoras.cards.domain.card.given
 import io.tyoras.cards.domain.game.war.model.GameState.WarTurn.BattleRound
 
-given Encoder[Player]      = Encoder.derived
-given Encoder[Elimination] = Encoder.derived
-given Encoder[GameContext] = Encoder.derived
-given Encoder[BattleRound] = Encoder.derived
+object codecs:
+  given Configuration = Configuration.default.withSnakeCaseMemberNames
 
-given Decoder[Player]      = Decoder.derived
-given Decoder[Elimination] = Decoder.derived
-given Decoder[GameContext] = Decoder.derived
-given Decoder[BattleRound] = Decoder.derived
+  given ConfiguredCodec[Player]      = ConfiguredCodec.derived
+  given ConfiguredCodec[Elimination] = ConfiguredCodec.derived
+  given ConfiguredCodec[GameContext] = ConfiguredCodec.derived
+  given ConfiguredCodec[BattleRound] = ConfiguredCodec.derived
 
-given Encoder[GameState] = ConfiguredEncoder.derive(discriminator = Some("code"))
-given Decoder[GameState] = ConfiguredDecoder.derive(discriminator = Some("code"))
-given Encoder[WarInput]  = ConfiguredEncoder.derive(discriminator = Some("input_type"))
-given Decoder[WarInput]  = ConfiguredDecoder.derive(discriminator = Some("input_type"))
+  given ConfiguredCodec[GameState] = ConfiguredCodec.derive(discriminator = Some("code"), transformMemberNames = renaming.snakeCase)
+  given ConfiguredCodec[WarInput]  = ConfiguredCodec.derive(discriminator = Some("input_type"), transformMemberNames = renaming.snakeCase)

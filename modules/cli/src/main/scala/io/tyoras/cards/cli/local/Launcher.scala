@@ -1,15 +1,16 @@
-package io.tyoras.cards.cli
+package io.tyoras.cards.cli.local
 
 import cats.effect.{ExitCode, IO}
+import cats.syntax.all.*
 import com.monovore.decline.*
 import com.monovore.decline.effect.*
 import io.tyoras.cards.BuildInfo
-import io.tyoras.cards.cli.game.war.WarCli
-import io.tyoras.cards.cli.game.schnapsen.SchnapsenCli
+import io.tyoras.cards.cli.*
+import io.tyoras.cards.cli.local.game.schnapsen.SchnapsenCli
+import io.tyoras.cards.cli.local.game.war.WarCli
+import io.tyoras.cards.domain.game.war.PlayerCount
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
-import cats.syntax.all.*
-import io.tyoras.cards.domain.game.war.PlayerCount
 
 object Launcher extends CommandIOApp(name = "cards", header = banner, version = s"cards version ${BuildInfo.version} built at ${BuildInfo.builtAtString}"):
   given LoggerFactory[IO] = Slf4jFactory.create[IO]

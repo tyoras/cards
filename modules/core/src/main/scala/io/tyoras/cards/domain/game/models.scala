@@ -9,7 +9,7 @@ import scala.util.control.NoStackTrace
 import cats.syntax.all.*
 import io.circe.{Decoder, Encoder}
 import io.tyoras.cards.domain.game
-import io.tyoras.cards.domain.game.war.given
+import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.schnapsen.given
 
 trait GameInput:

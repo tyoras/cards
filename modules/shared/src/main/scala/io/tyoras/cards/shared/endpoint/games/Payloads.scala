@@ -1,28 +1,25 @@
-package io.tyoras.cards.server.endpoints.games
+package io.tyoras.cards.shared.endpoint.games
 
 import cats.data.NonEmptyList
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.circe.*
-import io.circe.generic.semiauto.*
-import io.circe.{Decoder, Encoder}
+import io.circe.derivation.{Configuration, ConfiguredCodec}
+import io.circe.{Codec, Decoder, Encoder}
+import io.scalaland.chimney.Transformer
 import io.tyoras.cards.domain.game.Game.Existing
 import io.tyoras.cards.domain.game.GameType
 
 import java.time.ZonedDateTime
 
-import io.scalaland.chimney.Transformer
-
 object Payloads:
+  given Configuration = Configuration.default.withSnakeCaseMemberNames
   object Request:
-    final case class Creation(players: List[FUUID])
-    object Creation:
-      given Decoder[Creation] = deriveDecoder
+    final case class Creation(players: List[FUUID]) derives Codec
 
   object Response:
     final case class Game(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, gameType: GameType[?, ?], players: NonEmptyList[FUUID])
+        derives ConfiguredCodec
     object Game:
-      given Encoder[Game] = deriveEncoder
-
       given fromExisting: Transformer[Existing[?], Response.Game] = ???
 //        Transformer.define[Existing[?], Response.Game].enableMethodAccessors.buildTransformer
 

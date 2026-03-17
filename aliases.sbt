@@ -19,7 +19,7 @@ onLoadMessage +=
       |╭─────────────────────────────────╮
       |│     List of defined ${styled("aliases")}     │
       |├─────────────┬───────────────────┤
-      |│ ${styled("l")}           │ projects          │
+      |│ ${styled("ls")}          │ projects          │
       |│ ${styled("cd")}          │ project           │
       |│ ${styled("root")}        │ cd root           │
       |│ ${styled("c")}           │ compile           │

@@ -123,7 +123,8 @@ object ChatEndpoint:
           outputMessage <- Stream.evalSeq(
             frame match
               case WebSocketFrame.Text(text, _) => inputParser.parse(userRef, text)
-              case WebSocketFrame.Close(_)      => protocol.disconnect(userRef)
+              // at the moment there is a known bug in ember-server that prevent the stream to know about the close frame (see https://github.com/http4s/http4s/issues/6806)
+              case WebSocketFrame.Close(_) => protocol.disconnect(userRef)
           )
         yield outputMessage
     }

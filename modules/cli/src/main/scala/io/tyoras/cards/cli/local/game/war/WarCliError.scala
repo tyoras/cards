@@ -1,4 +1,4 @@
-package io.tyoras.cards.cli.game.war
+package io.tyoras.cards.cli.local.game.war
 
 import io.tyoras.cards.domain.game.GameError
 

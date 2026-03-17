@@ -1,23 +1,20 @@
 package io.tyoras.cards.server.protocol.game
 
 import cats.effect.{Ref, Sync}
-import io.tyoras.cards.server.protocol.game.OutputMessage.*
 import cats.syntax.all.*
 import dev.profunktor.auth.jwt.JwtToken
-import io.chrisdavenport.fuuid.FUUID
-import io.chrisdavenport.fuuid.circe.given
-import io.circe.{Decoder, Json, Error}
-import io.tyoras.cards.domain.game.GameType
-import io.tyoras.cards.domain.game.GameType.given
+import io.circe.Error
+import io.tyoras.cards.shared.protocol.game.Commands.*
+import io.tyoras.cards.shared.protocol.game.OutputMessage
+import io.tyoras.cards.shared.protocol.game.OutputMessage.*
+import org.typelevel.log4cats.LoggerFactory
 
 trait InputParser[F[_]]:
   def parse(playerRef: Ref[F, Option[ConnectedPlayer]], text: String): F[List[OutputMessage]]
 
 object InputParser:
-  private case class AuthCommand(gameId: FUUID, gameType: GameType[?, ?], jwt: String) derives Decoder
-  private case class GameCommand(gameId: FUUID, gameType: GameType[?, ?], input: Json) derives Decoder
-
-  def make[F[_] : Sync](protocol: GameProtocol[F]): InputParser[F] = new InputParser[F]:
+  def make[F[_] : Sync : LoggerFactory](protocol: GameProtocol[F]): InputParser[F] = new InputParser[F]:
+    private val logger = LoggerFactory.getLogger
     override def parse(playerRef: Ref[F, Option[ConnectedPlayer]], text: String): F[List[OutputMessage]] =
       text.trim match
         case "" => List(DiscardMessage).pure
@@ -41,7 +38,9 @@ object InputParser:
       val connected = authResult.collectFirst { case PlayerConnectionSuccess(gameId, id, name) =>
         ConnectedPlayer(gameId, id, name)
       }
-      playerRef.set(connected)
+      val logMsg =
+        connected.fold(s"WebSocket authentication attempt failed")(c => s"Player ${c.name} [id=${c.playerId}] successfully connected to game ${c.gameId}")
+      logger.info(logMsg) *> playerRef.set(connected)
 
     private def processAuthenticatedCommand(player: ConnectedPlayer, text: String): F[List[OutputMessage]] =
       (for

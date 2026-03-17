@@ -8,16 +8,17 @@ The project is designed around a set of modules :
 - `core` contains basic concepts useful modeling a card game and games logic implementations.
 - `persistence` (Work in progress) contains the details related to the PostgreSQL persistence of the games.
 - `cli` contains [CLI](https://en.wikipedia.org/wiki/Command-line_interface) oriented UIs for the games.
-- `server` (Work in progress) contains a web server for playing the games via restful APIs.
+- `server` contains a web server for playing the games via restful APIs.
+- `shared` contains shared code between the server and clients.
 
 ## Finished games
 None yet.
 
 ## Work in progress
 | Game                    | Logic | Local CLI | Web API | Remote CLI | persistence |
-|-------------------------|---|-----------|---------|------------|-------------|
-| [Schnapsen](#schnapsen) | ✅ | ✅ | ❌ | ❌ | ❌ |
-| [War](#war)             | ✅ | ✅ | ❌ | ❌ | ❌ |
+|-------------------------|---|----------|---------|------------|-------------|
+| [Schnapsen](#schnapsen) | ✅ | ✅        | ❌ | ❌ | ❌ |
+| [War](#war)             | ✅ | ✅        | ✅ | ❌ | ❌ |
 
 ### Schnapsen
 [Schnapsen](https://en.wikipedia.org/wiki/Schnapsen) is an Austrian game, it is the first game I have decided to implement because of its medium complexity which is a good first challenge.

@@ -53,10 +53,7 @@ object Dependencies {
     }
 
     case object circe {
-      val circeVersion                            = "0.14.15"
-      val `circe-core`                            = dep("core")
-      val `circe-generic`                         = dep("generic")
-      private def dep(artifact: String): ModuleID = "io.circe" %% s"circe-$artifact" % circeVersion
+      val `circe-core` = "io.circe" %% s"circe-core" % "0.14.14"
     }
   }
 
@@ -66,10 +63,11 @@ object Dependencies {
     }
 
     case object http4s {
-      val http4sVersion         = "0.23.33"
-      val `http4s-ember-server` = dep("ember-server")
-      val `http4s-circe`        = dep("circe")
-      val `http4s-dsl`          = dep("dsl")
+      val http4sVersion            = "0.23.33"
+      val `http4s-ember-server`    = dep("ember-server")
+      val `http4s-circe`           = dep("circe")
+      val `http4s-dsl`             = dep("dsl")
+      val `http4s-jdk-http-client` = "org.http4s" %% "http4s-jdk-http-client" % "0.10.0"
 
       private def dep(artifact: String): ModuleID = "org.http4s" %% s"http4s-$artifact" % http4sVersion
     }
@@ -152,6 +150,8 @@ object Dependencies {
     com.monovore.decline,
     com.monovore.`decline-effect`,
     io.chrisdavenport.`cats-effect-time`,
+    org.http4s.`http4s-circe`,
+    org.http4s.`http4s-jdk-http-client`,
     org.typelevel.`cats-core`,
     org.typelevel.`cats-effect`,
     org.typelevel.`log4cats-slf4j`
@@ -173,7 +173,6 @@ object Dependencies {
     io.chrisdavenport.`fuuid-http4s`,
     io.scalaland.chimney,
     io.circe.`circe-core`,
-    io.circe.`circe-generic`,
     org.http4s.`http4s-ember-server`,
     org.http4s.`http4s-circe`,
     org.http4s.`http4s-dsl`,
@@ -186,4 +185,16 @@ object Dependencies {
     org.scalatest.scalatest
   ).map(_ % Test)
 
+  lazy val sharedDeps = Seq(
+    io.chrisdavenport.fuuid,
+    io.chrisdavenport.`fuuid-circe`,
+    io.circe.`circe-core`,
+    io.scalaland.chimney,
+    org.typelevel.`cats-core`
+  )
+
+  lazy val sharedTestDeps = Seq(
+    org.scalacheck.scalacheck,
+    org.scalatest.scalatest
+  ).map(_ % Test)
 }

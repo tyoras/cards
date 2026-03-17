@@ -8,10 +8,12 @@ import io.chrisdavenport.fuuid.FUUID
 import io.circe.Encoder
 import io.circe.syntax.*
 import io.tyoras.cards.domain.auth.{AuthError, AuthService}
-import io.tyoras.cards.server.protocol.game.OutputMessage.{PlayerConnectionSuccess, PlayerDisconnected}
 import io.tyoras.cards.domain.game.war.War
 import io.tyoras.cards.domain.game.*
 import io.tyoras.cards.domain.user.User
+import io.tyoras.cards.shared.protocol.game.OutputMessage
+import io.tyoras.cards.shared.protocol.game.OutputMessage.{PlayerConnectionSuccess, PlayerDisconnected}
+import org.typelevel.log4cats.LoggerFactory
 
 trait GameProtocol[F[_]]:
   def currentState: F[Games[F]]
@@ -22,9 +24,10 @@ trait GameProtocol[F[_]]:
   def disconnect(playerRef: Ref[F, Option[ConnectedPlayer]]): F[OutputMessage]
 
 object GameProtocol:
-  def make[F[_] : Sync](authService: AuthService[F]): F[GameProtocol[F]] =
+  def make[F[_] : Sync : LoggerFactory](authService: AuthService[F]): F[GameProtocol[F]] =
     Ref.of(Games.empty[F]).map { gamesRef =>
       new GameProtocol[F]:
+        private val logger                     = LoggerFactory.getLogger
         override def currentState: F[Games[F]] = gamesRef.get
 
         override def connect(gameId: FUUID, gameType: GameType[?, ?], player: User.Existing): F[OutputMessage] =
@@ -82,9 +85,15 @@ object GameProtocol:
         private def checkInputPlayer(expectedPlayerId: FUUID, inputPlayerId: FUUID, gameId: FUUID, gameType: GameType[?, ?]): F[Unit] =
           ProtocolError.IllegalGameInput(expectedPlayerId, inputPlayerId, gameId, gameType).raiseError.unlessA(expectedPlayerId == inputPlayerId)
 
-        override def disconnect(playerRef: Ref[F, Option[ConnectedPlayer]]): F[OutputMessage] =
-          playerRef.modify {
-            case Some(player) => None -> PlayerDisconnected(player.gameId, player.playerId, player.name)
-            case None         => None -> OutputMessage.DiscardMessage
-          }
+        override def disconnect(playerRef: Ref[F, Option[ConnectedPlayer]]): F[OutputMessage] = {
+          playerRef
+            .modify {
+              case Some(player) => None -> PlayerDisconnected(player.gameId, player.playerId, player.name)
+              case None         => None -> OutputMessage.DiscardMessage
+            }
+            .flatTap {
+              case PlayerDisconnected(gameId, playerId, playerName) => logger.info(s"Player $playerName [id=$playerId] disconnected from game $gameId")
+              case _                                                => logger.warn("Disconnection on an already disconnected player")
+            }
+        }
     }
