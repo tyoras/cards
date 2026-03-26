@@ -1,39 +1,9 @@
 package io.tyoras.cards.server.config
 
 import cats.effect.Sync
-import io.tyoras.cards.domain.auth.AuthConfig
-import io.tyoras.cards.persistence.DatabaseConfig
 
-import scala.concurrent.duration.DurationInt
-//import pureconfig.generic.ProductHint
-//import pureconfig.generic.auto.*
-//import pureconfig.module.catseffect.syntax.CatsEffectConfigSource
-//import pureconfig.{CamelCase, ConfigFieldMapping, ConfigSource, SnakeCase}
+import pureconfig.module.catseffect.syntax.*
+import pureconfig.ConfigSource
 
-import java.nio.file.Path
-
-//  implicit def hint[T]: ProductHint[T] = ProductHint[T](ConfigFieldMapping(CamelCase, SnakeCase))
-
-def parseConfig[F[_] : Sync](configPath: Path): F[ServerConfig] =
-//    ConfigSource.default(ConfigSource.file(configPath)).loadF[F, CardsConfig]()
-  Sync[F].pure(
-    ServerConfig(
-      HttpConfig(
-        host = "0.0.0.0",
-        port = 8080
-      ),
-      DatabaseConfig(
-        host = "localhost",
-        port = 5432,
-        user = "cards",
-        password = "password",
-        db = "cards",
-        maxSession = 10
-      ),
-      AuthConfig(
-        // TODO security improvement : read secret key from env
-        secretKey = "SECRET_KEY_REPLACE_ME!!!",
-        exp = 1.hour
-      )
-    )
-  )
+def parseConfig[F[_] : Sync](configSource: ConfigSource): F[ServerConfig] =
+  configSource.loadF[F, ServerConfig]()

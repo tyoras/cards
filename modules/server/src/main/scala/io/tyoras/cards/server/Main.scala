@@ -22,22 +22,23 @@ import io.tyoras.cards.server.protocol.game.GameProtocol
 import natchez.Trace.Implicits.noop
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
+import pureconfig.ConfigSource
 
 import java.nio.file.{Path, Paths}
 
 object Main extends IOApp:
   given LoggerFactory[IO] = Slf4jFactory.create[IO]
 
-  private val defaultConfigPath = Paths.get("cards-server.conf")
+  private val defaultConfigSource = ConfigSource.resources("cards-server.conf")
   override def run(args: List[String]): IO[ExitCode] =
-    val configPath = args.headOption.fold(defaultConfigPath)(Paths.get(_))
-    init[IO](configPath).useForever
+    val configSource = args.headOption.fold(defaultConfigSource)(ConfigSource.file)
+    init[IO](configSource).useForever
       .as(ExitCode.Success)
       .handleErrorWith(t => Console[IO].errorln(s"Service has failed to start ${t.getMessage}").as(ExitCode.Error))
 
-  private def init[F[_] : Async : Console : Network : Files : natchez.Trace : LoggerFactory](configPath: Path): Resource[F, Unit] =
+  private def init[F[_] : Async : Console : Network : Files : natchez.Trace : LoggerFactory](configSource: ConfigSource): Resource[F, Unit] =
     for
-      config        <- Resource.eval(parseConfig(configPath))
+      config        <- Resource.eval(parseConfig(configSource))
       dbSessionPool <- SessionPool.of(config.database)
       userRepo      <- Resource.eval(PostgresUserRepository.of[F](dbSessionPool))
       userService = UserService.of(userRepo)

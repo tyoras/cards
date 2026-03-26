@@ -20,8 +20,9 @@ object Dependencies {
       }
       case object pureconfig {
         val pureconfigVersion        = "0.17.10"
-        val pureconfig               = "com.github.pureconfig" %% "pureconfig"             % pureconfigVersion
+        val `pureconfig-core`        = "com.github.pureconfig" %% "pureconfig-core"        % pureconfigVersion
         val `pureconfig-cats-effect` = "com.github.pureconfig" %% "pureconfig-cats-effect" % pureconfigVersion
+        val `pureconfig-http4s`      = "com.github.pureconfig" %% "pureconfig-http4s"      % pureconfigVersion
       }
     }
 
@@ -153,6 +154,9 @@ object Dependencies {
 
   lazy val cliDeps = Seq(
     ch.qos.logback.`logback-classic`,
+    com.github.pureconfig.`pureconfig-core`,
+    com.github.pureconfig.`pureconfig-cats-effect`,
+    com.github.pureconfig.`pureconfig-http4s`,
     com.monovore.decline,
     com.monovore.`decline-effect`,
     io.chrisdavenport.`cats-effect-time`,
@@ -174,6 +178,8 @@ object Dependencies {
     ch.qos.logback.`logback-classic`,
     com.github.`jwt-scala`.`jwt-core`,
     com.github.`jwt-scala`.`jwt-circe`,
+    com.github.pureconfig.`pureconfig-core`,
+    com.github.pureconfig.`pureconfig-cats-effect`,
     dev.profunktor.`http4s-jwt-auth`,
     io.chrisdavenport.fuuid,
     io.chrisdavenport.`fuuid-circe`,

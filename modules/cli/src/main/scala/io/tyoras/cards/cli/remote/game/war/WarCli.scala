@@ -41,7 +41,7 @@ object WarCli:
     new WarCli[F]:
       override val run: F[ExitCode] =
         for
-          config <- parseConfig("cli.conf").onError(e => console.errorln(s"Failed to parse config: $e"))
+          config <- parseConfig.onError(e => console.errorln(s"Failed to parse config: $e"))
           (http, webSocket) <- Sync[F].delay(HttpClient.newHttpClient()).map { httpClient =>
             (JdkHttpClient(httpClient), JdkWSClient(httpClient))
           }
