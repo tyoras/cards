@@ -11,7 +11,7 @@ import io.tyoras.cards.util.fsm.concurrent.SynchronizedConcurrentFSM
 import io.chrisdavenport.cats.effect.time.implicits.*
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.game.GameError.NoPlayersError
-import io.tyoras.cards.domain.game.{ActiveGame, GameType}
+import io.tyoras.cards.domain.game.{ActiveGame, GameTyp}
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.*
 import io.tyoras.cards.domain.game.war.model.GameState.*
 import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.*
@@ -21,7 +21,7 @@ import io.tyoras.cards.util.logging.syntax.*
 import org.typelevel.log4cats.LoggerFactory
 
 trait War[F[_]] extends ActiveGame[F, GameState, WarInput]:
-  override val gameType: GameType[GameState, WarInput] = GameType.War
+  override val gameType: GameTyp[GameState, WarInput] = GameTyp.War
 
 object War:
 
@@ -77,6 +77,7 @@ object War:
       case (s: BattleTurn, i: PlayCard) => playCard(s, i)
       case (s: WarTurn, i: PlayCard)    => playCard(s, i)
       case (s: PlayerWinTurn, i: Ready) => ackTurnWin(s, i)
+      case (s, i: GetState)             => s.pure
 
     private def playerReady(state: Init, input: Ready): F[GameState] =
       for

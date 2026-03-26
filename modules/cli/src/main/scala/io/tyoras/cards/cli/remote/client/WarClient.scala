@@ -7,7 +7,7 @@ import io.tyoras.cards.cli.remote.auth.AuthProvider
 import org.http4s.client.websocket.{WSConnectionHighLevel, WSDataFrame, WSFrame}
 import fs2.{Pipe, Stream}
 import io.chrisdavenport.fuuid.FUUID
-import io.tyoras.cards.domain.game.GameType.War
+import io.tyoras.cards.domain.game.GameTyp.War
 import io.tyoras.cards.shared.protocol.game.Commands.*
 import io.circe.syntax.*
 import io.tyoras.cards.shared.protocol.game.OutputMessage as ServerMessage
@@ -16,7 +16,8 @@ import io.circe.parser.decode
 import io.tyoras.cards.domain.card.Card
 import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.war.model.WarInput
-import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.{PlayCard, Ready}
+import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.*
+import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.*
 import org.typelevel.log4cats.LoggerFactory
 
 trait WarClient[F[_]]:
@@ -24,6 +25,7 @@ trait WarClient[F[_]]:
   def streamServerMessages: Stream[F, ServerMessage]
   def ready: F[Unit]
   def playCard(card: Card): F[Unit]
+  def getState: F[Unit]
   def quit: F[Unit]
 
 object WarClient:
@@ -46,6 +48,9 @@ object WarClient:
 
       override def playCard(card: Card): F[Unit] =
         sendGameInput(PlayCard(creds.userId, card))
+
+      override def getState: F[Unit] =
+        sendGameInput(GetState(creds.userId))
 
       private def sendGameInput(gameInput: WarInput): F[Unit] =
         val command = GameCommand(gameId, War, gameInput.asJson).asJson

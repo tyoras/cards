@@ -62,7 +62,7 @@ lazy val shared = (project in file("modules/shared"))
   ).dependsOn(core)
 
 lazy val cliPackagingSettings = Seq(
-  Compile / mainClass := Some("io.tyoras.cards.cli.Launcher")
+  Compile / mainClass := Some("io.tyoras.cards.cli.local.Launcher")
 ) ++ graalVMPackagingSettings
 
 lazy val serverPackagingSettings = Seq(

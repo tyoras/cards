@@ -1,20 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration scan="true" scanPeriod="5 minutes">
-
-    <!-- APPENDER CONSOLE -->
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-        <encoder>
-            <pattern>[%thread] %highlight(%-5level) %cyan(%logger{15}) - %msg %mdc%n</pattern>
-        </encoder>
-    </appender>
+<configuration scan="false" scanPeriod="5 minutes">
 
     <!-- APPENDER FILE -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>DEBUG</level>
+            <level>INFO</level>
         </filter>
         <file>logs/output.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -27,8 +17,7 @@
     </appender>
 
 
-    <root level="DEBUG">
-        <appender-ref ref="CONSOLE"/>
+    <root level="INFO">
         <appender-ref ref="FILE"/>
     </root>
 

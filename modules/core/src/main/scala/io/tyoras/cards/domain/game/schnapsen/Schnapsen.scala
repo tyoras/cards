@@ -12,13 +12,13 @@ import io.tyoras.cards.domain.game.schnapsen.model.*
 import io.tyoras.cards.util.fsm.FinalStateMachine
 import io.tyoras.cards.util.fsm.concurrent.SynchronizedConcurrentFSM
 import io.tyoras.cards.domain.card.*
-import io.tyoras.cards.domain.game.{ActiveGame, GameType}
+import io.tyoras.cards.domain.game.{ActiveGame, GameTyp}
 import io.tyoras.cards.domain.game.schnapsen.model.SchnapsenInput.GameInput.*
 import io.tyoras.cards.domain.game.schnapsen.model.SchnapsenInput.MetaInput.*
 import io.tyoras.cards.domain.game.schnapsen.model.RoundOutcome.*
 
 trait Schnapsen[F[_]] extends ActiveGame[F, GameState, SchnapsenInput]:
-  override val gameType: GameType[GameState, SchnapsenInput] = GameType.Schnapsen
+  override val gameType: GameTyp[GameState, SchnapsenInput] = GameTyp.Schnapsen
 
 object Schnapsen:
 

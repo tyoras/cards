@@ -14,7 +14,7 @@ import org.http4s.client.middleware.RetryPolicy.exponentialBackoff
 import java.time.ZonedDateTime
 import scala.concurrent.duration.DurationInt
 
-final case class Game(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, gameType: GameType[?, ?], players: NonEmptyList[FUUID])
+final case class Game(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, gameType: GameType, players: NonEmptyList[FUUID])
 
 def authedClient[F[_] : Async](underlying: Client[F], authProvider: AuthProvider[F]): Client[F] =
   val retryPolicy = RetryPolicy[F](backoff = exponentialBackoff(3.second, maxRetry = 5))

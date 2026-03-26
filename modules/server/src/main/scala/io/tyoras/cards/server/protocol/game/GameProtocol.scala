@@ -17,10 +17,10 @@ import org.typelevel.log4cats.LoggerFactory
 
 trait GameProtocol[F[_]]:
   def currentState: F[Games[F]]
-  def connect(gameId: FUUID, gameType: GameType[?, ?], player: User.Existing): F[OutputMessage]
-  def auth(gameId: FUUID, gameType: GameType[?, ?], jwt: JwtToken): F[OutputMessage]
+  def connect(gameId: FUUID, gameType: GameType, player: User.Existing): F[OutputMessage]
+  def auth(gameId: FUUID, gameType: GameType, jwt: JwtToken): F[OutputMessage]
   def registerActiveGame(gameId: FUUID, game: ActiveGame[F, ?, ?]): F[Unit]
-  def submitInput[State : Encoder, Input <: GameInput](gameId: FUUID, gameType: GameType[State, Input], playerId: FUUID, input: Input): F[List[OutputMessage]]
+  def submitInput[State : Encoder, Input <: GameInput](gameId: FUUID, gameType: GameTyp[State, Input], playerId: FUUID, input: Input): F[List[OutputMessage]]
   def disconnect(playerRef: Ref[F, Option[ConnectedPlayer]]): F[OutputMessage]
 
 object GameProtocol:
@@ -30,7 +30,7 @@ object GameProtocol:
         private val logger                     = LoggerFactory.getLogger
         override def currentState: F[Games[F]] = gamesRef.get
 
-        override def connect(gameId: FUUID, gameType: GameType[?, ?], player: User.Existing): F[OutputMessage] =
+        override def connect(gameId: FUUID, gameType: GameType, player: User.Existing): F[OutputMessage] =
           (for
             games   <- currentState
             game    <- findActiveGame(gameId, gameType, games)
@@ -40,13 +40,13 @@ object GameProtocol:
             case e: (ProtocolError.PlayerDoesNotBelongToGame | ProtocolError.ActiveGameNotFound) => OutputMessage.AuthError(e.code, e.getMessage)
           }
 
-        private def findActiveGame[S, I <: GameInput](gameId: FUUID, gameType: GameType[S, I], games: Games[F]): F[ActiveGame[F, S, I]] =
+        private def findActiveGame[S, I <: GameInput](gameId: FUUID, gameType: GameTyp[S, I], games: Games[F]): F[ActiveGame[F, S, I]] =
           val game: Option[ActiveGame[F, S, I]] = gameType match
-            case GameType.War => games.warGames.get(gameId)
-            case _            => None // game is not supported yet
+            case GameTyp.War => games.warGames.get(gameId)
+            case _           => None // game is not supported yet
           Sync[F].fromOption(game, ProtocolError.ActiveGameNotFound(gameId, gameType))
 
-        override def auth(gameId: FUUID, gameType: GameType[?, ?], jwt: JwtToken): F[OutputMessage] =
+        override def auth(gameId: FUUID, gameType: GameType, jwt: JwtToken): F[OutputMessage] =
           authService.authenticate(jwt).flatMap(connect(gameId, gameType, _)).handleError {
             case e: AuthError => OutputMessage.AuthError("token_auth", e.message)
             case _            => OutputMessage.AuthError("unexpected", "unexpected auth error")
@@ -55,7 +55,7 @@ object GameProtocol:
         override def registerActiveGame(gameId: FUUID, game: ActiveGame[F, ?, ?]): F[Unit] =
           gamesRef.update { games =>
             game.gameType match {
-              case GameType.War =>
+              case GameTyp.War =>
                 val warGame = game.asInstanceOf[War[F]]
                 games.copy(warGames = games.warGames.updated(gameId, warGame))
               case _ => games
@@ -64,7 +64,7 @@ object GameProtocol:
 
         override def submitInput[State : Encoder, Input <: GameInput](
             gameId: FUUID,
-            gameType: GameType[State, Input],
+            gameType: GameTyp[State, Input],
             playerId: FUUID,
             input: Input
         ): F[List[OutputMessage]] =
@@ -82,7 +82,7 @@ object GameProtocol:
             case e => List(OutputMessage.GameError(gameId, playerId, "input_submission_failure", e.getMessage))
           }
 
-        private def checkInputPlayer(expectedPlayerId: FUUID, inputPlayerId: FUUID, gameId: FUUID, gameType: GameType[?, ?]): F[Unit] =
+        private def checkInputPlayer(expectedPlayerId: FUUID, inputPlayerId: FUUID, gameId: FUUID, gameType: GameType): F[Unit] =
           ProtocolError.IllegalGameInput(expectedPlayerId, inputPlayerId, gameId, gameType).raiseError.unlessA(expectedPlayerId == inputPlayerId)
 
         override def disconnect(playerRef: Ref[F, Option[ConnectedPlayer]]): F[OutputMessage] = {

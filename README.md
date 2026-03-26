@@ -18,7 +18,7 @@ None yet.
 | Game                    | Logic | Local CLI | Web API | Remote CLI | persistence |
 |-------------------------|---|----------|---------|------------|-------------|
 | [Schnapsen](#schnapsen) | ✅ | ✅        | ❌ | ❌ | ❌ |
-| [War](#war)             | ✅ | ✅        | ✅ | ❌ | ❌ |
+| [War](#war)             | ✅ | ✅        | ✅ | ✅ | ❌ |
 
 ### Schnapsen
 [Schnapsen](https://en.wikipedia.org/wiki/Schnapsen) is an Austrian game, it is the first game I have decided to implement because of its medium complexity which is a good first challenge.

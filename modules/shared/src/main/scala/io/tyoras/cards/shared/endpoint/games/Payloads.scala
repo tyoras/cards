@@ -7,7 +7,7 @@ import io.circe.derivation.{Configuration, ConfiguredCodec}
 import io.circe.{Codec, Decoder, Encoder}
 import io.scalaland.chimney.Transformer
 import io.tyoras.cards.domain.game.Game.Existing
-import io.tyoras.cards.domain.game.GameType
+import io.tyoras.cards.domain.game.GameTyp
 
 import java.time.ZonedDateTime
 
@@ -17,7 +17,7 @@ object Payloads:
     final case class Creation(players: List[FUUID]) derives Codec
 
   object Response:
-    final case class Game(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, gameType: GameType[?, ?], players: NonEmptyList[FUUID])
+    final case class Game(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, gameType: GameTyp[?, ?], players: NonEmptyList[FUUID])
         derives ConfiguredCodec
     object Game:
       given fromExisting: Transformer[Existing[?], Response.Game] = ???

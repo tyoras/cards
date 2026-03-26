@@ -10,7 +10,7 @@ import fs2.concurrent.Topic
 import fs2.{Pipe, Stream}
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.circe.given
-import io.tyoras.cards.domain.game.{Game, GameService, GameType}
+import io.tyoras.cards.domain.game.{Game, GameService, GameTyp}
 import io.tyoras.cards.server.endpoints.Endpoint
 import io.tyoras.cards.shared.endpoint.games.Payloads.Response.Game.given
 import io.tyoras.cards.shared.endpoint.games.war.Payloads.Request.Creation
@@ -77,7 +77,7 @@ object WarEndpoint:
         players   <- playersValidation(payload.players)
         war       <- War(payload.players)
         initState <- war.currentState
-        created   <- gameService.create(Game.Data[GameState](GameType.War, payload.players, initState))
+        created   <- gameService.create(Game.Data[GameState](GameTyp.War, payload.players, initState))
         _         <- gameProtocol.registerActiveGame(created.id, war)
         _         <- createGameChat(created.id, players)
         response  <- Created(Payloads.Response.Game.fromExistingGame(created))

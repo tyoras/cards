@@ -18,15 +18,15 @@ object Dependencies {
         val `jwt-circe`     = "com.github.jwt-scala" %% "jwt-circe" % jwtScalaVersion
 
       }
-//      case object pureconfig {
-//        val pureconfigVersion = "0.17.0"
-//        val pureconfig = "com.github.pureconfig" %% "pureconfig"                           % pureconfigVersion
-//        val `pureconfig-cats-effect` = "com.github.pureconfig" %% "pureconfig-cats-effect" % pureconfigVersion
-//      }
+      case object pureconfig {
+        val pureconfigVersion        = "0.17.10"
+        val pureconfig               = "com.github.pureconfig" %% "pureconfig"             % pureconfigVersion
+        val `pureconfig-cats-effect` = "com.github.pureconfig" %% "pureconfig-cats-effect" % pureconfigVersion
+      }
     }
 
     case object monovore {
-      val declineVersion   = "2.6.0"
+      val declineVersion   = "2.6.1"
       val decline          = "com.monovore" %% "decline"        % declineVersion
       val `decline-effect` = "com.monovore" %% "decline-effect" % declineVersion
     }
@@ -49,7 +49,7 @@ object Dependencies {
     }
 
     case object scalaland {
-      val chimney = "io.scalaland" %% "chimney" % "1.8.2"
+      val chimney = "io.scalaland" %% "chimney" % "1.9.0"
     }
 
     case object circe {
@@ -59,7 +59,7 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-core` = "org.flywaydb" % "flyway-database-postgresql" % "12.0.2"
+      val `flyway-core` = "org.flywaydb" % "flyway-database-postgresql" % "12.2.0"
     }
 
     case object http4s {
@@ -81,11 +81,11 @@ object Dependencies {
     }
 
     case object scalatest {
-      val scalatest = "org.scalatest" %% "scalatest" % "3.2.19"
+      val scalatest = "org.scalatest" %% "scalatest" % "3.2.20"
     }
 
     case object scalatestplus {
-      val `scalacheck-1-15` = "org.scalatestplus" %% "scalacheck-1-19" % "3.2.19.0"
+      val `scalacheck-1-15` = "org.scalatestplus" %% "scalacheck-1-19" % "3.2.20.0"
     }
 
     case object tpolecat {
@@ -98,10 +98,16 @@ object Dependencies {
 
     case object typelevel {
       val `cats-core`                     = "org.typelevel" %% "cats-core"                     % "2.13.0"
-      val `cats-effect`                   = "org.typelevel" %% "cats-effect"                   % "3.6.3"
-      val `cats-effect-testing-scalatest` = "org.typelevel" %% "cats-effect-testing-scalatest" % "1.7.0"
+      val `cats-effect`                   = "org.typelevel" %% "cats-effect"                   % "3.7.0"
+      val `cats-effect-testing-scalatest` = "org.typelevel" %% "cats-effect-testing-scalatest" % "1.8.0"
       val `cats-parse`                    = "org.typelevel" %% "cats-parse"                    % "1.1.0"
-      val `log4cats-slf4j`                = "org.typelevel" %% "log4cats-slf4j"                % "2.7.1"
+      val `log4cats-slf4j`                = "org.typelevel" %% "log4cats-slf4j"                % "2.8.0"
+    }
+  }
+
+  case object xyz {
+    case object matthieucourt {
+      val layoutz = "xyz.matthieucourt" %% "layoutz" % "0.7.0"
     }
   }
 
@@ -154,7 +160,8 @@ object Dependencies {
     org.http4s.`http4s-jdk-http-client`,
     org.typelevel.`cats-core`,
     org.typelevel.`cats-effect`,
-    org.typelevel.`log4cats-slf4j`
+    org.typelevel.`log4cats-slf4j`,
+    xyz.matthieucourt.layoutz
   )
 
   lazy val cliTestDeps = Seq(

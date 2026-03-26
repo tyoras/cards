@@ -23,6 +23,6 @@ class CardSpec extends AnyFlatSpec with Matchers:
   }
 
   "toString" should "work" in {
-    val expected = s"K$RESET$RED♥$RESET"
+    val expected = s"$RESET$RED🂾$RESET"
     heartKing.toString should be(expected)
   }

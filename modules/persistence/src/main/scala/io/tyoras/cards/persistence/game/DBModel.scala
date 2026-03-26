@@ -6,14 +6,14 @@ import io.chrisdavenport.fuuid.FUUID
 import io.circe.syntax.*
 import io.circe.{Decoder, DecodingFailure, Encoder, Json}
 import io.tyoras.cards.domain.game.Game.Existing
-import io.tyoras.cards.domain.game.{Game, GameType}
+import io.tyoras.cards.domain.game.*
 import io.tyoras.cards.persistence.{fuuid, gameType, timestampTZ}
 import skunk.Codec
 import skunk.circe.codec.all.*
 
 import java.time.ZonedDateTime
 
-final case class GameCreationDBModel(game: GameType[?, ?], state: Json)
+final case class GameCreationDBModel(game: GameType, state: Json)
 object GameCreationDBModel:
   val codec: Codec[GameCreationDBModel] = (gameType *: jsonb).to[GameCreationDBModel]
 
@@ -26,7 +26,7 @@ object GameUpdateDBModel:
 
 final case class GameReadDBModel(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: GameCreationDBModel):
   def toExistingGame[State : Decoder](players: NonEmptyList[FUUID]): Either[DecodingFailure, Game.Existing[State]] =
-    data.state.as[State].map(state => Game.Existing(id, createdAt, updatedAt, Game.Data[State](data.game.asInstanceOf[GameType[State, ?]], players, state)))
+    data.state.as[State].map(state => Game.Existing(id, createdAt, updatedAt, Game.Data[State](data.game.asInstanceOf[GameTyp[State, ?]], players, state)))
 
 object GameReadDBModel:
   given Eq[GameReadDBModel] = Eq.fromUniversalEquals

@@ -3,7 +3,7 @@ package io.tyoras.cards.persistence
 import cats.syntax.all.*
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.game.GameType
-import io.tyoras.cards.domain.game.GameType.*
+import io.tyoras.cards.domain.game.GameTyp.*
 import io.tyoras.cards.util.error.TechnicalError
 import skunk.Codec
 import skunk.codec.all.*
@@ -22,7 +22,7 @@ val timestampTZ: Codec[ZonedDateTime] = timestamptz.imap(
   _.withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime
 )
 
-val gameType: Codec[GameType[?, ?]] = `enum`[GameType[?, ?]](
+val gameType: Codec[GameType] = `enum`[GameType](
   _.label,
   {
     case Schnapsen.label => Some(Schnapsen)
