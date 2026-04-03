@@ -31,9 +31,10 @@ import org.typelevel.log4cats.LoggerFactory
 
 import scala.concurrent.duration.DurationInt
 import io.circe.syntax.given
-import io.tyoras.cards.server.protocol.chat.{ChatProtocol, ChatUser, Room}
+import io.tyoras.cards.server.protocol.chat.{ChatProtocol, Room}
 import io.tyoras.cards.server.protocol.game.{ConnectedPlayer, GameProtocol, InputParser}
 import io.tyoras.cards.shared.endpoint.games.Payloads
+import io.tyoras.cards.shared.protocol.chat.ChatUser
 import io.tyoras.cards.shared.protocol.game.OutputMessage
 
 object WarEndpoint:

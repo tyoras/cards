@@ -36,7 +36,7 @@ object Launcher extends CommandIOApp(name = "cards", header = banner, version = 
       .orElse(warCommandOpts)
       .map {
         case SchnapsenCommand => IO.println("Not implemented yet").as(ExitCode.Success)
-        case WarCommand(cfg)  => WarCli[IO](cfg).run
+        case WarCommand(cfg)  => WarCli.make[IO](cfg).flatMap(_.run)
       }
       .withDefault(gameSelection)
       .map(_.onError(e => Console[IO].errorln(s"Unexpected error: $e")))
@@ -51,5 +51,5 @@ object Launcher extends CommandIOApp(name = "cards", header = banner, version = 
 
   private def launchGame(gameChoice: GameTyp[?, ?]): IO[ExitCode] =
     gameChoice match
-      case War       => WarCli[IO](WarCli.Config(false)).run
+      case War       => WarCli.make[IO](WarCli.Config(false)).flatMap(_.run)
       case Schnapsen => IO.println("Not implemented yet").as(ExitCode.Success)

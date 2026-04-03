@@ -15,7 +15,7 @@ import io.tyoras.cards.cli.tui.TUI
 import io.tyoras.cards.domain.user.User
 import layoutz.*
 import cats.syntax.all.*
-import io.tyoras.cards.cli.tui.TUI.Notification
+import io.tyoras.cards.cli.tui.TUI.Message.Notification
 import io.tyoras.cards.domain.game.GameType
 
 import scala.util.Try

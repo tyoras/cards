@@ -54,8 +54,8 @@ object WarClient:
 
       private def sendGameInput(gameInput: WarInput): F[Unit] =
         val command = GameCommand(gameId, War, gameInput.asJson).asJson
-        logger.debug(s"Sending game input:\n${command.spaces2}")
-        wsConnection.send(WSFrame.Text(command.noSpaces))
+        logger.debug(s"Sending game input:\n${command.spaces2}") *>
+          wsConnection.send(WSFrame.Text(command.noSpaces))
 
       override def quit: F[Unit] =
         stopStreamSignal.set(true) >> wsConnection.closeFrame.get.void

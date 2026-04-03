@@ -5,7 +5,8 @@ import cats.syntax.all.*
 import cats.data.Validated.*
 import dev.profunktor.auth.jwt.JwtToken
 import io.tyoras.cards.domain.auth.{AuthError, AuthService}
-import OutputMessage.{ChatMsg, DiscardMessage, ParsingError, SendToUser, SuccessfulRegistration}
+import io.tyoras.cards.shared.protocol.chat.*
+import io.tyoras.cards.shared.protocol.chat.OutputMessage.*
 import org.typelevel.log4cats.LoggerFactory
 
 trait ChatProtocol[F[_]]:
@@ -116,7 +117,7 @@ object ChatProtocol:
         override def listRooms(user: ChatUser): F[List[OutputMessage]] =
           chatState.get.map { cs =>
             val roomList =
-              cs.roomMembers.keys.map(_.room).toList.sorted.mkString("Rooms:\n\t", "\n\t", "")
+              cs.roomMembers.keys.map(_.room).toList.sorted.mkString("Rooms:\n  ", "\n  ", "")
             List(SendToUser(user, roomList))
           }
 
@@ -125,7 +126,7 @@ object ChatProtocol:
             val memberList =
               cs.roomsByUser.get(user) match
                 case Some(room) =>
-                  cs.roomMembers.getOrElse(room, Set.empty).map(_.name).toList.sorted.mkString("Room Members:\n\t", "\n\t", "")
+                  cs.roomMembers.getOrElse(room, Set.empty).map(_.name).toList.sorted.mkString("Room Members:\n  ", "\n ", "")
                 case None => "You are not currently in a room"
             List(SendToUser(user, memberList))
           }

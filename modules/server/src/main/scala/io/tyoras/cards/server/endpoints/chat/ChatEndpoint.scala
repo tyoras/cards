@@ -14,8 +14,9 @@ import org.http4s.server.websocket.WebSocketBuilder2
 import org.http4s.websocket.WebSocketFrame
 import org.http4s.{HttpRoutes, MediaType, StaticFile}
 import io.circe.syntax.*
-import io.tyoras.cards.server.protocol.chat.OutputMessage.{ChatMsg, DiscardMessage, KeepAlive, SendToUser}
-import io.tyoras.cards.server.protocol.chat.{ChatProtocol, ChatUser, InputParser, OutputMessage}
+import io.tyoras.cards.server.protocol.chat.{ChatProtocol, InputParser}
+import io.tyoras.cards.shared.protocol.chat.{ChatUser, OutputMessage}
+import io.tyoras.cards.shared.protocol.chat.OutputMessage.*
 import org.http4s.headers.`Content-Type`
 
 import scala.concurrent.duration.DurationInt

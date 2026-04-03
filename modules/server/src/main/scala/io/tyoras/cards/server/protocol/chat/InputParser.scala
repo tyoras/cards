@@ -3,12 +3,13 @@ package io.tyoras.cards.server.protocol.chat
 import cats.Monad
 import cats.effect.Ref
 import cats.syntax.all.*
-import OutputMessage.*
 import cats.parse.{Parser, Rfc5234}
 import cats.parse.Parser.char
 import cats.parse.Rfc5234.{alpha, sp, wsp}
 import cats.data.Validated.*
 import dev.profunktor.auth.jwt.JwtToken
+import io.tyoras.cards.shared.protocol.chat.OutputMessage.*
+import io.tyoras.cards.shared.protocol.chat.*
 
 trait InputParser[F[_]]:
   def parse(userRef: Ref[F, Option[ChatUser]], text: String): F[List[OutputMessage]]
