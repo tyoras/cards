@@ -24,8 +24,6 @@ import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 import pureconfig.ConfigSource
 
-import java.nio.file.{Path, Paths}
-
 object Main extends IOApp:
   given LoggerFactory[IO] = Slf4jFactory.create[IO]
 
@@ -34,7 +32,7 @@ object Main extends IOApp:
     val configSource = args.headOption.fold(defaultConfigSource)(ConfigSource.file)
     init[IO](configSource).useForever
       .as(ExitCode.Success)
-      .handleErrorWith(t => Console[IO].errorln(s"Service has failed to start ${t.getMessage}").as(ExitCode.Error))
+ //     .handleErrorWith(t => Console[IO].errorln(s"Service has failed to start ${t.getMessage})}").as(ExitCode.Error))
 
   private def init[F[_] : Async : Console : Network : Files : natchez.Trace : LoggerFactory](configSource: ConfigSource): Resource[F, Unit] =
     for

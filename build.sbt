@@ -6,10 +6,12 @@ ThisBuild / scalaVersion := "3.7.4"
 ThisBuild / tlBaseVersion    := "0.1"
 ThisBuild / scapegoatVersion := "3.2.4"
 ThisBuild / tlFatalWarnings  := false // no need for fatal warnings in this project
+ThisBuild / tlJdkRelease     := Some(25)
 
 lazy val commonSettings = Seq(
   update / evictionWarningOptions := EvictionWarningOptions.empty,
-  scalafmtPrintDiff               := true
+  scalafmtPrintDiff               := true,
+  scalacOptions ++= Seq("-Jsun-misc-unsafe-memory-access=allow")
 )
 
 ThisBuild / coverageMinimumStmtTotal := 75
@@ -40,6 +42,7 @@ lazy val persistence = (project in file("modules/persistence"))
 lazy val cli = (project in file("modules/cli"))
   .settings(
     commonSettings,
+    run / connectInput := true,
     cliPackagingSettings,
     libraryDependencies ++= cliDeps ++ cliTestDeps
   )
@@ -76,10 +79,13 @@ lazy val graalVMPackagingSettings = Seq(
     "--initialize-at-run-time=org.slf4j.LoggerFactory",
     "--initialize-at-run-time=org.slf4j.MDC",
     "--initialize-at-build-time=scala.runtime.Statics$VM",
+    "--initialize-at-build-time=ch.qos.logback,ch.qos.logback.classic.Logger",
     "--no-fallback",
     "--static",
+    "--libc=musl",
     "--enable-http",
     "--enable-https"
   ),
-  nativeImageVersion := "22.3.3"
+  nativeImageVersion := "25.0.1",
+  nativeImageJvm := "graalvm-java25"
 )

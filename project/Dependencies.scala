@@ -60,7 +60,7 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-core` = "org.flywaydb" % "flyway-database-postgresql" % "12.2.0"
+      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "12.3.0"
     }
 
     case object http4s {
@@ -137,7 +137,7 @@ object Dependencies {
     io.chrisdavenport.`cats-effect-time`,
     io.chrisdavenport.fuuid,
     io.circe.`circe-core`,
-    org.flywaydb.`flyway-core`,
+    org.flywaydb.`flyway-database-postgresql`,
     org.postgresql.postgresql,
     org.tpolecat.`skunk-core`,
     org.tpolecat.`skunk-circe`,
