@@ -70,17 +70,17 @@ Build CLI:
     - tags
   script:
     - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
-    - docker pull $CI_REGISTRY/tyoras/cards:latest || true
+    - docker pull $CI_REGISTRY_IMAGE/cli:latest || true
     - >
       docker build
       --pull
       --build-arg VCS_REF=$CI_COMMIT_SHA
       --build-arg VCS_URL=$CI_PROJECT_URL
       --build-arg MODULE=cli
-      --cache-from $CI_REGISTRY/tyoras/cards:latest
-      --tag $CI_REGISTRY/tyoras/cards:$CI_COMMIT_SHA
+      --cache-from $CI_REGISTRY_IMAGE/cli:latest
+      --tag $CI_REGISTRY_IMAGE/cli:$CI_COMMIT_SHA
       .
-    - docker push $CI_REGISTRY/tyoras/cards:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/cli:$CI_COMMIT_SHA
 
 Build Server:
   image: docker:latest
@@ -92,17 +92,17 @@ Build Server:
     - tags
   script:
     - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
-    - docker pull $CI_REGISTRY/tyoras/cards-server:latest || true
+    - docker pull $CI_REGISTRY_IMAGE/server:latest || true
     - >
       docker build
       --pull
       --build-arg VCS_REF=$CI_COMMIT_SHA
       --build-arg VCS_URL=$CI_PROJECT_URL
       --build-arg MODULE=server
-      --cache-from $CI_REGISTRY/tyoras/cards-server:latest
-      --tag $CI_REGISTRY/tyoras/cards-server:$CI_COMMIT_SHA
+      --cache-from $CI_REGISTRY_IMAGE/server:latest
+      --tag $CI_REGISTRY_IMAGE/server:$CI_COMMIT_SHA
       .
-    - docker push $CI_REGISTRY/tyoras/cards-server:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/server:$CI_COMMIT_SHA
 
 Push latest:
   image: docker:latest
@@ -115,16 +115,16 @@ Push latest:
     - master
   script:
     - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
-    - docker pull $CI_REGISTRY/tyoras/cards:$CI_COMMIT_SHA
-    - docker pull $CI_REGISTRY/tyoras/cards-server:$CI_COMMIT_SHA
-    - docker tag $CI_REGISTRY/tyoras/cards:$CI_COMMIT_SHA $CI_REGISTRY/tyoras/cards:latest
-    - docker tag $CI_REGISTRY/tyoras/cards-server:$CI_COMMIT_SHA $CI_REGISTRY/tyoras/cards-server:latest
-    - docker push $CI_REGISTRY/tyoras/cards:latest
-    - docker push $CI_REGISTRY/tyoras/cards-server:latest
+    - docker pull $CI_REGISTRY_IMAGE/cli:$CI_COMMIT_SHA
+    - docker pull $CI_REGISTRY_IMAGE/server:$CI_COMMIT_SHA
+    - docker tag $CI_REGISTRY_IMAGE/cli:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE/cli:latest
+    - docker tag $CI_REGISTRY_IMAGE/server:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE/server:latest
+    - docker push $CI_REGISTRY_IMAGE/cli:latest
+    - docker push $CI_REGISTRY_IMAGE/server:latest
     - echo -n $DOCKER_HUB_PASSWORD | docker login -u tyoras --password-stdin
-    - docker tag $CI_REGISTRY/tyoras/cards:$CI_COMMIT_SHA tyoras/cards:latest
+    - docker tag $CI_REGISTRY_IMAGE/cli:$CI_COMMIT_SHA tyoras/cards:latest
     - docker push tyoras/cards:latest
-    - docker tag $CI_REGISTRY/tyoras/cards-server:$CI_COMMIT_SHA tyoras/cards-server:latest
+    - docker tag $CI_REGISTRY_IMAGE/server:$CI_COMMIT_SHA tyoras/cards-server:latest
     - docker push tyoras/cards-server:latest
 
 Push tag:
@@ -138,14 +138,14 @@ Push tag:
     - tags
   script:
     - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
-    - docker pull $CI_REGISTRY/tyoras-cards:$CI_COMMIT_SHA
-    - docker pull $CI_REGISTRY/tyoras-cards-server:$CI_COMMIT_SHA
-    - docker tag $CI_REGISTRY/tyoras/cards:$CI_COMMIT_SHA $CI_REGISTRY/tyoras/cards:$CI_COMMIT_REF_NAME
-    - docker tag $CI_REGISTRY/tyoras/cards-server:$CI_COMMIT_SHA $CI_REGISTRY/tyoras/cards-server:$CI_COMMIT_REF_NAME
-    - docker push $CI_REGISTRY/tyoras/cards:$CI_COMMIT_REF_NAME
-    - docker push $CI_REGISTRY/tyoras/cards-server:$CI_COMMIT_REF_NAME
+    - docker pull $CI_REGISTRY_IMAGE/cli:$CI_COMMIT_SHA
+    - docker pull $CI_REGISTRY_IMAGE/server:$CI_COMMIT_SHA
+    - docker tag $CI_REGISTRY_IMAGE/cli:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE/cli:$CI_COMMIT_REF_NAME
+    - docker tag $CI_REGISTRY_IMAGE/server:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE/server:$CI_COMMIT_REF_NAME
+    - docker push $CI_REGISTRY_IMAGE/cli:$CI_COMMIT_REF_NAME
+    - docker push $CI_REGISTRY_IMAGE/server:$CI_COMMIT_REF_NAME
     - echo -n $DOCKER_HUB_PASSWORD | docker login -u tyoras --password-stdin
-    - docker tag $CI_REGISTRY/tyoras/cards:$CI_COMMIT_SHA tyoras/cards:$CI_COMMIT_REF_NAME
-    - docker tag $CI_REGISTRY/tyoras/cards-server:$CI_COMMIT_SHA tyoras/cards-server:$CI_COMMIT_REF_NAME
+    - docker tag $CI_REGISTRY_IMAGE/cli:$CI_COMMIT_SHA tyoras/cards:$CI_COMMIT_REF_NAME
+    - docker tag $CI_REGISTRY_IMAGE/server:$CI_COMMIT_SHA tyoras/cards-server:$CI_COMMIT_REF_NAME
     - docker push tyoras/cards:$CI_COMMIT_REF_NAME
     - docker push tyoras/cards-server:$CI_COMMIT_REF_NAME

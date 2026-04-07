@@ -28,9 +28,7 @@ object SessionPool:
 
   private def initializeDb[F[_] : Sync](config: DatabaseConfig): F[Unit] =
     Sync[F].delay {
-      val base = Flyway
-        .configure()
-        .dataSource(config.jdbcUrl, config.user, config.password)
+      val base = Flyway.configure().dataSource(config.jdbcUrl, config.user, config.password)
       val configured = if (System.getProperty("org.graalvm.nativeimage.imagecode") != null) {
         base.resourceProvider(NativeImageResourceProvider())
       } else {

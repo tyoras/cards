@@ -1,3 +1,4 @@
+name: cards_dev_env
 services:
   db:
     image: postgres:18
