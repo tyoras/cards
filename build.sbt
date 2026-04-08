@@ -84,7 +84,8 @@ lazy val graalVMPackagingSettings = Seq(
     "--static",
     "--libc=musl",
     "--enable-http",
-    "--enable-https"
+    "--enable-https",
+    "-march=compatibility" //so it is compatible with low end machines architecture
   ),
   nativeImageVersion := "25.0.1",
   nativeImageJvm := "graalvm-java25"
