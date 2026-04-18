@@ -52,6 +52,6 @@ object Main extends IOApp:
       warEndpoint  <- WarEndpoint.make(gameService, userService, gameProtocol, chatProtocol)
       authEndpoint <- Resource.eval(AuthEndpoint.of(authService))
       chatEndpoint <- ChatEndpoint.make(chatProtocol)
-      httpWsApp = Server.HttpWsApp.of(config.auth, authService)(authEndpoint, userEndpoint, gameEndpoint, warEndpoint, authEndpoint, chatEndpoint)
+      httpWsApp = Server.HttpWsApp.of(config.http, config.auth, authService)(authEndpoint, userEndpoint, gameEndpoint, warEndpoint, authEndpoint, chatEndpoint)
       _ <- Server.of(config.http, httpWsApp).serve
     yield ()
