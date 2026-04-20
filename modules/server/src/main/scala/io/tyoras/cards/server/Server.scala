@@ -14,8 +14,7 @@ import dev.profunktor.auth.jwt.JwtAuth
 import fs2.io.net.Network
 import io.tyoras.cards.domain.auth.{AuthConfig, AuthService}
 import io.tyoras.cards.domain.user.User
-import io.tyoras.cards.server.config.{HttpConfig, ServerConfig}
-import org.http4s.headers.Origin
+import io.tyoras.cards.server.config.HttpConfig
 import org.http4s.server.websocket.WebSocketBuilder2
 
 import scala.util.chaining.*

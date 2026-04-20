@@ -5,25 +5,27 @@ import cats.effect.{Resource, Sync, Temporal}
 import cats.syntax.all.*
 import fs2.io.net.Network
 import io.tyoras.cards.persistence.flyway.NativeImageResourceProvider
-import natchez.Trace
 import org.flywaydb.core.Flyway
-import skunk.{Session, SessionPool, Strategy}
+import org.typelevel.otel4s.metrics.Meter
+import org.typelevel.otel4s.trace.Tracer
+import skunk.Session
+import skunk.TypingStrategy.SearchPath
 
 object SessionPool:
-  def of[F[_] : Sync : Temporal : Trace : Network : Console](config: DatabaseConfig): SessionPool[F] =
+  def of[F[_] : Sync : Meter : Tracer : Temporal : Network : Console](config: DatabaseConfig): Resource[F, Resource[F, Session[F]]] =
     Resource
       .eval(initializeDb(config))
       .flatMap(_ =>
-        Session.pooled(
-          host = config.host,
-          port = config.port,
-          user = config.user,
-          password = config.password.some,
-          database = config.db,
-          max = config.maxSession,
-          strategy = Strategy.SearchPath,
-          debug = false
-        )
+        Session
+          .Builder[F]
+          .withHost(config.host)
+          .withPort(config.port)
+          .withUser(config.user)
+          .withUserAndPassword(config.user, config.password)
+          .withDatabase(config.db)
+          .withDebug(false)
+          .withTypingStrategy(SearchPath)
+          .pooled(config.maxSession)
       )
 
   private def initializeDb[F[_] : Sync](config: DatabaseConfig): F[Unit] =

@@ -6,9 +6,9 @@ import io.tyoras.cards.persistence.{fuuid, timestampTZ}
 import skunk.*
 import skunk.codec.all.*
 import skunk.implicits.*
-import skunk.feature.legacyCommandSyntax
 
 import java.time.ZonedDateTime
+import skunk.Codec.given
 
 object Statements:
   extension (data: User.Data.type) def codec: Codec[User.Data] = (varchar(100) *: varchar).to[User.Data]
@@ -18,11 +18,11 @@ object Statements:
   object Insert:
     val one: Query[User.Data, User.Existing] =
       sql"""INSERT INTO users (name, about)
-            VALUES(${User.Data.codec})
+            VALUES ${User.Data.codec.values}
             RETURNING *
          """.query(User.Existing.codec)
 
-    val oneWithId: Query[FUUID ~ User.Data, User.Existing] =
+    val oneWithId: Query[FUUID *: User.Data *: EmptyTuple, User.Existing] =
       sql"""INSERT INTO users (id, name, about)
             VALUES(${fuuid ~ User.Data.codec})
             RETURNING *
@@ -35,16 +35,12 @@ object Statements:
          """.query(User.Existing.codec)
 
   object Update:
-    val one: Query[User.Existing ~ ZonedDateTime, User.Existing] =
+    val one: Query[User.Existing *: ZonedDateTime *: EmptyTuple, User.Existing] =
       sql"""UPDATE users
             SET name = ${varchar(100)}, about = $varchar, updated_at = $timestampTZ
             WHERE id = $fuuid
             RETURNING *
-         """.query(User.Existing.codec).contramap(input)
-
-    private def input(e: User.Existing ~ ZonedDateTime): String ~ String ~ ZonedDateTime ~ FUUID =
-      val (data, updatedAt) = e
-      data.name ~ data.about ~ updatedAt ~ data.id
+         """.query(User.Existing.codec).contramap { case (data, updatedAt) => (data.name, data.about, updatedAt, data.id) }
 
   object Select:
     val all: Query[Void, User.Existing] =

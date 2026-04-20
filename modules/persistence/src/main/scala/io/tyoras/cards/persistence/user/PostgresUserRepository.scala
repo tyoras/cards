@@ -6,7 +6,7 @@ import io.chrisdavenport.cats.effect.time.implicits.*
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.user.{User, UserRepository}
 import io.tyoras.cards.persistence.PersistenceError
-import skunk.{Session, SqlState}
+import skunk.*
 
 object PostgresUserRepository:
   def of[F[_] : Sync](sessionPool: Resource[F, Session[F]]): F[UserRepository[F]] = Sync[F].delay {
@@ -45,7 +45,7 @@ object PostgresUserRepository:
         sessionPool.use(_.prepareR(Statements.Select.manyByName(names.size)).use(_.stream(names, chunkSize).compile.toList))
 
       override def readAll: F[List[User.Existing]] =
-        sessionPool.use(_.execute(Statements.Select.all))
+        sessionPool.use(_.prepareR(Statements.Select.all).use(_.stream(Void, chunkSize).compile.toList))
 
       override def deleteMany(users: List[User.Existing]): F[Unit] =
         sessionPool.use(_.prepareR(Statements.Delete.many(users.size)).use(_.execute(users.map(_.id)).void))

@@ -13,7 +13,7 @@ object Dependencies {
   case object com {
     case object github {
       case object `jwt-scala` {
-        val jwtScalaVersion = "11.0.3"
+        val jwtScalaVersion = "11.0.4"
         val `jwt-core`      = "com.github.jwt-scala" %% "jwt-core"  % jwtScalaVersion
         val `jwt-circe`     = "com.github.jwt-scala" %% "jwt-circe" % jwtScalaVersion
 
@@ -27,7 +27,7 @@ object Dependencies {
     }
 
     case object monovore {
-      val declineVersion   = "2.6.1"
+      val declineVersion   = "2.6.2"
       val decline          = "com.monovore" %% "decline"        % declineVersion
       val `decline-effect` = "com.monovore" %% "decline-effect" % declineVersion
     }
@@ -35,7 +35,7 @@ object Dependencies {
 
   case object dev {
     case object profunktor {
-      val http4sJwtAuthVersion = "2.0.13"
+      val http4sJwtAuthVersion = "2.0.14"
       val `http4s-jwt-auth`    = "dev.profunktor" %% "http4s-jwt-auth" % http4sJwtAuthVersion
     }
   }
@@ -60,7 +60,7 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "12.3.0"
+      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "12.4.0"
     }
 
     case object http4s {
@@ -90,7 +90,7 @@ object Dependencies {
     }
 
     case object tpolecat {
-      val skunkVersion = "0.6.5"
+      val skunkVersion = "1.0.0"
       val `skunk-core` =
         "org.tpolecat" %% "skunk-core" % skunkVersion
       val `skunk-circe` =

@@ -19,9 +19,12 @@ import io.tyoras.cards.server.endpoints.games.war.WarEndpoint
 import io.tyoras.cards.server.endpoints.users.UserEndpoint
 import io.tyoras.cards.server.protocol.chat.ChatProtocol
 import io.tyoras.cards.server.protocol.game.GameProtocol
-import natchez.Trace.Implicits.noop
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
+import org.typelevel.otel4s.metrics.Meter
+import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.otel4s.metrics.Meter.Implicits.noop
+import org.typelevel.otel4s.trace.Tracer.Implicits.noop
 import pureconfig.ConfigSource
 
 object Main extends IOApp:
@@ -33,7 +36,7 @@ object Main extends IOApp:
     init[IO](configSource).useForever.as(ExitCode.Success)
   //     .handleErrorWith(t => Console[IO].errorln(s"Service has failed to start ${t.getMessage})}").as(ExitCode.Error))
 
-  private def init[F[_] : Async : Console : Network : Files : natchez.Trace : LoggerFactory](configSource: ConfigSource): Resource[F, Unit] =
+  private def init[F[_] : Async : Console : Network : Files : Tracer : Meter : LoggerFactory](configSource: ConfigSource): Resource[F, Unit] =
     for
       config        <- Resource.eval(parseConfig(configSource))
       dbSessionPool <- SessionPool.of(config.database)

@@ -10,7 +10,7 @@ import io.circe.{Decoder, Encoder}
 import io.tyoras.cards.domain.game.{Game, GameRepository}
 import io.tyoras.cards.persistence.PersistenceError
 import io.tyoras.cards.persistence.game.Statements
-import skunk.Session
+import skunk.*
 
 object PostgresGameRepository:
   extension [F[_], A : Eq, B](s: Stream[F, (A, B)])
@@ -44,10 +44,12 @@ object PostgresGameRepository:
           yield result
         }
 
-      override def readAll[State : Decoder]: F[List[Game.Existing[State]]] = List.empty.pure
-      // TODO implement read all
-      // FIXME what can be passed to .stream(...) as Void as no instance ?
-//        sessionPool.use(_.prepare(Statements.Select.all).use(_.stream(???, chunkSize).chunkAdjacent.through(toExisting[F, State]).compile.toList))
+      override def readAll[State : Decoder]: F[List[Game.Existing[State]]] =
+        sessionPool.use(
+          _.prepareR(Statements.Select.all).use(
+            _.stream(Void, chunkSize).chunkAdjacent.through(toExisting[F, State]).compile.toList
+          )
+        )
 
       override def readManyById[State : Decoder](ids: List[FUUID]): F[List[Game.Existing[State]]] =
         sessionPool.use(

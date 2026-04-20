@@ -5,7 +5,6 @@ import io.tyoras.cards.persistence.{fuuid, timestampTZ}
 import skunk.*
 import skunk.circe.codec.all.*
 import skunk.implicits.*
-import skunk.feature.legacyCommandSyntax
 import io.circe.Json
 
 import java.time.ZonedDateTime
@@ -36,26 +35,23 @@ object Statements:
             SET state = $jsonb, updated_at = $timestampTZ
             WHERE id = $fuuid AND updated_at = $timestampTZ
             RETURNING *
-         """.query(GameReadDBModel.codec).contramap(input)
-
-    private def input(e: GameUpdateDBModel): Json ~ ZonedDateTime ~ FUUID ~ ZonedDateTime =
-      e.state ~ e.updateDate ~ e.id ~ e.previousUpdate
+         """.query(GameReadDBModel.codec).contramap(e => e.state *: e.updateDate *: e.id *: e.previousUpdate *: EmptyTuple)
 
   object Select:
-    val all: Query[Void, GameReadDBModel ~ FUUID] =
+    val all: Query[Void, GameReadDBModel *: FUUID *: EmptyTuple] =
       sql"""SELECT g.id, g.created_at, g.updated_at, g.game_type, g.state, p.player_id
            FROM games g INNER JOIN gamesplayers p ON g.id = p.game_id
            ORDER BY g.created_at
-           """.query(GameReadDBModel.codec ~ fuuid)
+           """.query(GameReadDBModel.codec *: fuuid)
 
-    def many(size: Int): Query[List[FUUID], GameReadDBModel ~ FUUID] =
+    def many(size: Int): Query[List[FUUID], (GameReadDBModel, FUUID)] =
       sql"""SELECT g.id, g.created_at, g.updated_at, g.game_type, g.state, p.player_id
             FROM games g INNER JOIN gamesplayers p ON g.id = p.game_id
             WHERE g.id IN (${fuuid.list(size)})
             ORDER BY g.created_at
-         """.query(GameReadDBModel.codec ~ fuuid)
+         """.query(GameReadDBModel.codec *: fuuid)
 
-    val byUser: Query[FUUID, GameReadDBModel ~ FUUID] =
+    val byUser: Query[FUUID, GameReadDBModel *: FUUID *: EmptyTuple] =
       sql"""SELECT g.id, g.created_at, g.updated_at, g.game_type, g.state, p.player_id
             FROM games g INNER JOIN gamesplayers p ON g.id = p.game_id
             WHERE g.id IN (
@@ -64,7 +60,7 @@ object Statements:
                 WHERE player_id = $fuuid
             )
             ORDER BY g.created_at
-         """.query(GameReadDBModel.codec ~ fuuid)
+         """.query(GameReadDBModel.codec *: fuuid)
 
   object Delete:
     val all: Command[Void] =

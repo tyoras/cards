@@ -1,8 +1,6 @@
 package io.tyoras.cards.server.config
 
 import cats.effect.Sync
-import cats.implicits.toTraverseOps
-import com.typesafe.config.ConfigValueType
 import org.http4s.headers.Origin
 import pureconfig.error.CannotConvert
 import pureconfig.module.catseffect.syntax.*
