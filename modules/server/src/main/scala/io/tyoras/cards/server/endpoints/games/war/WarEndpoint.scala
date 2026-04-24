@@ -19,7 +19,7 @@ import org.http4s.circe.CirceEntityEncoder.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import org.http4s.{AuthedRoutes, EntityDecoder, HttpRoutes, Response}
-import io.tyoras.cards.shared.protocol.game.OutputMessage.{DiscardMessage, KeepAlive, PlayerConnectionSuccess, PlayerDisconnected}
+import io.tyoras.cards.shared.protocol.game.OutputMessage.{DiscardMessage, GameEnded, KeepAlive, PlayerConnectionSuccess, PlayerDisconnected}
 import io.tyoras.cards.domain.game.war.War
 import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.war.model.GameState
@@ -63,7 +63,7 @@ object WarEndpoint:
       given EntityDecoder[F, Creation] = accumulatingJsonOf[F, Creation]
 
       override val authedRoutes: AuthedRoutes[User.Existing, F] = AuthedRoutes.of {
-        case r @ POST -> Root / "games" / "war" as user           => r.req.as[Creation].flatMap(create)
+        case r @ POST -> Root / "games" / "war" as user           => r.req.as[Creation].flatMap(create(user))
         case r @ GET -> Root / "games" / "war" / "active" as user => listPlayerGames(user)
       }
 
@@ -74,11 +74,11 @@ object WarEndpoint:
           }
         }
 
-      private def create(payload: Creation): F[Response[F]] = for
+      private def create(user: User.Existing)(payload: Creation): F[Response[F]] = for
         players   <- playersValidation(payload.players)
         war       <- War(payload.players)
         initState <- war.currentState
-        created   <- gameService.create(Game.Data[GameState](GameTyp.War, payload.players, initState))
+        created   <- gameService.create(Game.Data[GameState](GameTyp.War, payload.players, initState, user.id, None))
         _         <- gameProtocol.registerActiveGame(created.id, war)
         _         <- createGameChat(created.id, players)
         response  <- Created(Payloads.Response.Game.fromExistingGame(created))
@@ -97,7 +97,7 @@ object WarEndpoint:
 
       private def listPlayerGames(player: User.Existing): F[Response[F]] =
         for
-          games       <- gameProtocol.currentState
+          games       <- gameProtocol.activeGames
           playerGames <- games.warGames.toList.filterA { case (gameId, game) => game.playerIds.map(_.exists(_ == player.id)) }.map(_.map(_._1))
           response    <- Ok(playerGames)
         yield response
@@ -128,8 +128,9 @@ object WarEndpoint:
           case OutputMessage.GameState(gameId, recipient, _)        => playerRef.get.map(_.fold(false)(p => p.gameId == gameId && p.playerId == recipient))
           case OutputMessage.GameError(gameId, recipient, _, _)     => playerRef.get.map(_.fold(false)(p => p.gameId == gameId && p.playerId == recipient))
           case OutputMessage.ProtocolError(gameId, recipient, _, _) => playerRef.get.map(_.fold(false)(p => p.gameId == gameId && p.playerId == recipient))
-          case PlayerConnectionSuccess(gameId, _, _)                => playerRef.get.map(_.fold(false)(_.gameId == gameId))
+          case PlayerConnectionSuccess(gameId, _, _, _)             => playerRef.get.map(_.fold(false)(_.gameId == gameId))
           case PlayerDisconnected(gameId, _, _)                     => playerRef.get.map(_.fold(false)(_.gameId == gameId))
+          case GameEnded(gameId)                                    => playerRef.get.map(_.fold(false)(_.gameId == gameId))
           case _                                                    => true.pure
 
       private def processMsg(msg: OutputMessage): WebSocketFrame =

@@ -1,11 +1,12 @@
 package io.tyoras.cards.server.protocol.game
 
-import cats.effect.Sync
+import cats.effect.{Async, Resource}
 import cats.effect.kernel.Ref
+import cats.effect.std.AtomicCell
 import cats.syntax.all.*
 import dev.profunktor.auth.jwt.JwtToken
 import io.chrisdavenport.fuuid.FUUID
-import io.circe.Encoder
+import io.circe.*
 import io.circe.syntax.*
 import io.tyoras.cards.domain.auth.{AuthError, AuthService}
 import io.tyoras.cards.domain.game.war.War
@@ -14,52 +15,82 @@ import io.tyoras.cards.domain.user.User
 import io.tyoras.cards.shared.protocol.game.OutputMessage
 import io.tyoras.cards.shared.protocol.game.OutputMessage.{PlayerConnectionSuccess, PlayerDisconnected}
 import org.typelevel.log4cats.LoggerFactory
+import io.tyoras.cards.domain.game.war.codecs.given
 
 trait GameProtocol[F[_]]:
-  def currentState: F[Games[F]]
-  def connect(gameId: FUUID, gameType: GameType, player: User.Existing): F[OutputMessage]
-  def auth(gameId: FUUID, gameType: GameType, jwt: JwtToken): F[OutputMessage]
+  def activeGames: F[Games[F]]
+  def connectPlayer(gameId: FUUID, gameType: GameType, player: User.Existing): F[OutputMessage]
+  def authPlayer(gameId: FUUID, gameType: GameType, jwt: JwtToken): F[OutputMessage]
   def registerActiveGame(gameId: FUUID, game: ActiveGame[F, ?, ?]): F[Unit]
+  def currentState[State : Encoder](gameId: FUUID, gameType: GameTyp[State, ?], playerId: FUUID): F[OutputMessage]
   def submitInput[State : Encoder, Input <: GameInput](gameId: FUUID, gameType: GameTyp[State, Input], playerId: FUUID, input: Input): F[List[OutputMessage]]
+  def endGame(gameId: FUUID, gameType: GameType): F[List[OutputMessage]]
   def disconnect(playerRef: Ref[F, Option[ConnectedPlayer]]): F[OutputMessage]
 
 object GameProtocol:
-  def make[F[_] : Sync : LoggerFactory](authService: AuthService[F]): F[GameProtocol[F]] =
-    Ref.of(Games.empty[F]).map { gamesRef =>
+  def make[F[_] : Async : LoggerFactory](authService: AuthService[F], gameService: GameService[F]): Resource[F, GameProtocol[F]] =
+    Resource.make(AtomicCell[F].of(Games.empty[F]).map { gamesRef =>
       new GameProtocol[F]:
-        private val logger                     = LoggerFactory.getLogger
-        override def currentState: F[Games[F]] = gamesRef.get
+        private val logger = LoggerFactory.getLogger
 
-        override def connect(gameId: FUUID, gameType: GameType, player: User.Existing): F[OutputMessage] =
+        override def activeGames: F[Games[F]] = gamesRef.get
+
+        override def connectPlayer(gameId: FUUID, gameType: GameType, player: User.Existing): F[OutputMessage] =
           (for
-            games   <- currentState
-            game    <- findActiveGame(gameId, gameType, games)
+            game    <- gamesRef.evalModify(findActiveGame(gameId, gameType, _))
             players <- game.playerIds
             _       <- ProtocolError.PlayerDoesNotBelongToGame(player.id, gameId, gameType).raiseError.unlessA(players.exists(_ == player.id))
-          yield PlayerConnectionSuccess(gameId, player.id, player.data.name)).handleError {
+          yield PlayerConnectionSuccess(gameId, gameType, player.id, player.data.name)).handleError {
             case e: (ProtocolError.PlayerDoesNotBelongToGame | ProtocolError.ActiveGameNotFound) => OutputMessage.AuthError(e.code, e.getMessage)
           }
 
-        private def findActiveGame[S, I <: GameInput](gameId: FUUID, gameType: GameTyp[S, I], games: Games[F]): F[ActiveGame[F, S, I]] =
-          val game: Option[ActiveGame[F, S, I]] = gameType match
-            case GameTyp.War => games.warGames.get(gameId)
-            case _           => None // game is not supported yet
-          Sync[F].fromOption(game, ProtocolError.ActiveGameNotFound(gameId, gameType))
+        private def findActiveGame[S, I <: GameInput](gameId: FUUID, gameType: GameTyp[S, I], games: Games[F]): F[(Games[F], ActiveGame[F, S, I])] =
+          for
+            game <- gameType match
+              case GameTyp.War =>
+                games.warGames
+                  .get(gameId)
+                  .fold(
+                    for
+                      gameData <- findActiveGameData[war.model.GameState](gameId)
+                      found    <- gameData.traverse(data => War.fromState[F](data.state).map(_.asInstanceOf[ActiveGame[F, S, I]]))
+                    yield found.map(data => updateActiveGames(games, gameId, data) -> data)
+                  )(game => (games, game).some.pure)
+              case _ => none.pure // game is not supported yet
+            found <- Async[F].fromOption(game, ProtocolError.ActiveGameNotFound(gameId, gameType))
+          yield found
 
-        override def auth(gameId: FUUID, gameType: GameType, jwt: JwtToken): F[OutputMessage] =
-          authService.authenticate(jwt).flatMap(connect(gameId, gameType, _)).handleError {
+        private def findActiveGameData[S : Decoder](gameId: FUUID): F[Option[Game.Existing[S]]] =
+          for
+            found <- gameService.readById[S](gameId)
+            _     <- Async[F].raiseError(ProtocolError.GameAlreadyFinished(gameId)).unlessA(found.exists(_.data.finishedAt.isEmpty))
+          yield found
+
+        override def authPlayer(gameId: FUUID, gameType: GameType, jwt: JwtToken): F[OutputMessage] =
+          authService.authenticate(jwt).flatMap(connectPlayer(gameId, gameType, _)).handleError {
             case e: AuthError => OutputMessage.AuthError("token_auth", e.message)
             case _            => OutputMessage.AuthError("unexpected", "unexpected auth error")
           }
 
         override def registerActiveGame(gameId: FUUID, game: ActiveGame[F, ?, ?]): F[Unit] =
-          gamesRef.update { games =>
-            game.gameType match {
-              case GameTyp.War =>
-                val warGame = game.asInstanceOf[War[F]]
-                games.copy(warGames = games.warGames.updated(gameId, warGame))
-              case _ => games
-            }
+          gamesRef.update(updateActiveGames(_, gameId, game))
+
+        private def updateActiveGames(games: Games[F], gameId: FUUID, game: ActiveGame[F, ?, ?]): Games[F] =
+          game.gameType match
+            case GameTyp.War =>
+              val warGame = game.asInstanceOf[War[F]]
+              games.copy(warGames = games.warGames.updated(gameId, warGame))
+            case _ => games
+
+        override def currentState[State : Encoder](gameId: FUUID, gameType: GameTyp[State, ?], playerId: FUUID): F[OutputMessage] =
+          (for
+            game      <- gamesRef.evalModify(games => findActiveGame(gameId, gameType, games))
+            gameState <- game.currentState
+          // TODO filter context by user ??
+          yield OutputMessage.GameState(gameId, playerId, gameState.asJson)).handleError {
+            case e: ProtocolError.ActiveGameNotFound =>
+              OutputMessage.ProtocolError(gameId, playerId, e.code, e.getMessage)
+            case e => OutputMessage.GameError(gameId, playerId, "state_failure", e.getMessage)
           }
 
         override def submitInput[State : Encoder, Input <: GameInput](
@@ -69,14 +100,14 @@ object GameProtocol:
             input: Input
         ): F[List[OutputMessage]] =
           (for
-            _         <- checkInputPlayer(expectedPlayerId = playerId, input.playerId, gameId, gameType)
-            games     <- currentState
-            game      <- findActiveGame(gameId, gameType, games)
-            players   <- game.playerIds
-            gameState <- game.submitInput(input)
+            _           <- checkInputPlayer(expectedPlayerId = playerId, input.playerId, gameId, gameType)
+            game        <- gamesRef.evalModify(findActiveGame(gameId, gameType, _))
+            players     <- game.playerIds
+            gameState   <- game.submitInput(input)
+            endMessages <- game.isFinished.flatMap(finished => if finished then endGame(gameId, gameType) else Nil.pure)
             // TODO filter context by user ??
             output = players.toList.map(OutputMessage.GameState(gameId, _, gameState.asJson))
-          yield output).handleError {
+          yield output ::: endMessages).handleError {
             case e: (ProtocolError.IllegalGameInput | ProtocolError.ActiveGameNotFound) =>
               List(OutputMessage.ProtocolError(gameId, playerId, e.code, e.getMessage))
             case e => List(OutputMessage.GameError(gameId, playerId, "input_submission_failure", e.getMessage))
@@ -85,6 +116,22 @@ object GameProtocol:
         private def checkInputPlayer(expectedPlayerId: FUUID, inputPlayerId: FUUID, gameId: FUUID, gameType: GameType): F[Unit] =
           ProtocolError.IllegalGameInput(expectedPlayerId, inputPlayerId, gameId, gameType).raiseError.unlessA(expectedPlayerId == inputPlayerId)
 
+        override def endGame(gameId: FUUID, gameType: GameType): F[List[OutputMessage]] =
+          for output <- gameType match
+            case GameTyp.War =>
+              for output <- gamesRef.evalModify(games =>
+                  for
+                    activeGame   <- findActiveGame(gameId, GameTyp.War, games).map(_._2)
+                    currentState <- activeGame.currentState
+                    found        <- findActiveGameData[war.model.GameState](gameId)
+                    gameData     <- Async[F].fromOption(found, ProtocolError.ActiveGameNotFound(gameId, gameType))
+                    _            <- gameService.update(gameData.withUpdatedState(currentState))
+                  yield games.copy(warGames = games.warGames - gameId) -> List(OutputMessage.GameEnded(gameId))
+                )
+              yield output
+            case _ => Nil.pure // game is not supported yet
+          yield output
+
         override def disconnect(playerRef: Ref[F, Option[ConnectedPlayer]]): F[OutputMessage] = {
           playerRef
             .modify {
@@ -92,8 +139,23 @@ object GameProtocol:
               case None         => None -> OutputMessage.DiscardMessage
             }
             .flatTap {
-              case PlayerDisconnected(gameId, playerId, playerName) => logger.info(s"Player $playerName [id=$playerId] disconnected from game $gameId")
-              case _                                                => logger.warn("Disconnection on an already disconnected player")
+              case PlayerDisconnected(gameId, playerId, playerName) =>
+                gamesRef.evalUpdate(games =>
+                  for
+                    activeGame   <- findActiveGame(gameId, GameTyp.War, games).map(_._2)
+                    currentState <- activeGame.currentState
+                    found        <- findActiveGameData[war.model.GameState](gameId)
+                    gameData     <- Async[F].fromOption(found, ProtocolError.ActiveGameNotFound(gameId, activeGame.gameType))
+                    _            <- gameService.update(gameData.withUpdatedState(currentState))
+                    _            <- logger.info(s"Persisted game state for game $gameId after player $playerName [id=$playerId] disconnection")
+                  yield games
+                ) <* logger.info(s"Player $playerName [id=$playerId] disconnected from game $gameId")
+
+              case _ => logger.warn("Disconnection on an already disconnected player")
             }
         }
-    }
+    })(protocol =>
+      protocol.activeGames.flatMap(_.warGames.toList.traverse_ { (id, game) =>
+        protocol.endGame(id, game.gameType)
+      })
+    )

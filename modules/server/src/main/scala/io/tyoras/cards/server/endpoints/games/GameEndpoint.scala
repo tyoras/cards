@@ -25,19 +25,20 @@ object GameEndpoint:
 
       override val authedRoutes: AuthedRoutes[User.Existing, F] =
         AuthedRoutes.of {
-          case GET -> Root / "games" :? UserIdParam(userId) as u => listByUser(userId)
-          case GET -> Root / "games" as u                        => listAll
-          case GET -> Root / "games" / FUUIDVar(id) as u         => searchById(id)
-          case DELETE -> Root / "games" / FUUIDVar(id) as u      => deleteById(id)
+          case GET -> Root / "games" :? UserIdParam(userId) +& FinishedParam(finished) as u => listByUser(userId, finished)
+          case GET -> Root / "games" :? FinishedParam(finished) as u                        => listAll(finished)
+          case GET -> Root / "games" / FUUIDVar(id) as u                                    => searchById(id)
+          case DELETE -> Root / "games" / FUUIDVar(id) as u                                 => deleteById(id)
         }
 
-      object UserIdParam extends QueryParamDecoderMatcher[FUUID]("user_id")
+      object UserIdParam   extends QueryParamDecoderMatcher[FUUID]("user_id")
+      object FinishedParam extends FlagQueryParamMatcher("finished")
 
-      private def listByUser(userId: FUUID): F[Response[F]] =
-        gameService.readManyByUser[Json](userId).map(_.map(Payloads.Response.Game.fromExistingGame)).flatMap(Ok(_))
+      private def listByUser(userId: FUUID, finished: Boolean): F[Response[F]] =
+        gameService.readManyByUser[Json](userId, finished).map(_.map(Payloads.Response.Game.fromExistingGame)).flatMap(Ok(_))
 
-      private val listAll: F[Response[F]] =
-        gameService.readAll[Json].map(_.map(Payloads.Response.Game.fromExistingGame)).flatMap(Ok(_))
+      private def listAll(finished: Boolean): F[Response[F]] =
+        gameService.readAll[Json](finished).map(_.map(Payloads.Response.Game.fromExistingGame)).flatMap(Ok(_))
 
       private def searchById(id: FUUID): F[Response[F]] =
         gameService.readById[Json](id).flatMap(_.fold(notFoundResponse)(Payloads.Response.Game.fromExistingGame(_).pipe(Ok(_))))

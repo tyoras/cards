@@ -10,14 +10,14 @@ import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.game.GameTyp.War
 import io.tyoras.cards.shared.protocol.game.Commands.*
 import io.circe.syntax.*
-import io.tyoras.cards.shared.protocol.game.OutputMessage as ServerMessage
+import io.tyoras.cards.shared.protocol.game.{Commands, OutputMessage as ServerMessage}
 import org.http4s.client.websocket.WSFrame.Text
 import io.circe.parser.decode
 import io.tyoras.cards.domain.card.Card
 import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.war.model.WarInput
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.*
-import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.*
+import io.tyoras.cards.shared.protocol.game.Commands.AuthenticatedCommand.*
 import org.typelevel.log4cats.LoggerFactory
 
 trait WarClient[F[_]]:
@@ -50,15 +50,22 @@ object WarClient:
         sendGameInput(PlayCard(creds.userId, card))
 
       override def getState: F[Unit] =
-        sendGameInput(GetState(creds.userId))
+        sendCommand(StateCommand(gameId))
 
       private def sendGameInput(gameInput: WarInput): F[Unit] =
-        val command = GameCommand(gameId, War, gameInput.asJson).asJson
-        logger.debug(s"Sending game input:\n${command.spaces2}") *>
-          wsConnection.send(WSFrame.Text(command.noSpaces))
+        val command = GameCommand(gameId, gameInput.asJson)
+        sendCommand(command)
 
-      override def quit: F[Unit] =
-        stopStreamSignal.set(true) >> wsConnection.closeFrame.get.void
+      private def sendCommand(command: AuthenticatedCommand): F[Unit] =
+        val cmd = command.asJson
+        logger.debug(s"Sending game input:\n${cmd.spaces2}") *>
+          wsConnection.send(WSFrame.Text(cmd.noSpaces))
+
+      override def quit: F[Unit] = {
+        sendCommand(QuitCommand(gameId)) >>
+          stopStreamSignal.set(true) >>
+          wsConnection.closeFrame.get.void
+      }
 
       private val decodeServerMessage: Pipe[F, WSDataFrame, ServerMessage] = _.evalMapFilter {
         case Text(data, _) =>

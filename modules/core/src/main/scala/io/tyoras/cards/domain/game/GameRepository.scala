@@ -9,11 +9,11 @@ trait GameRepository[F[_]]:
 
   def update[State : Decoder : Encoder](game: Game.Existing[State]): F[Game.Existing[State]]
 
-  def readAll[State : Decoder]: F[List[Game.Existing[State]]]
+  def readAll[State : Decoder](finished: Boolean): F[List[Game.Existing[State]]]
 
   def readManyById[State : Decoder](ids: List[FUUID]): F[List[Game.Existing[State]]]
 
-  def readManyByUser[State : Decoder](userId: FUUID): F[List[Game.Existing[State]]]
+  def readManyByUser[State : Decoder](userId: FUUID, finished: Boolean): F[List[Game.Existing[State]]]
 
   def deleteMany(game: List[Game.Existing[?]]): F[Unit]
 

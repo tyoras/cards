@@ -12,9 +12,9 @@ trait GameService[F[_]]:
 
   def readById[State : Decoder](id: FUUID): F[Option[Game.Existing[State]]]
 
-  def readManyByUser[State : Decoder](userId: FUUID): F[List[Game.Existing[State]]]
+  def readManyByUser[State : Decoder](userId: FUUID, finished: Boolean): F[List[Game.Existing[State]]]
 
-  def readAll[State : Decoder]: F[List[Game.Existing[State]]]
+  def readAll[State : Decoder](finished: Boolean): F[List[Game.Existing[State]]]
 
   def delete(game: Game.Existing[?]): F[Unit] =
     deleteMany(List(game))
@@ -34,11 +34,11 @@ object GameService:
     override def readById[State : Decoder](id: FUUID): F[Option[Game.Existing[State]]] =
       gameRepo.readManyById(List(id)).map(_.headOption)
 
-    override def readManyByUser[State : Decoder](userId: FUUID): F[List[Game.Existing[State]]] =
-      gameRepo.readManyByUser(userId)
+    override def readManyByUser[State : Decoder](userId: FUUID, finished: Boolean): F[List[Game.Existing[State]]] =
+      gameRepo.readManyByUser(userId, finished)
 
-    override def readAll[State : Decoder]: F[List[Game.Existing[State]]] =
-      gameRepo.readAll
+    override def readAll[State : Decoder](finished: Boolean): F[List[Game.Existing[State]]] =
+      gameRepo.readAll(finished)
 
     override def deleteMany(games: List[Game.Existing[?]]): F[Unit] =
       gameRepo.deleteMany(games)

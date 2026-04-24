@@ -38,6 +38,7 @@ trait ActiveGame[F[_], State, Input <: GameInput]:
   def playerIds: F[NonEmptyList[FUUID]]
   def currentState: F[State]
   def submitInput(input: Input): F[State]
+  def isFinished: F[Boolean]
 
 sealed abstract class Game[State] extends Product with Serializable:
   protected type ThisType <: Game[State]
@@ -45,7 +46,7 @@ sealed abstract class Game[State] extends Product with Serializable:
   def gameType: GameTyp[State, ?]
   def players: NonEmptyList[FUUID]
   def state: State
-  def withUpdatedState(newState: State, updateDate: ZonedDateTime): ThisType
+  def withUpdatedState(newState: State): ThisType
 
 object Game:
   final case class Existing[State](id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: Data[State]) extends Game[State]:
@@ -55,19 +56,22 @@ object Game:
     override def players: NonEmptyList[FUUID] = data.players
     override def state: State                 = data.state
 
-    override def withUpdatedState(newState: State, updateDate: ZonedDateTime): ThisType =
-      copy(data = data.withUpdatedState(newState, updateDate), updatedAt = updateDate)
+    override def withUpdatedState(newState: State): ThisType =
+      copy(data = data.withUpdatedState(newState))
 
   object Existing:
     given [State]: Show[Existing[State]] = e => s"id = ${e.id} | created_at = ${e.createdAt} | updated_at = ${e.updatedAt} | ${e.data.show}"
 
-  final case class Data[State](gameType: GameTyp[State, ?], players: NonEmptyList[FUUID], state: State) extends Game[State]:
+  final case class Data[State](gameType: GameTyp[State, ?], players: NonEmptyList[FUUID], state: State, createdBy: FUUID, finishedAt: Option[ZonedDateTime])
+      extends Game[State]:
     override protected type ThisType = Data[State]
 
-    override def withUpdatedState(newState: State, updateDate: ZonedDateTime): ThisType = copy(state = newState)
+    override def withUpdatedState(newState: State): ThisType = copy(state = newState)
 
   object Data:
-    given [State]: Show[Data[State]] = d => s"""game = ${d.gameType} | players = ${d.players.toList.mkString(", ")} | State = ${d.state}"""
+    given [State]: Show[Data[State]] = d =>
+      s"""game = ${d.gameType} | players = ${d.players.toList
+          .mkString(", ")} | State = ${d.state} | created_by = ${d.createdBy} | finished_at = ${d.finishedAt.map(_.toString).getOrElse("not finished")}"""
 
 abstract class GameError(val code: String, msg: String) extends Exception(msg) with NoStackTrace
 object GameError:

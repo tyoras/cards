@@ -108,9 +108,9 @@ object GameStartMenuTUI:
 
       private val joinGame: F[Msg] =
         for
-          creds <- authProvider.connectedUserCredentials
-          games <- gameClient.findByUserId(creds.userId)
-          foundGame = games.sortBy(_.updatedAt).findLast(_.gameType == gameType)
+          creds       <- authProvider.connectedUserCredentials
+          activeGames <- gameClient.findByUserId(creds.userId, finished = false)
+          foundGame = activeGames.sortBy(_.updatedAt).findLast(_.gameType == gameType)
         yield foundGame.fold(Msg.DisplayNotif(Notification.Error(s"No ${gameType.label} game found... Please try joining again after a moment.")))(g =>
           Msg.Output(g.id)
         )

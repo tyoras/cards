@@ -110,9 +110,11 @@ object WarCli:
           case GameOutputMessage.PlayerDisconnected(_, id, name) =>
             logger.info(s"Player $name[id = $id] disconnected") *>
               messagesRef.update(_ :+ Notification.Info(s"Player $name has disconnected from the game"))
-          case GameOutputMessage.PlayerConnectionSuccess(_, id, name) =>
+          case GameOutputMessage.PlayerConnectionSuccess(_, _, id, name) =>
             logger.info(s"Player $name[id = $id] connected") *>
               messagesRef.update(_ :+ Notification.Info(s"Player $name has join the game"))
+          case GameOutputMessage.GameEnded(_) =>
+            messagesRef.update(_ :+ Notification.Info(s"Game has ended"))
           case msg => logger.info(s"$msg ignored")
         }
         .compile

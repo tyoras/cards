@@ -51,6 +51,7 @@ object War:
   private class WarFSM[F[_] : Async : LoggerFactory](fsm: FinalStateMachine[F, GameState]) extends War[F]:
     private val logger                      = LoggerFactory.getLogger
     override def currentState: F[GameState] = fsm.getCurrentState
+    override def isFinished: F[Boolean]     = currentState.map(_.isInstanceOf[Finish])
     override val playerIds: F[NonEmptyList[FUUID]] =
       currentState.map(_.context.players.keys.toList).flatMap(ids => Sync[F].fromOption(NonEmptyList.fromList(ids), NoPlayersError))
 
@@ -77,7 +78,6 @@ object War:
       case (s: BattleTurn, i: PlayCard) => playCard(s, i)
       case (s: WarTurn, i: PlayCard)    => playCard(s, i)
       case (s: PlayerWinTurn, i: Ready) => ackTurnWin(s, i)
-      case (s, i: GetState)             => s.pure
 
     private def playerReady(state: Init, input: Ready): F[GameState] =
       for

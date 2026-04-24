@@ -49,7 +49,7 @@ object Main extends IOApp:
       // FIXME usage of insecure naive auth
       authService  <- Resource.eval(AuthService.naive(userService, jwtGenerator, config.auth))
       chatProtocol <- Resource.eval(ChatProtocol.make(authService))
-      gameProtocol <- Resource.eval(GameProtocol.make(authService))
+      gameProtocol <- GameProtocol.make(authService, gameService)
       userEndpoint <- Resource.eval(UserEndpoint.of(userService))
       gameEndpoint <- Resource.eval(GameEndpoint.of(gameService))
       warEndpoint  <- WarEndpoint.make(gameService, userService, gameProtocol, chatProtocol)

@@ -13,11 +13,12 @@ import skunk.circe.codec.all.*
 
 import java.time.ZonedDateTime
 
-final case class GameCreationDBModel(game: GameType, state: Json)
+final case class GameCreationDBModel(game: GameType, state: Json, createdBy: FUUID, finishedAt: Option[ZonedDateTime])
 object GameCreationDBModel:
-  val codec: Codec[GameCreationDBModel] = (gameType *: jsonb).to[GameCreationDBModel]
+  val codec: Codec[GameCreationDBModel] = (gameType *: jsonb *: fuuid *: timestampTZ.opt).to[GameCreationDBModel]
 
-  def fromGameData[State : Encoder](data: Game.Data[State]): GameCreationDBModel = GameCreationDBModel(data.gameType, data.state.asJson)
+  def fromGameData[State : Encoder](data: Game.Data[State]): GameCreationDBModel =
+    GameCreationDBModel(data.gameType, data.state.asJson, data.createdBy, data.finishedAt)
 
 final case class GameUpdateDBModel(state: Json, updateDate: ZonedDateTime, id: FUUID, previousUpdate: ZonedDateTime)
 object GameUpdateDBModel:
@@ -26,7 +27,11 @@ object GameUpdateDBModel:
 
 final case class GameReadDBModel(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: GameCreationDBModel):
   def toExistingGame[State : Decoder](players: NonEmptyList[FUUID]): Either[DecodingFailure, Game.Existing[State]] =
-    data.state.as[State].map(state => Game.Existing(id, createdAt, updatedAt, Game.Data[State](data.game.asInstanceOf[GameTyp[State, ?]], players, state)))
+    data.state
+      .as[State]
+      .map(state =>
+        Game.Existing(id, createdAt, updatedAt, Game.Data[State](data.game.asInstanceOf[GameTyp[State, ?]], players, state, data.createdBy, data.finishedAt))
+      )
 
 object GameReadDBModel:
   given Eq[GameReadDBModel] = Eq.fromUniversalEquals

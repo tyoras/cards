@@ -18,8 +18,13 @@ CREATE TABLE IF NOT EXISTS games
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()       NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()       NOT NULL,
     game_type  game_type                                    NOT NULL,
-    state      JSONB                    DEFAULT '{}'::JSONB NOT NULL
+    state      JSONB                    DEFAULT '{}'::JSONB NOT NULL,
+    created_by UUID REFERENCES users (id) ON DELETE CASCADE,
+    finished_at TIMESTAMP WITH TIME ZONE
 );
+
+CREATE INDEX IF NOT EXISTS idx_games_game_type ON games (game_type);
+CREATE INDEX IF NOT EXISTS idx_games_active ON games (finished_at);
 
 CREATE TABLE IF NOT EXISTS gamesplayers
 (

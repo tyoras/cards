@@ -44,9 +44,9 @@ object PostgresGameRepository:
           yield result
         }
 
-      override def readAll[State : Decoder]: F[List[Game.Existing[State]]] =
+      override def readAll[State : Decoder](finished: Boolean): F[List[Game.Existing[State]]] =
         sessionPool.use(
-          _.prepareR(Statements.Select.all).use(
+          _.prepareR(Statements.Select.all(finished)).use(
             _.stream(Void, chunkSize).chunkAdjacent.through(toExisting[F, State]).compile.toList
           )
         )
@@ -58,9 +58,9 @@ object PostgresGameRepository:
           )
         )
 
-      override def readManyByUser[State : Decoder](userId: FUUID): F[List[Game.Existing[State]]] =
+      override def readManyByUser[State : Decoder](userId: FUUID, finished: Boolean): F[List[Game.Existing[State]]] =
         sessionPool.use(
-          _.prepareR(Statements.Select.byUser).use(
+          _.prepareR(Statements.Select.byUser(finished)).use(
             _.stream(userId, chunkSize).chunkAdjacent.through(toExisting[F, State]).compile.toList
           )
         )

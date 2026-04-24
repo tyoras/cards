@@ -23,7 +23,7 @@ import org.typelevel.log4cats.LoggerFactory
 trait GamesClient[F[_]]:
   def listAll: F[List[Game]]
   def findById(gameId: FUUID): F[Option[Game]]
-  def findByUserId(userId: FUUID): F[List[Game]]
+  def findByUserId(userId: FUUID, finished: Boolean): F[List[Game]]
   def removeById(gameId: FUUID): F[Boolean]
   def createWarGame(players: NonEmptyList[PlayerId]): F[Game]
   def connectWarGame(gameId: FUUID): Resource[F, WarClient[F]]
@@ -55,11 +55,14 @@ object GamesClient:
           result  <- httpClient.expectOption[Response.Game](request)
         yield result.map(_.transformInto[Game])
 
-      override def findByUserId(userId: FUUID): F[List[Game]] =
+      override def findByUserId(userId: FUUID, finished: Boolean): F[List[Game]] = {
+        val baseUri = gamesApiUri.withQueryParam("user_id", userId.toString)
+        val uri     = if finished then baseUri.withQueryParam("finished") else baseUri
         for
-          request <- Request[F](GET, gamesApiUri.withQueryParam("user_id", userId.toString)).pure
+          request <- Request[F](GET, uri).pure
           result  <- httpClient.expect[List[Response.Game]](request)
         yield result.map(_.transformInto[Game])
+      }
 
       override def removeById(gameId: FUUID): F[Boolean] =
         for

@@ -241,3 +241,5 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
     Finish(updatedRound, outcome)
 
   override def currentState: F[GameState] = fsm.getCurrentState
+
+  override def isFinished: F[Boolean] = currentState.map(_.isInstanceOf[Finish])
