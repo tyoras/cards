@@ -41,26 +41,26 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
   "createDeck" should "create a deck containing the right number of card" in {
     forAll(suitsGen -> "suits", defaultRanksGen -> "ranks") { (suits, ranks) =>
       val expectedDeckLength = suits.size * ranks.size
-      createDeck(suits, ranks) should have size expectedDeckLength.toLong
+      Deck.create(suits, ranks) should have size expectedDeckLength.toLong
     }
   }
 
   it should "create a deck containing only unique cards" in {
     forAll(suitsGen -> "suits", defaultRanksGen -> "ranks") { (suits, ranks) =>
       val expectedDeckLength = suits.size * ranks.size
-      createDeck(suits, ranks).toSet should have size expectedDeckLength.toLong
+      Deck.create(suits, ranks).toSet should have size expectedDeckLength.toLong
     }
   }
 
   "shuffle" should "preserve the deck size" in {
     val baseDeck         = international52Deck
     val expectedDeckSize = baseDeck.size.toLong
-    shuffle(baseDeck) should have size expectedDeckSize
+    baseDeck.shuffled should have size expectedDeckSize
   }
 
   it should "keep the same cards" in {
     forAll(randomDeckGen -> "deck") { deck =>
-      shuffle(deck) should contain theSameElementsAs deck
+      deck.shuffled should contain theSameElementsAs deck
     }
   }
 
@@ -68,8 +68,8 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
   it should "produce different deck order most of the time" ignore {
     forAll(randomDeckGen -> "deck") { deck =>
       whenever(deck.size > 1) {
-        val firstShuffle  = shuffle(deck)
-        val secondShuffle = shuffle(deck)
+        val firstShuffle  = deck.shuffled
+        val secondShuffle = deck.shuffled
         firstShuffle should ((contain theSameElementsAs secondShuffle).and(not) contain theSameElementsInOrderAs(secondShuffle))
       }
     }
@@ -77,12 +77,12 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
 
   it should "return an empty deck on a empty deck" in {
     val baseDeck = Nil
-    shuffle(baseDeck) shouldBe empty
+    baseDeck.shuffled shouldBe empty
   }
 
   "pickCard by index" should "return None with an empty hand" in {
     val hand = Nil
-    pickCard(0, hand) should be((None, hand))
+    hand.pickCard(0) should be((None, hand))
   }
 
   it should "return the card and the remaining hand when the hand contain cards" in {
@@ -90,7 +90,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
       whenever(index < hand.size) {
         val expectedCard                = hand(index)
         val expectedRemainingHand       = hand.diff(List(expectedCard))
-        val (pickedCard, remainingHand) = pickCard(index, hand)
+        val (pickedCard, remainingHand) = hand.pickCard(index)
         pickedCard.value shouldBe expectedCard
         (remainingHand should contain).theSameElementsInOrderAs(expectedRemainingHand)
       }
@@ -99,20 +99,20 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
 
   it should "return None when the index is lower than 0" in {
     forAll(randomDeckGen -> "hand", Gen.negNum[Int] -> "index") { (hand, index) =>
-      pickCard(index, hand) shouldBe (None -> hand)
+      hand.pickCard(index) shouldBe (None -> hand)
     }
   }
 
   it should "return None when the index is equal to the hand size" in {
     forAll(randomDeckGen -> "hand") { hand =>
-      pickCard(hand.size, hand) shouldBe (None -> hand)
+      hand.pickCard(hand.size) shouldBe (None -> hand)
     }
   }
 
   it should "return None when the index is greater than the hand size" in {
     forAll(randomDeckGen -> "hand", Gen.posNum[Int] -> "index") { (hand, index) =>
       whenever(index > hand.size) {
-        pickCard(index, hand) shouldBe (None -> hand)
+        hand.pickCard(index) shouldBe (None -> hand)
       }
     }
   }
@@ -120,7 +120,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
   "pickCard by card" should "return None with an empty hand" in {
     forAll(cardGen -> "card") { card =>
       val hand = Nil
-      pickCard(card, hand) shouldBe (None -> hand)
+      hand.pickCard(card) shouldBe (None -> hand)
     }
   }
 
@@ -130,7 +130,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
       whenever(distinctHand.nonEmpty) {
         val expectedCard                = distinctHand.head
         val handWithoutCardToPick       = distinctHand.tail
-        val (pickedCard, remainingHand) = pickCard(expectedCard, distinctHand)
+        val (pickedCard, remainingHand) = distinctHand.pickCard(expectedCard)
         pickedCard.value shouldBe expectedCard
         (remainingHand should contain).theSameElementsInOrderAs(handWithoutCardToPick)
       }
@@ -143,7 +143,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
       whenever(distinctHand.nonEmpty) {
         val card                  = distinctHand.head
         val handWithoutCardToPick = distinctHand.tail
-        pickCard(card, handWithoutCardToPick) shouldBe (None -> handWithoutCardToPick)
+        handWithoutCardToPick.pickCard(card) shouldBe (None -> handWithoutCardToPick)
       }
     }
   }
@@ -153,7 +153,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
       whenever(hand.nonEmpty) {
         val card                           = hand.head
         val handWithSeveralCardOccurrences = card :: hand
-        val (pickedCard, remainingHand)    = pickCard(card, handWithSeveralCardOccurrences)
+        val (pickedCard, remainingHand)    = handWithSeveralCardOccurrences.pickCard(card)
         pickedCard.value shouldBe card
         (remainingHand should contain).theSameElementsInOrderAs(hand)
       }
@@ -163,7 +163,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
   "drawNCard" should "return the n first card from a deck and the remaining deck when the deck has more cards than asked" in {
     forAll(randomDeckGen -> "deck", Gen.choose(1, 3) -> "n") { (deck, n) =>
       whenever(deck.size > 3) {
-        val (drawnCards, remainingDeck) = drawNCard(n, deck)
+        val (drawnCards, remainingDeck) = deck.drawNCard(n)
         (drawnCards should contain).theSameElementsInOrderAs(deck.take(n))
         (remainingDeck should contain).theSameElementsInOrderAs(deck.drop(n))
       }
@@ -173,7 +173,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
   it should "return all the cards from a deck when the number of card to draw is greater than the deck size" in {
     forAll(randomDeckGen -> "deck", Gen.posNum[Int] -> "n") { (deck, n) =>
       whenever(deck.size < n) {
-        val (drawnCards, remainingDeck) = drawNCard(n, deck)
+        val (drawnCards, remainingDeck) = deck.drawNCard(n)
         (drawnCards should contain).theSameElementsInOrderAs(deck)
         remainingDeck shouldBe empty
       }
@@ -183,7 +183,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
   it should "return an empty list when the deck is empty" in {
     forAll(Gen.posNum[Int] -> "n") { n =>
       val deck                        = Nil
-      val (drawnCards, remainingDeck) = drawNCard(n, deck)
+      val (drawnCards, remainingDeck) = deck.drawNCard(n)
       drawnCards shouldBe empty
       remainingDeck shouldBe deck
     }
@@ -192,7 +192,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
   it should "return an empty list when the number of card to draw is 0" in {
     forAll(randomDeckGen -> "deck") { deck =>
       whenever(deck.nonEmpty) {
-        val (drawnCards, remainingDeck) = drawNCard(0, deck)
+        val (drawnCards, remainingDeck) = deck.drawNCard(0)
         drawnCards shouldBe empty
         remainingDeck shouldBe deck
       }
@@ -202,7 +202,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
   it should "return an empty list when the number of card to draw is lower than 0" in {
     forAll(randomDeckGen -> "deck", Gen.negNum[Int] -> "n") { (deck, n) =>
       whenever(deck.nonEmpty) {
-        val (drawnCards, remainingDeck) = drawNCard(n, deck)
+        val (drawnCards, remainingDeck) = deck.drawNCard(n)
         drawnCards shouldBe empty
         remainingDeck should be(deck)
       }
@@ -212,7 +212,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
   "drawFirstCard" should "return the first card when the deck has more than one card" in {
     forAll(randomDeckGen -> "deck") { deck =>
       whenever(deck.nonEmpty) {
-        val (drawnCard, remainingDeck) = drawFirstCard(deck)
+        val (drawnCard, remainingDeck) = deck.drawFirstCard
         drawnCard.value shouldBe deck.head
         (remainingDeck should contain).theSameElementsInOrderAs(deck.tail)
       }
@@ -222,7 +222,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
   it should "return the first card when the deck has only one card" in {
     forAll(cardGen -> "card") { card =>
       val deck                       = List(card)
-      val (drawnCard, remainingDeck) = drawFirstCard(deck)
+      val (drawnCard, remainingDeck) = deck.drawFirstCard
       drawnCard.value should be(card)
       remainingDeck shouldBe empty
     }
@@ -230,7 +230,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
 
   it should "return None when the deck is empty" in {
     val deck                       = Nil
-    val (drawnCard, remainingDeck) = drawFirstCard(deck)
+    val (drawnCard, remainingDeck) = deck.drawFirstCard
     drawnCard should be(None)
     remainingDeck should be(deck)
   }

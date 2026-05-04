@@ -89,7 +89,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
     for
       _ <- checkPlayer(forehand, input.playerId)
       _ <- if state.canExchangeTrumpJack then F.unit else F.raiseError[Unit](InvalidAction())
-      remainingHand   = pickCard(state.trumpJack, forehand.hand)._2
+      remainingHand   = forehand.hand.pickCard(state.trumpJack)._2
       updatedForehand = forehand.copy(hand = remainingHand :+ trumpCard)
       updatedRound    = state.round.copy(trumpCard = state.trumpJack, forehand = updatedForehand)
       _ <- Logger[F].debug(s"Player ${forehand.name} has exchanged the trump jack ${state.trumpJack} with the trump card $trumpCard")
@@ -149,7 +149,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
     yield nextState
 
   private def playCard(player: Player, card: Card): InternalGameState[F, Card] = StateT { state =>
-    val (playedCard, remainingHand) = pickCard(card, player.hand)
+    val (playedCard, remainingHand) = player.hand.pickCard(card)
     playedCard match
       case None => Sync[F].raiseError(InvalidCard(s"Player ${player.name} has tried to play the card $card that he does not own."))
       case Some(c) =>
@@ -176,7 +176,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
 
   private def drawCard(player: Player): InternalGameState[F, Card] = StateT { state =>
     for
-      drawn <- drawFirstCardF[F](state.talon)
+      drawn <- state.talon.drawFirstCardF[F]
       (card, updatedDeck) = drawn
       _ <- Logger[F].debug(s"Player ${player.name} has drawn $card")
       updatedPlayer = player.copy(hand = player.hand :+ card)
@@ -191,7 +191,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
     if playableRule.apply(card) then card.pure[F] else F.raiseError(InvalidCard())
 
   private def finishEarlyGame(game: GameRound): F[GameState] = for
-    drawn <- drawFirstCardF[F](game.talon)
+    drawn <- game.talon.drawFirstCardF[F]
     (lastCard, updatedDeck) = drawn
     updatedForehand         = game.forehand.copy(hand = game.forehand.hand :+ lastCard)
     updatedDealer           = game.dealer.copy(hand = game.dealer.hand :+ game.trumpCard)

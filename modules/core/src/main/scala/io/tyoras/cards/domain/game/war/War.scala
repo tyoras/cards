@@ -28,8 +28,8 @@ object War:
   private def initGameContext[F[_] : Sync](playerIds: NonEmptyList[PlayerId]): F[GameContext] =
     for
       startAt <- Clock[F].getZonedDateTimeUTC
-      deck    <- Sync[F].delay(shuffle(warDeck))
-      hands   = divideN(deck, playerIds.size)
+      deck    <- Sync[F].delay(warDeck.shuffled)
+      hands   = deck.divideN(playerIds.size)
       players = playerIds.toList.zip(hands).map((id, hand) => id -> Player(id, hand)).toMap
     yield GameContext(players, startAt, Turn.firstTurn)
 
@@ -163,7 +163,7 @@ object War:
         if warTurn.currentRound.fightingCards.nonEmpty then warTurn.currentRound.fightingCards
         // in case does not happen to have hidden cards we draw cards from a second deck instead
         else if warTurn.currentRound.hiddenPlayedCards.nonEmpty then warTurn.currentRound.hiddenPlayedCards
-        else warTurn.currentRound.involvedPlayers.foldLeft(Map.empty[PlayerId, Card])((cards, id) => cards.updated(id, shuffle(warDeck).head))
+        else warTurn.currentRound.involvedPlayers.foldLeft(Map.empty[PlayerId, Card])((cards, id) => cards.updated(id, warDeck.shuffled.head))
       val highestRank = fightingCards.values.maxBy(_.value)
       val winners     = fightingCards.filter(_._2.value == highestRank.value).keySet.toNes
       winners.toList match

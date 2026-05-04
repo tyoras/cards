@@ -2,7 +2,7 @@ package io.tyoras.cards.shared.protocol.game
 
 import io.chrisdavenport.fuuid.FUUID
 import io.circe.{Codec, Json}
-import io.circe.derivation.{Configuration, ConfiguredCodec, ConfiguredEnumCodec, renaming}
+import io.circe.derivation.{Configuration, ConfiguredCodec}
 import io.tyoras.cards.domain.game.GameType
 import io.chrisdavenport.fuuid.circe.given
 import io.tyoras.cards.domain.game.GameTyp.given

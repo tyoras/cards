@@ -14,7 +14,7 @@ import org.typelevel.log4cats.StructuredLogger
 val schnapsenRanks: Set[Rank] = Set(Ace(11), Ten(), King(4), Queen(3), Jack(2))
 val schnapsenSuits: Set[Suit] = allSuits
 
-lazy val baseDeck: Deck = createDeck(schnapsenSuits, schnapsenRanks)
+lazy val baseDeck: Deck = Deck.create(schnapsenSuits, schnapsenRanks)
 
 type PlayerId = FUUID
 
@@ -24,10 +24,11 @@ private[schnapsen] def forehand[F[_] : Applicative]: InternalGameState[F, Player
 
 private[schnapsen] def dealer[F[_] : Applicative]: InternalGameState[F, Player] = StateT.inspect(_.dealer)
 
-def drawFirstCardF[F[_] : ApplicativeThrow](deck: Deck): F[(Card, Deck)] =
-  val (drawnCard, updatedDeck) = drawFirstCard(deck)
-  for c <- drawnCard.fold(ApplicativeThrow[F].raiseError[Card](DeckError("Not enough card left in the deck to draw.")))(Applicative[F].pure)
-  yield (c, updatedDeck)
+extension (deck: Deck)
+  def drawFirstCardF[F[_] : ApplicativeThrow]: F[(Card, Deck)] =
+    val (drawnCard, updatedDeck) = deck.drawFirstCard
+    for c <- drawnCard.fold(ApplicativeThrow[F].raiseError[Card](DeckError("Not enough card left in the deck to draw.")))(Applicative[F].pure)
+    yield (c, updatedDeck)
 
 private[schnapsen] def findPossibleMarriages(hand: Hand, trumpSuit: Suit): List[Marriage] =
   hand
@@ -59,20 +60,20 @@ private[schnapsen] def initGameRound[F[_]](ctx: GameContext)(logger: StructuredL
 
     for
       deck <- F.delay {
-        shuffle(baseDeck)
+        baseDeck.shuffled
       }
       decision <- context.previousFirstDealer.map(swapDealer).getOrElse(decide(deck))
     yield decision
 
   def dealing(deck: Deck): Either[DeckError, (Hand, Hand, Deck, Card)] =
     def deal(n: Int, talon: Deck): (Hand, Hand, Deck) =
-      val (fhDraw, t)              = drawNCard(n, talon)
-      val (dlDraw, remainingTalon) = drawNCard(n, t)
+      val (fhDraw, t)              = talon.drawNCard(n)
+      val (dlDraw, remainingTalon) = t.drawNCard(n)
       (fhDraw, dlDraw, remainingTalon)
 
-    val t0                               = shuffle(deck)
+    val t0                               = deck.shuffled
     val (fhFirstDraw, dlFirstDraw, t1)   = deal(3, t0)
-    val (trumpCard, t2)                  = drawFirstCard(t1)
+    val (trumpCard, t2)                  = t1.drawFirstCard
     val (fhSndDraw, dlSecondDraw, talon) = deal(2, t2)
 
     val dlHand = dlFirstDraw ++ dlSecondDraw

@@ -43,7 +43,7 @@ class SchnapsenSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPrope
     forAll(deckGen -> "deck") { deck =>
       whenever(deck.nonEmpty) {
         val expectedCard          = deck.head
-        val program               = drawFirstCardF[IO](deck)
+        val program               = deck.drawFirstCardF[IO]
         val (card, remainingDeck) = program.unsafeRunSync()
         card should be(expectedCard)
         remainingDeck should be(deck.tail)
@@ -54,6 +54,6 @@ class SchnapsenSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPrope
 
   it should "return a DeckError when the deck is empty" in {
     val deck    = Nil
-    val program = drawFirstCardF[IO](deck)
+    val program = deck.drawFirstCardF[IO]
     a[DeckError] should be thrownBy program.unsafeRunSync()
   }

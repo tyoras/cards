@@ -18,7 +18,7 @@ val suitsGen: Gen[Set[Suit]] = Gen.containerOf[Set, Suit](suitGen)
 val rankGen: Gen[Rank]       = Gen.oneOf(schnapsenRanks)
 val ranksGen: Gen[Set[Rank]] = Gen.containerOf[Set, Rank](rankGen)
 
-val deckGen: Gen[Deck] = Gen.delay(shuffle(baseDeck))
+val deckGen: Gen[Deck] = Gen.delay(baseDeck.shuffled)
 val handGen: Gen[Hand] = for
   n    <- Gen.chooseNum(0, 5)
   deck <- deckGen
@@ -74,7 +74,7 @@ val gameRoundGen: Gen[GameRound] = for
   context   <- gameContextGen
   deck      <- deckGen
   trumpCard <- Gen.oneOf(deck)
-  (_, d2) = pickCard(trumpCard, deck)
+  (_, d2) = deck.pickCard(trumpCard)
   p1 <- playerGen(context.player1.id.some, context.player1.name.some, trumpCard.suit.some)
   p2 <- playerGen(context.player2.id.some, context.player2.name.some, trumpCard.suit.some)
   playerIds = Seq(p1.id, p2.id)

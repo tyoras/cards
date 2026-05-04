@@ -7,11 +7,11 @@ import io.tyoras.cards.domain.card.Rank.*
 case class Card(suit: Suit, rank: Rank) extends Ordered[Card]:
   override def toString: String = emoji
 
-  override def compare(that: Card): Int = rank.compare(that.rank)
+  override def compare(that: Card): Int = value.compare(that.value)
 
   val color: Color = suit.color
 
-  val value: Int = rank.value
+  val value: CardValue = rank.value
 
   val emoji: String = Card.emoji(this)
 

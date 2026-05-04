@@ -9,12 +9,12 @@ val suitsGen: Gen[Set[Suit]] = Gen.containerOf[Set, Suit](suitGen)
 val defaultRankGen: Gen[Rank]       = Gen.oneOf(defaultRanks)
 val defaultRanksGen: Gen[Set[Rank]] = Gen.containerOf[Set, Rank](defaultRankGen)
 
-val international52DeckGen: Gen[Deck] = Gen.delay(shuffle(international52Deck))
+val international52DeckGen: Gen[Deck] = Gen.delay(international52Deck.shuffled)
 val randomDeckGen: Gen[Deck] = for
   suits <- suitsGen
   ranks <- defaultRanksGen
-  sortedDeck = createDeck(suits, ranks)
-  shuffledDeck <- Gen.delay(shuffle(sortedDeck))
+  sortedDeck = Deck.create(suits, ranks)
+  shuffledDeck <- Gen.delay(sortedDeck.shuffled)
 yield shuffledDeck
 
 val cardGen: Gen[Card] = for
