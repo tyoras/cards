@@ -21,7 +21,7 @@ trait AuthProvider[F[_]]:
 
 object AuthProvider:
   def make[F[_] : Sync : LoggerFactory](config: AuthConfig, authClient: AuthClient[F]): F[AuthProvider[F]] =
-    val logger = LoggerFactory.getLogger
+    val logger                                   = LoggerFactory.getLogger
     val attemptLogin: F[Option[AuthCredentials]] =
       authClient
         .login(config.userName, config.password)

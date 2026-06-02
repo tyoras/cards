@@ -60,7 +60,7 @@ object GameStartMenuTUI:
 
       override def update(msg: Msg, state: State): (State, Cmd[Msg]) =
         (msg, state.mode) match
-          case (Msg.DisplayNotif(notif), _) => State(Menu(notif = notif.some)) -> Cmd.none
+          case (Msg.DisplayNotif(notif), _)            => State(Menu(notif = notif.some)) -> Cmd.none
           case (Msg.MoveUp | Msg.MoveDown, menu: Menu) =>
             val selection = menu.selection match
               case Create => Join
@@ -92,7 +92,7 @@ object GameStartMenuTUI:
             state -> runEffectCmd(createGame(creation))(e => Msg.DisplayNotif(Notification.Error(s"Client error : $e")))
           case (Msg.PlayersFound(players, playerId), _) =>
             State(Creation(playerId, availablePlayers = players, selection = Set(players.lastIndexWhere(_.id == playerId)))) -> Cmd.none
-          case (Msg.Back, _) => State(Menu()) -> Cmd.none
+          case (Msg.Back, _)       => State(Menu()) -> Cmd.none
           case (Msg.Output(id), _) =>
             state -> Cmd.batch(
               fireEffectCmd(gameId.complete(id)),
@@ -132,7 +132,7 @@ object GameStartMenuTUI:
         Sub.onKeyPress {
           case Key.Up | Key.Char('k')   => Msg.MoveUp.some
           case Key.Down | Key.Char('j') => Msg.MoveDown.some
-          case Key.Char(' ') =>
+          case Key.Char(' ')            =>
             state.mode match
               case _: Creation => Msg.ToggleSelection.some
               case _: Menu     => Msg.Submit.some

@@ -7,7 +7,7 @@ import io.tyoras.cards.util.validation.syntax.*
 
 final case class Room private (room: String)
 object Room:
-  val defaultRoom: Room = new Room("Default")
+  val defaultRoom: Room                           = new Room("Default")
   def apply(name: String): ValidationResult[Room] =
     name.optionalWithDefault("Chat user name", notBlank, min(2), max(50)).map(new Room(_))
 

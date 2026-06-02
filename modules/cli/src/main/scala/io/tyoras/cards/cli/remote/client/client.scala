@@ -17,10 +17,10 @@ import scala.concurrent.duration.DurationInt
 final case class Game(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, gameType: GameType, players: NonEmptyList[FUUID])
 
 def authedClient[F[_] : Async](underlying: Client[F], authProvider: AuthProvider[F]): Client[F] =
-  val retryPolicy = RetryPolicy[F](backoff = exponentialBackoff(3.second, maxRetry = 5))
+  val retryPolicy  = RetryPolicy[F](backoff = exponentialBackoff(3.second, maxRetry = 5))
   val loggedClient = Logger.colored[F](logHeaders = true, logBody = true)(Client[F] { req =>
     for
-      creds <- Resource.eval(authProvider.connectedUserCredentials)
+      creds  <- Resource.eval(authProvider.connectedUserCredentials)
       result <- underlying.run(
         req.putHeaders(
           Headers(

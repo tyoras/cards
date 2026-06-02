@@ -12,7 +12,7 @@ def parseConfig[F[_] : Sync](configSource: ConfigSource): F[ServerConfig] =
 given ConfigReader[Set[Origin.Host]] =
   ConfigReader.fromString[Set[Origin.Host]] {
     case "*" => Right(Set.empty) // empty set means all origins are allowed
-    case s =>
+    case s   =>
       Origin
         .parse(s)
         .fold(

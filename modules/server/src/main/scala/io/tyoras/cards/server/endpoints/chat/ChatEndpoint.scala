@@ -28,7 +28,7 @@ object ChatEndpoint:
       messageQueue <- Resource.eval(Queue.unbounded[F, OutputMessage])
       // publishing/subscription
       messageTopic <- Resource.eval(Topic[F, OutputMessage])
-      _ <- Stream
+      _            <- Stream
         .fromQueueUnterminated(messageQueue)
         .through(messageTopic.publish)
         .concurrently(
@@ -120,7 +120,7 @@ object ChatEndpoint:
 
       private def handleWebSocketStream(frameStream: Stream[F, WebSocketFrame], userRef: Ref[F, Option[ChatUser]]): Stream[F, OutputMessage] =
         for
-          frame <- frameStream
+          frame         <- frameStream
           outputMessage <- Stream.evalSeq(
             frame match
               case WebSocketFrame.Text(text, _) => inputParser.parse(userRef, text)

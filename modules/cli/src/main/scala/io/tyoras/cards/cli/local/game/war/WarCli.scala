@@ -41,7 +41,7 @@ object WarCli:
 
       private val readPlayerCount: F[PlayerCount] =
         console.readLine.flatMap {
-          case "" => config.defaultPlayerCount.pure
+          case ""  => config.defaultPlayerCount.pure
           case str =>
             Sync[F]
               .fromEither(PlayerCount.from(str))
@@ -93,7 +93,7 @@ object WarCli:
           _           <- displayIntro
           playerNames <- askPlayerInfos
           rendering = Rendering[F](playerNames)
-          game <- War(NonEmptyList.fromListUnsafe(playerNames.keys.toList))
+          game     <- War(NonEmptyList.fromListUnsafe(playerNames.keys.toList))
           exitCode <- game.tailRecM(_.currentState.flatMap {
             case Exit(_) => ExitCode.Success.asRight.pure
             case _       => loop(game, rendering).map(_.asLeft)

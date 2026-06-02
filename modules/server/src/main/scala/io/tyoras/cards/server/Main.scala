@@ -30,7 +30,7 @@ import pureconfig.ConfigSource
 object Main extends IOApp:
   given LoggerFactory[IO] = Slf4jFactory.create[IO]
 
-  private val defaultConfigSource = ConfigSource.resources("cards-server.conf")
+  private val defaultConfigSource                    = ConfigSource.resources("cards-server.conf")
   override def run(args: List[String]): IO[ExitCode] =
     val configSource = args.headOption.fold(defaultConfigSource)(ConfigSource.file)
     init[IO](configSource).useForever.as(ExitCode.Success)

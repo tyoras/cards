@@ -25,13 +25,13 @@ object ErrorHandling:
     case e: ResourceNotFound                        => (Status.NotFound, ApiMessage("not_found", e.getMessage))
     case e: InvalidRequest                          => (Status.BadRequest, ApiMessage("invalid_request", e.getMessage))
     case PersistenceError("already_exist", message) => (Status.Conflict, ApiMessage("already_exist", message))
-    case ve: ValidationError =>
+    case ve: ValidationError                        =>
       (Status.UnprocessableContent, ApiMessage(ve.code, ve.message, ve.errors.map(e => ApiFieldError(e.code, e.field, e.message.getOrElse("")))))
     case pf: ParseFailure =>
       (Status.BadRequest, ApiMessage("parse_failure", pf.message))
     case mmbf: MalformedMessageBodyFailure =>
       (Status.BadRequest, ApiMessage("invalid_request", mmbf.message))
-    case imbf: InvalidMessageBodyFailure => handleInvalidMessageBodyFailure(imbf)
+    case imbf: InvalidMessageBodyFailure   => handleInvalidMessageBodyFailure(imbf)
     case umtf: UnsupportedMediaTypeFailure =>
       (Status.UnsupportedMediaType, ApiMessage("invalid_request", umtf.message))
     case t =>

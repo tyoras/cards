@@ -13,7 +13,7 @@ abstract class TUI[F[_], State, Msg] extends LayoutzApp[State, Msg]:
   protected def dispatcher: Dispatcher[F]
   protected def pageBanner: String
 
-  protected def fireEffectCmd[A](effect: F[A]): Cmd[Msg] = Cmd.fire(dispatcher.unsafeRunAndForget(effect))
+  protected def fireEffectCmd[A](effect: F[A]): Cmd[Msg]                      = Cmd.fire(dispatcher.unsafeRunAndForget(effect))
   protected def runEffectCmd(effect: F[Msg])(errMsg: String => Msg): Cmd[Msg] = Cmd.task(dispatcher.unsafeRunSync(effect)) {
     case Right(value) => value
     case Left(err)    => errMsg(err)

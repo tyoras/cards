@@ -51,7 +51,7 @@ object UserEndpoint:
       private def createOrUpdate(id: FUUID)(payload: Creation): F[Response[F]] = for
         validated <- payload.validateF
         search    <- userService.readById(id)
-        result <- search.fold(userService.create(validated, withId = id.some)) { existing =>
+        result    <- search.fold(userService.create(validated, withId = id.some)) { existing =>
           userService.update(existing.copy(data = validated))
         }
         transformed = result.transformInto[Payloads.Response.User]

@@ -30,7 +30,7 @@ sealed abstract class EarlyGame(game: GameRound, currentRole: Role) extends Play
 
 case class EarlyGameForehandTurn(round: GameRound, ongoingMarriage: Option[Marriage] = None) extends EarlyGame(round, Forehand) with ForehandTurn:
   override val label: String = "Early game - forehand turn"
-  lazy val trumpJack: Card =
+  lazy val trumpJack: Card   =
     baseDeck.find(c => c.suit == round.trumpSuit && c.rank.isInstanceOf[Jack]).getOrElse(throw new IllegalArgumentException("Trump jack not found"))
   lazy val canExchangeTrumpJack: Boolean = currentPlayer.hand.contains(trumpJack)
   override lazy val playableCards: Hand  = ongoingMarriage.fold(currentPlayer.hand)(m => List(m.king, m.queen))
@@ -48,7 +48,7 @@ case class LateGameForehandTurn(round: GameRound, ongoingMarriage: Option[Marria
   override lazy val playableCards: Hand = ongoingMarriage.fold(currentPlayer.hand)(m => List(m.king, m.queen))
 
 case class LateGameDealerTurn(round: GameRound, forehandCard: Card) extends LateGame(round, Dealer) with DealerTurn:
-  override val label: String = "Late game - dealer turn"
+  override val label: String            = "Late game - dealer turn"
   override lazy val playableCards: Hand =
     currentPlayer.hand.filter(_.suit == forehandCard.suit) match
       case Nil =>

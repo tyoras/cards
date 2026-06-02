@@ -129,7 +129,7 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
       card2   = context.players(playerIds.last).hand.head
       _       <- war.submitInput(GameInput.PlayCard(playerIds.head, card1.id))
       winTurn <- war.submitInput(GameInput.PlayCard(playerIds.last, card2.id))
-      result <-
+      result  <-
         if winTurn.isInstanceOf[PlayerWinTurn] then war.submitInput(Ready(playerIds.head))
         else IO.pure(winTurn)
     } yield if winTurn.isInstanceOf[PlayerWinTurn] then result shouldBe a[PlayerWinTurn] else succeed
@@ -147,7 +147,7 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
       card2   = context.players(playerIds.last).hand.head
       _       <- war.submitInput(GameInput.PlayCard(playerIds.head, card1.id))
       winTurn <- war.submitInput(GameInput.PlayCard(playerIds.last, card2.id))
-      result <-
+      result  <-
         if winTurn.isInstanceOf[PlayerWinTurn] then
           for {
             _     <- war.submitInput(Ready(playerIds.head))

@@ -5,7 +5,7 @@ object Dependencies {
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.5.32"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.5.34"
       }
     }
   }
@@ -35,7 +35,7 @@ object Dependencies {
 
   case object dev {
     case object profunktor {
-      val http4sJwtAuthVersion = "2.0.14"
+      val http4sJwtAuthVersion = "2.0.15"
       val `http4s-jwt-auth`    = "dev.profunktor" %% "http4s-jwt-auth" % http4sJwtAuthVersion
     }
   }
@@ -50,7 +50,7 @@ object Dependencies {
     }
 
     case object scalaland {
-      val chimney = "io.scalaland" %% "chimney" % "1.9.0"
+      val chimney = "io.scalaland" %% "chimney" % "1.10.0"
     }
 
     case object circe {
@@ -60,7 +60,7 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "12.4.0"
+      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "12.7.0"
     }
 
     case object http4s {
@@ -74,7 +74,7 @@ object Dependencies {
     }
 
     case object postgresql {
-      val postgresql = "org.postgresql" % "postgresql" % "42.7.10"
+      val postgresql = "org.postgresql" % "postgresql" % "42.7.11"
     }
 
     case object scalacheck {

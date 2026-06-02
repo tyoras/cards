@@ -90,16 +90,16 @@ object WarTUI:
 
       override def update(msg: Msg, state: State): (State, Cmd[Msg]) = {
         msg match
-          case Msg.Tick                => state.incrementTick() -> Cmd.none
-          case Msg.DisplayNotif(notif) => state.addNotif(notif) -> Cmd.none
-          case Msg.TypeChar(c)         => state.typeChar(c)     -> Cmd.none
-          case Msg.Backspace           => state.removeChar()    -> Cmd.none
+          case Msg.Tick                   => state.incrementTick() -> Cmd.none
+          case Msg.DisplayNotif(notif)    => state.addNotif(notif) -> Cmd.none
+          case Msg.TypeChar(c)            => state.typeChar(c)     -> Cmd.none
+          case Msg.Backspace              => state.removeChar()    -> Cmd.none
           case Msg.SubmitChatMessage(msg) =>
             state.emptyCurrentMsg() -> runEffectCmd(submitChatMessage(state.currentMsg))(_ =>
               Msg.DisplayNotif(Notification.Error(s"Failed to send chat message: ${state.currentMsg}"))
             )
           case Msg.Exit => state -> Cmd.exit
-          case _ =>
+          case _        =>
             state match
               case state @ Loading(tick, msgs, crtMsg, writingInChat) =>
                 msg match
@@ -111,7 +111,7 @@ object WarTUI:
                     Loading(crtMsg = crtMsg, active = writingInChat) -> runEffectCmd(loadState)(e =>
                       Msg.DisplayNotif(Notification.Error(s"Failed to load game state: $e"))
                     )
-                  case Msg.SendReady => state -> runEffectCmd(sendReady)(e => Msg.DisplayNotif(Notification.Error(s"Failed to send ready input: $e")))
+                  case Msg.SendReady          => state -> runEffectCmd(sendReady)(e => Msg.DisplayNotif(Notification.Error(s"Failed to send ready input: $e")))
                   case Msg.SendPlayCard(card) =>
                     state -> runEffectCmd(sendPlayCard(card))(e => Msg.DisplayNotif(Notification.Error(s"Failed to send play card input: $e")))
                   case Msg.ToggleChatFocus => state.copy(writingInChat = !writingInChat)
@@ -164,8 +164,8 @@ object WarTUI:
           case _ => None
 
       override def view(state: State): Element =
-        val chat      = chatElement(state.messages, state.currentMsg, state.chatActive)
-        val chatWidth = chat.width - 4 // minus border*2 + space*2
+        val chat                     = chatElement(state.messages, state.currentMsg, state.chatActive)
+        val chatWidth                = chat.width - 4 // minus border*2 + space*2
         val (leftCol, rightColElems) = state match
           case Loading(tick, _, _, _) =>
             val clockSpinner = spinner("Loading...", tick, SpinnerStyle.Clock)
@@ -241,7 +241,7 @@ object WarTUI:
             section("Played cards") {
               val involvedPlayers = state.battles.head.involvedPlayers.toNonEmptyList.toList
               val headers         = "Player" +: state.battles.toList.zipWithIndex.map((_, i) => s"Round ${i + 1}")
-              val rows = involvedPlayers.map(id =>
+              val rows            = involvedPlayers.map(id =>
                 playerNames(id).style(Bold) +: state.battles.toList.map(round =>
                   row(
                     List(round.hiddenPlayedCards.get(id).as(renderCardBack()), round.fightingCards.get(id).map(renderCard(_))).flatten*

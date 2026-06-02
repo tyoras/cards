@@ -21,7 +21,7 @@ object InputParser:
     new InputParser[F]:
       override def parse(userRef: Ref[F, Option[ChatUser]], text: String): F[List[OutputMessage]] =
         text.trim match
-          case "" => List(DiscardMessage).pure
+          case ""  => List(DiscardMessage).pure
           case txt =>
             userRef.get.flatMap {
               _.fold(processText4UnReg(txt, userRef, Room.defaultRoom)) { user =>

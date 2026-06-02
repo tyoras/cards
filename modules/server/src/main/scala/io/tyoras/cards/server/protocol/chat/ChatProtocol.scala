@@ -85,7 +85,7 @@ object ChatProtocol:
 
         override def chat(user: ChatUser, text: String): F[List[OutputMessage]] =
           for
-            cs <- chatState.get
+            cs     <- chatState.get
             output <- cs.roomsByUser.get(user) match
               case Some(room) => broadcastMessage(cs, room, ChatMsg(user, user, text))
               case None       => List(SendToUser(user, "You are not currently in a room")).pure[F]

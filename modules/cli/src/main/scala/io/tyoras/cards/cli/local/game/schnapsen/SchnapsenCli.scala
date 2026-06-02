@@ -74,7 +74,7 @@ object SchnapsenCli:
         _           <- displayIntro
         gameContext <- initGameContext
         game        <- Schnapsen(gameContext)
-        exitCode <- game.tailRecM(_.currentState.flatMap {
+        exitCode    <- game.tailRecM(_.currentState.flatMap {
           case Exit(_) => ExitCode.Success.asRight[Schnapsen[F]].pure[F]
           case _       => loop(game).map(_.asLeft[ExitCode])
         })
@@ -83,7 +83,7 @@ object SchnapsenCli:
     private def renderGameState(state: GameState): F[Unit] =
       console.println(lineSeparator) >>
         (state match {
-          case _: Init => console.println("Press 'Enter' if you are ready to start the game...")
+          case _: Init        => console.println("Press 'Enter' if you are ready to start the game...")
           case pt: PlayerTurn =>
             val player = pt.currentPlayer
             console.println(s"${player.name} it is your turn, your hand : ${player.hand.mkString(" ")}") >>
@@ -114,7 +114,7 @@ object SchnapsenCli:
               _      <- console.println("End of the round.")
               winner <- F.fromEither(s.player(s.outcome.winner))
               loser  <- F.fromEither(s.player(s.outcome.loser))
-              _ <-
+              _      <-
                 console.println(s"The round winner is : ${winner.name} !") >>
                   (s.outcome match {
                     case _: TalonExhausted =>
@@ -141,7 +141,7 @@ object SchnapsenCli:
     private def displayMarriageChoice(state: ForehandTurn): F[Unit] = state.possibleMarriages match
       case Nil      => ().pure[F]
       case m :: Nil => console.println(s"\tM : Meld ${m.king} and ${m.queen} for ${m.status.score} points")
-      case couples =>
+      case couples  =>
         val choices = couples.zipWithIndex.map { case (m, i) =>
           s"\tM${i + 1} : Meld ${m.king} and ${m.queen} for ${m.status.score} points"
         }
@@ -151,13 +151,13 @@ object SchnapsenCli:
       rawInput match
         case "\\q" => End(state.round.forehand.id).pure
         case "\\r" => Restart(state.round.forehand.id).pure
-        case _ =>
+        case _     =>
           state match
             case _: Init                  => Start(state.round.forehand.id).pure
             case s: EarlyGameForehandTurn => parseEarlyGameForehandTurnChoice(s, rawInput)
             case s: DealerTurn            => parseCardChoice(s, rawInput)
             case s: LateGameForehandTurn  => parseLateGameForehandTurnChoice(s, rawInput)
-            case s: Finish =>
+            case s: Finish                =>
               F.fromEither(s.player(s.outcome.winner)).map(_.score <= 0).ifM(End(state.round.forehand.id).pure, Start(state.round.forehand.id).pure)
             case _: Exit => InvalidState.raiseError // Exit state is handled exclusively by the main game loop
 

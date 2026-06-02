@@ -31,7 +31,7 @@ def displayDeck[F[_] : Monad : Console](deck: Deck): F[Unit] =
 
   def displaySplit(deck: Deck): F[Unit] = Monad[F].tailRecM(deck) {
     case Nil => ().asRight[Deck].pure[F]
-    case d =>
+    case d   =>
       val (split, rest) = d.splitAt(nbCards)
       for
         _ <- split.traverse_(displayCard)

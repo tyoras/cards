@@ -23,7 +23,7 @@ object Launcher extends CommandIOApp(name = "cards", header = banner, version = 
 
   case class WarCommand(config: WarCli.Config)
   private val playerCountRaw: Opts[Int] = Opts.option("player-count", "How many player for this game (min. 2 - max. 52)").withDefault(2)
-  val playerCount: Opts[PlayerCount] = playerCountRaw.mapValidated(
+  val playerCount: Opts[PlayerCount]    = playerCountRaw.mapValidated(
     PlayerCount
       .from(_)
       .leftMap {
@@ -34,8 +34,8 @@ object Launcher extends CommandIOApp(name = "cards", header = banner, version = 
       }
       .toValidatedNel
   )
-  val autoNamePlayers: Opts[Boolean] = Opts.flag("auto-name", "Automatically use default name for players").orFalse
-  val autoPlay: Opts[Boolean]        = Opts.flag("auto-play", "Automatically play").orFalse
+  val autoNamePlayers: Opts[Boolean]   = Opts.flag("auto-name", "Automatically use default name for players").orFalse
+  val autoPlay: Opts[Boolean]          = Opts.flag("auto-play", "Automatically play").orFalse
   val warCommandOpts: Opts[WarCommand] =
     Opts.subcommand("war", "Play a game of War") {
       (playerCount, autoNamePlayers, autoPlay).mapN(WarCli.Config.apply).map(WarCommand.apply)

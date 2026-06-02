@@ -26,7 +26,7 @@ trait UsersClient[F[_]]:
 object UsersClient:
   def make[F[_] : Async](config: CardsClientConfig, httpClient: Client[F]): UsersClient[F] =
     new:
-      private val usersApiUri = config.apiUri / "api" / "users"
+      private val usersApiUri                      = config.apiUri / "api" / "users"
       override def listAll: F[List[User.Existing]] =
         for
           request <- Request[F](GET, usersApiUri).pure

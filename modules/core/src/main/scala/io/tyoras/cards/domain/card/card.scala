@@ -46,7 +46,7 @@ extension (cards: List[Card])
     cards match
       case Nil                           => (None, cards)
       case _ if n < 0 || n >= cards.size => (None, cards)
-      case _ =>
+      case _                             =>
         val card          = cards(n)
         val remainingHand = cards.take(n) ++ cards.drop(n + 1)
         (Some(card), remainingHand)

@@ -49,9 +49,9 @@ object War:
     yield new WarFSM[F](fsm)
 
   private class WarFSM[F[_] : Async : LoggerFactory](fsm: FinalStateMachine[F, GameState]) extends War[F]:
-    private val logger                      = LoggerFactory.getLogger
-    override def currentState: F[GameState] = fsm.getCurrentState
-    override def isFinished: F[Boolean]     = currentState.map(_.isInstanceOf[Finish])
+    private val logger                             = LoggerFactory.getLogger
+    override def currentState: F[GameState]        = fsm.getCurrentState
+    override def isFinished: F[Boolean]            = currentState.map(_.isInstanceOf[Finish])
     override val playerIds: F[NonEmptyList[FUUID]] =
       currentState.map(_.context.players.keys.toList).flatMap(ids => Sync[F].fromOption(NonEmptyList.fromList(ids), NoPlayersError))
 
@@ -137,7 +137,7 @@ object War:
         .map(_.id) - winnerId // removing winner in case he does not have cards anymore before getting the ones he just won
       val alreadyEliminated = context.eliminations.map(_.playerId).toSet
       val newlyEliminated   = allEliminated.diff(alreadyEliminated)
-      val updatedCtx =
+      val updatedCtx        =
         newlyEliminated.foldLeft(context)(_.eliminatePlayer(_)).updatePlayer(winnerId)(p => p.copy(hand = p.hand ::: wonCards)).incrementTurnNumber
       PlayerWinTurn(updatedCtx, winnerId, wonCards.toSet, newlyEliminated)
 

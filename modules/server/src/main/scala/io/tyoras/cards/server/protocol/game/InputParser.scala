@@ -15,10 +15,10 @@ trait InputParser[F[_]]:
 
 object InputParser:
   def make[F[_] : Sync : LoggerFactory](protocol: GameProtocol[F]): InputParser[F] = new InputParser[F]:
-    private val logger = LoggerFactory.getLogger
+    private val logger                                                                                   = LoggerFactory.getLogger
     override def parse(playerRef: Ref[F, Option[ConnectedPlayer]], text: String): F[List[OutputMessage]] =
       text.trim match
-        case "" => List(DiscardMessage).pure
+        case ""  => List(DiscardMessage).pure
         case txt =>
           playerRef.get.flatMap {
             _.fold(processUnauthenticatedCommand(txt, playerRef)) { player =>
@@ -46,7 +46,7 @@ object InputParser:
     private def processAuthenticatedCommand(player: ConnectedPlayer, text: String, playerRef: Ref[F, Option[ConnectedPlayer]]): F[List[OutputMessage]] =
       import player.gameType.given
       (for
-        cmd <- Sync[F].fromEither(io.circe.parser.decode[AuthenticatedCommand](text))
+        cmd    <- Sync[F].fromEither(io.circe.parser.decode[AuthenticatedCommand](text))
         result <- cmd match
           case gameCmd: GameCommand =>
             for

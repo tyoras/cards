@@ -48,7 +48,7 @@ object WarEndpoint:
       // needed to order the command as FIFO
       outputQueue <- Resource.eval(Queue.unbounded[F, OutputMessage])
       outputTopic <- Resource.eval(Topic[F, OutputMessage])
-      _ <- Stream
+      _           <- Stream
         .fromQueueUnterminated(outputQueue)
         .through(outputTopic.publish)
         .concurrently(
@@ -155,7 +155,7 @@ object WarEndpoint:
 
       private def handleWebSocketStream(frameStream: Stream[F, WebSocketFrame], playerRef: Ref[F, Option[ConnectedPlayer]]): Stream[F, OutputMessage] =
         for
-          frame <- frameStream
+          frame         <- frameStream
           outputMessage <- Stream.evalSeq(
             frame match
               case WebSocketFrame.Text(text, _) => inputParser.parse(playerRef, text)

@@ -1,4 +1,4 @@
-image: "sbtscala/scala-sbt:graalvm-community-25.0.1_1.12.0_3.7.4"
+image: "sbtscala/scala-sbt:graalvm-community-25.0.1_1.12.11_3.8.3"
 
 stages:
   - test

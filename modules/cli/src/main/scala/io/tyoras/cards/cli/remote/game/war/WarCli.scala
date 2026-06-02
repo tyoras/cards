@@ -40,7 +40,7 @@ object WarCli:
 
   def make[F[_] : Async : Concurrent : LoggerFactory](config: Config)(using console: Console[F]): F[WarCli[F]] =
     for
-      config <- parseConfig.onError(e => console.errorln(s"Failed to parse config: $e"))
+      config            <- parseConfig.onError(e => console.errorln(s"Failed to parse config: $e"))
       (http, webSocket) <- Sync[F].delay(HttpClient.newHttpClient()).map { httpClient =>
         (JdkHttpClient(httpClient), JdkWSClient(httpClient))
       }
@@ -66,7 +66,7 @@ object WarCli:
         foundById   <- gamesClient.findById(gameId)
         gameInfo    <- Async[F].fromOption(foundById, new IllegalStateException(s"Game $gameId not found"))
         playerNames <- gameInfo.players.toList.parTraverse(usersClient.findById).map(_.flatten.map(u => u.id -> u.name).toMap)
-        _ <- gamesClient.connectWarGame(gameId).both(chatClient.connect).use { (warClient, chatClient) =>
+        _           <- gamesClient.connectWarGame(gameId).both(chatClient.connect).use { (warClient, chatClient) =>
           for
             logger <- LoggerFactory[F].create.map(_.addContext(Map("game" -> War.label, "game_id" -> gameId.show)))
             chatRoom = s"War game ${warClient.gameId}"
@@ -80,7 +80,7 @@ object WarCli:
             _            <- warClient.getState // load the current state once
             _            <- TUI.runTUI(WarTUI.make(banner, creds.userId, playerNames, gameStateRef, messagesRef, warClient, chatClient))
             _            <- (warClient.quit >> logger.info("Disconnected gracefully")).race(Async[F].sleep(2.second) >> logger.warn("disconnection timeout"))
-            _ <- (chatClient.disconnect >> logger.info("Disconnected gracefully from chat"))
+            _            <- (chatClient.disconnect >> logger.info("Disconnected gracefully from chat"))
               .race(Async[F].sleep(2.second) >> logger.warn("Chat disconnection timeout"))
             _ <- logger.debug("Stop consuming server message stream") >> gameFiber.join >> logger.debug("server message stream stopped")
             _ <- logger.debug("Stop consuming chat message stream") >> chatFiber.join >> logger.debug("chat stream stopped")

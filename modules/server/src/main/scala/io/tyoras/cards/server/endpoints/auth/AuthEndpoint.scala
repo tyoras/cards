@@ -26,7 +26,7 @@ object AuthEndpoint:
 
       private def login(loginRequest: Request.Login): F[Response[F]] =
         for
-          attempt <- loginRequest.validateF
+          attempt  <- loginRequest.validateF
           response <- authService
             .login(attempt)
             .flatMap(result => Ok(Payloads.Response.SuccessfulLogin(result.token, result.user.id)))

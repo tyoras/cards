@@ -25,7 +25,7 @@ object InputParser:
         (rawInput match
           case "\\q" => NonEmptyList.one(End(playerId)).pure
           case "\\r" => NonEmptyList.one(Restart(playerId)).pure
-          case _ =>
+          case _     =>
             state match
               case s: Init          => Sync[F].fromOption(NonEmptyList.fromList(s.notReady.toList.map(Ready(_))), InvalidState)
               case s: BattleTurn    => Sync[F].fromOption(s.pickFirstCard(playerId), InvalidState).map(_.id).map(PlayCard(playerId, _)).map(NonEmptyList.one)

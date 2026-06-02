@@ -86,7 +86,7 @@ object PlayerGameState:
     extension (gameState: GameState)
       def filterForPlayer(playerId: PlayerId): PlayerGameState =
         gameState match
-          case s: GameState.Init => Init(s.context.turnNumber, playerId, s.ready, s.notReady)
+          case s: GameState.Init       => Init(s.context.turnNumber, playerId, s.ready, s.notReady)
           case s: GameState.BattleTurn =>
             BattleTurn(
               s.context.turnNumber,

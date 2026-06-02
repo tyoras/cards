@@ -25,7 +25,7 @@ object Launcher extends CommandIOApp(name = "cards", header = banner, version = 
     }
 
   case class WarCommand(config: WarCli.Config)
-  val autoPlay: Opts[Boolean] = Opts.flag("auto-play", "Automatically play").orFalse
+  val autoPlay: Opts[Boolean]          = Opts.flag("auto-play", "Automatically play").orFalse
   val warCommandOpts: Opts[WarCommand] =
     Opts.subcommand("war", "Play a game of War") {
       autoPlay.map(WarCli.Config.apply).map(WarCommand.apply)

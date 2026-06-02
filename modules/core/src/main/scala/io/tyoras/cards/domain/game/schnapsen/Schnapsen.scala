@@ -57,7 +57,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
       Logger[F].debug(s"Player ${end.playerId} has asked to exit the game").as(Exit(s.round))
 
   private def game: PartialFunction[(GameState, SchnapsenInput), F[GameState]] =
-    case (Init(g), _: Start) => Sync[F].pure(EarlyGameForehandTurn(g))
+    case (Init(g), _: Start)            => Sync[F].pure(EarlyGameForehandTurn(g))
     case (s: ForehandTurn, i: PlayCard) =>
       forehandTurn(s, i).handleErrorWith { case se: SchnapsenError =>
         Logger[F].warn(se)(s"Error during turn, ignoring input $i") *> Sync[F].pure(s)
@@ -66,7 +66,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
     case (s: EarlyGameForehandTurn, i: ExchangeTrumpJack) => exchangeTrumpJack(s, i)
     case (s: EarlyGameForehandTurn, i: CloseTalon)        => closeTalon(s, i)
     case (s: EarlyGameForehandTurn, i: Meld)              => marriage(s, i)
-    case (s: DealerTurn, i: PlayCard) =>
+    case (s: DealerTurn, i: PlayCard)                     =>
       dealerTurn(s, i).handleErrorWith { case se: SchnapsenError =>
         Logger[F].warn(se)(s"Error during dealer turn, ignoring input $i") *> Sync[F].pure(s)
       }
@@ -151,7 +151,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
   private def playCard(player: Player, card: Card): InternalGameState[F, Card] = StateT { state =>
     val (playedCard, remainingHand) = player.hand.pickCard(card.id)
     playedCard match
-      case None => Sync[F].raiseError(InvalidCard(s"Player ${player.name} has tried to play the card $card that he does not own."))
+      case None    => Sync[F].raiseError(InvalidCard(s"Player ${player.name} has tried to play the card $card that he does not own."))
       case Some(c) =>
         val updatedPlayer = player.copy(hand = remainingHand)
         (state.updatePlayer(updatedPlayer), c).pure[F]
@@ -168,7 +168,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
     val updatedScore    = winner.score + c1.rank.value + c2.rank.value + winner.potentialMarriagePoints
     val updatedWonCards = winner.wonCards ++ List(c1, c2)
     val updatedWinner   = winner.copy(wonCards = updatedWonCards, score = updatedScore)
-    val updatedState =
+    val updatedState    =
       if winner == state.forehand then state.copy(forehand = updatedWinner)
       else state.copy(dealer = state.forehand, forehand = updatedWinner)
     (updatedState, ()).pure[F]
@@ -218,8 +218,8 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
     yield applyRoundOutcome(updatedRound, outcome)
 
   private def findClaimedVictoryWinner(state: ForehandTurn): VictoryClaimed =
-    val forehand = state.currentPlayer
-    val dealer   = state.round.dealer
+    val forehand    = state.currentPlayer
+    val dealer      = state.round.dealer
     val dealerScore = state.round.talonClosing match
       case Some(tc) => tc.opponentScore
       case None     => dealer.score
@@ -231,8 +231,8 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
       case _                    => VictoryClaimed(winner = forehand.id, loser = dealer.id, 1)
 
   private def applyRoundOutcome(round: GameRound, outcome: RoundOutcome): Finish =
-    val p1 = round.context.player1
-    val p2 = round.context.player2
+    val p1         = round.context.player1
+    val p2         = round.context.player2
     val (up1, up2) = outcome.winner match
       case p1.id => (p1.copy(score = p1.score - outcome.reward), p2)
       case p2.id => (p1, p2.copy(score = p2.score - outcome.reward))

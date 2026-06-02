@@ -35,7 +35,7 @@ private def renderSmallCard(value: String, title: Option[String]): Element =
   box(title.getOrElse(""))(value.leftAlign(5), empty, value.rightAlign(5)).border(Round).color(Black).bg(BrightWhite)
 
 private def renderBigCard(card: Card, title: Option[String] = None): Element =
-  val suit = card.suit.toString
+  val suit   = card.suit.toString
   val inside = card.rank match
     case Ace(_) =>
       Seq(

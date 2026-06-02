@@ -17,7 +17,7 @@ object GameState:
     lazy val notReady: Set[PlayerId] = context.players.keySet.diff(ready)
 
   final case class BattleTurn(override val context: GameContext, playedCards: Map[PlayerId, Card] = Map.empty) extends GameState:
-    override val code: String = "battle-turn"
+    override val code: String            = "battle-turn"
     lazy val missingPlays: Set[PlayerId] =
       // only expect cards from players who still have cards to plays
       context.players.filterNot(_._2.eliminated).keySet.diff(playedCards.keySet)

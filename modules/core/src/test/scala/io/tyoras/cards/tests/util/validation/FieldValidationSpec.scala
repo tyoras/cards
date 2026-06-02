@@ -33,7 +33,7 @@ class FieldValidationSpec extends AnyFlatSpec with Matchers:
   }
 
   "nested optional with default field validator" should "return the value if it is valid" in {
-    val fieldValue = "abc"
+    val fieldValue      = "abc"
     val nestedValidator = new Validator[String, String] {
       override def validate(a: String)(using pf: Option[ParentField]): ValidationResult[String] = a.optionalWithDefault("nested_field_name", max(3))
     }

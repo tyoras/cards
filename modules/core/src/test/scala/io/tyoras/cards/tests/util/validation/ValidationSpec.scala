@@ -34,7 +34,7 @@ class ValidationSpec extends AnyFlatSpec with Matchers with EitherValues:
   }
 
   it should "return all errors when several nested object fields are not valid" in {
-    val input = FakeInput("abcd".some, None, None, FakeInputSubObject(None, "".some).some)
+    val input         = FakeInput("abcd".some, None, None, FakeInputSubObject(None, "".some).some)
     val expectedError = List(
       MissingFieldError("mandatory_object.mandatory_object_field"),
       BlankFieldError("mandatory_object.optional_object_field")
@@ -61,7 +61,7 @@ class ValidationSpec extends AnyFlatSpec with Matchers with EitherValues:
   }
 
   it should "return all errors when several nested object fields are not valid" in {
-    val input = FakeInput("abcd".some, None, None, FakeInputSubObject(None, "".some).some)
+    val input         = FakeInput("abcd".some, None, None, FakeInputSubObject(None, "".some).some)
     val expectedError = List(
       MissingFieldError("mandatory_object.mandatory_object_field"),
       BlankFieldError("mandatory_object.optional_object_field")
