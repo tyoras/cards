@@ -25,8 +25,8 @@ unit_test:
   - sbt clean coverage test coverageReport coverageAggregate
   artifacts:
     paths:
-    - target/scala-3.7.4/scoverage-report/
-    - target/scala-3.7.4/coverage-report/
+    - target/scala-3.8.3/scoverage-report/
+    - target/scala-3.8.3/coverage-report/
     when: always
     reports:
       junit:
@@ -52,7 +52,7 @@ pages:
   script:
     - rm -rf public/coverage
     - mkdir -p public/coverage
-    - mv target/scala-3.7.4/scoverage-report/* public/coverage/
+    - mv target/scala-3.8.3/scoverage-report/* public/coverage/
   artifacts:
     paths:
       - public
