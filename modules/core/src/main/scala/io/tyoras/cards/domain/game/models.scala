@@ -7,21 +7,36 @@ import io.chrisdavenport.fuuid.FUUID
 import java.time.ZonedDateTime
 import scala.util.control.NoStackTrace
 import cats.syntax.all.*
-import io.circe.{Decoder, Encoder}
+import io.circe.{Codec, Decoder, Encoder}
 import io.tyoras.cards.domain.game
 import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.schnapsen.given
+import io.tyoras.cards.domain.game.war.model.PlayerGameState.given
+import io.tyoras.cards.domain.game.schnapsen.model.PlayerGameState.given
+
+trait GameStateFilter[State]:
+  type PlayerState
+  extension (gameState: State) def filterForPlayer(playerId: FUUID): PlayerState
+  def codec: Codec[PlayerState]
+object GameStateFilter:
+  def apply[State](using filter: GameStateFilter[State]): GameStateFilter[State] = filter
 
 trait GameInput:
   def label: String
   def playerId: FUUID
 
 type GameType = GameTyp[?, ?]
-sealed abstract class GameTyp[S : Encoder, I <: GameInput : Decoder](val label: String, val minPlayers: Int, val maxPlayers: Int):
-  type State = S
-  type Input = I
-  given Encoder[State] = Encoder[S]
+sealed abstract class GameTyp[S, I <: GameInput : Decoder](val label: String, val minPlayers: Int, val maxPlayers: Int)(using
+    filter: GameStateFilter[S]
+):
+  type State       = S
+  type PlayerState = GameStateFilter[S]#PlayerState
+  type Input       = I
   given Decoder[Input] = Decoder[I]
+
+  given GameStateFilter[State] = filter
+
+  given Codec[PlayerState] = filter.codec.asInstanceOf[Codec[PlayerState]]
 
 object GameTyp:
   case object Schnapsen extends GameTyp[schnapsen.model.GameState, schnapsen.model.SchnapsenInput]("schnapsen", 2, 2)

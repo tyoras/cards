@@ -89,7 +89,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
     for
       _ <- checkPlayer(forehand, input.playerId)
       _ <- if state.canExchangeTrumpJack then F.unit else F.raiseError[Unit](InvalidAction())
-      remainingHand   = forehand.hand.pickCard(state.trumpJack)._2
+      remainingHand   = forehand.hand.pickCard(state.trumpJack.id)._2
       updatedForehand = forehand.copy(hand = remainingHand :+ trumpCard)
       updatedRound    = state.round.copy(trumpCard = state.trumpJack, forehand = updatedForehand)
       _ <- Logger[F].debug(s"Player ${forehand.name} has exchanged the trump jack ${state.trumpJack} with the trump card $trumpCard")
@@ -149,7 +149,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
     yield nextState
 
   private def playCard(player: Player, card: Card): InternalGameState[F, Card] = StateT { state =>
-    val (playedCard, remainingHand) = player.hand.pickCard(card)
+    val (playedCard, remainingHand) = player.hand.pickCard(card.id)
     playedCard match
       case None => Sync[F].raiseError(InvalidCard(s"Player ${player.name} has tried to play the card $card that he does not own."))
       case Some(c) =>

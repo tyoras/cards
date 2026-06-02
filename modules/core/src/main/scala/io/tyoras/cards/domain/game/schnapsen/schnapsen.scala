@@ -49,19 +49,17 @@ private[schnapsen] def initGameRound[F[_]](ctx: GameContext)(logger: StructuredL
     def decide(d: Deck): F[(PlayerId, PlayerId)] = F.tailRecM(d) {
       case h1 :: h2 :: t if h1.rank.value == h2.rank.value => t.asLeft[(PlayerId, PlayerId)].pure[F]
       case h1 :: h2 :: _                                   => (if h1.rank.value > h2.rank.value then (p1, p2) else (p2, p1)).asRight[Deck].pure[F]
-      case Nil                                             => decideFirstDealer(context).asRight[Deck].traverse(identity)
+      case Nil                                             => decideFirstDealer(context).asRight[Deck].sequence
       case _                                               => F.raiseError(DeckError("Impossible to select first player : odd deck size"))
     }
 
     def swapDealer(previousDealerId: PlayerId): F[(PlayerId, PlayerId)] = previousDealerId match
       case context.player1.id => (p2, p1).pure[F]
       case context.player2.id => (p1, p2).pure[F]
-      case _                  => F.raiseError(DeckError("Impossible to select first player : previous dealer is neither player 1 nor player 2"))
+      case _                  => DeckError("Impossible to select first player : previous dealer is neither player 1 nor player 2").raiseError
 
     for
-      deck <- F.delay {
-        baseDeck.shuffled
-      }
+      deck     <- F.delay(baseDeck.shuffled)
       decision <- context.previousFirstDealer.map(swapDealer).getOrElse(decide(deck))
     yield decision
 

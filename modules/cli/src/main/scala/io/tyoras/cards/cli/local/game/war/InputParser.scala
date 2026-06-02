@@ -28,8 +28,8 @@ object InputParser:
           case _ =>
             state match
               case s: Init          => Sync[F].fromOption(NonEmptyList.fromList(s.notReady.toList.map(Ready(_))), InvalidState)
-              case s: BattleTurn    => Sync[F].fromOption(s.pickFirstCard(playerId), InvalidState).map(PlayCard(playerId, _)).map(NonEmptyList.one)
-              case s: WarTurn       => Sync[F].fromOption(s.pickFirstCard(playerId), InvalidState).map(PlayCard(playerId, _)).map(NonEmptyList.one)
+              case s: BattleTurn    => Sync[F].fromOption(s.pickFirstCard(playerId), InvalidState).map(_.id).map(PlayCard(playerId, _)).map(NonEmptyList.one)
+              case s: WarTurn       => Sync[F].fromOption(s.pickFirstCard(playerId), InvalidState).map(_.id).map(PlayCard(playerId, _)).map(NonEmptyList.one)
               case s: PlayerWinTurn => Sync[F].fromOption(NonEmptyList.fromList(s.notAcked.toList.map(Ready(_))), InvalidState)
               // In finish state we only expect Quit or Restart inputs
               case _: Finish => logger.warn("Unexpected input in Finish state") *> InvalidInput.raiseError

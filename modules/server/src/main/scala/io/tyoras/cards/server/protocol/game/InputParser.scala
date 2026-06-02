@@ -44,16 +44,17 @@ object InputParser:
       logger.info(logMsg) *> playerRef.set(connected)
 
     private def processAuthenticatedCommand(player: ConnectedPlayer, text: String, playerRef: Ref[F, Option[ConnectedPlayer]]): F[List[OutputMessage]] =
+      import player.gameType.given
       (for
         cmd <- Sync[F].fromEither(io.circe.parser.decode[AuthenticatedCommand](text))
         result <- cmd match
           case gameCmd: GameCommand =>
             for
-              input  <- Sync[F].fromEither(gameCmd.input.as[player.gameType.Input](using player.gameType.given_Decoder_Input))
-              result <- protocol.submitInput(gameCmd.gameId, player.gameType, player.playerId, input)(using player.gameType.given_Encoder_State)
+              input  <- Sync[F].fromEither(gameCmd.input.as[player.gameType.Input])
+              result <- protocol.submitInput(gameCmd.gameId, player.gameType, player.playerId, input)
             yield result
           case stateCmd: StateCommand =>
-            protocol.currentState(stateCmd.gameId, player.gameType, player.playerId)(using player.gameType.given_Encoder_State).map(List(_))
+            protocol.currentState(stateCmd.gameId, player.gameType, player.playerId).map(List(_))
           case quitCmd: QuitCommand => protocol.disconnect(playerRef).map(List(_))
       yield result).handleError { case e: Error =>
         List(ProtocolError(player.gameId, player.playerId, "invalid_input", e.getMessage))

@@ -106,17 +106,20 @@ object War:
     private def checkPlayer(expectedPlayers: Set[PlayerId], playerId: PlayerId): F[Unit] =
       WrongPlayer.raiseError.unlessA(expectedPlayers.contains(playerId))
 
-    private def checkPlayedCard(input: PlayCard)(context: GameContext): F[Unit] =
-      InvalidCard(s"${input.playerId} has played an invalid card ${input.card}").raiseError.unlessA(context.pickFirstCard(input.playerId).contains(input.card))
+    private def checkPlayedCard(input: PlayCard)(context: GameContext): F[Card] =
+      Sync[F].fromOption(
+        context.pickFirstCard(input.playerId).filter(_.id == input.cardId),
+        InvalidCard(s"${input.playerId} has played an invalid card ${input.cardId}")
+      )
 
     private def playCard(state: BattleTurn, input: PlayCard): F[GameState] =
       for
-        _ <- checkPlayer(state.missingPlays, input.playerId)
-        _ <- checkPlayedCard(input)(state.context)
+        _          <- checkPlayer(state.missingPlays, input.playerId)
+        playedCard <- checkPlayedCard(input)(state.context)
         newCtx            = state.context.updatePlayer(input.playerId)(p => p.copy(hand = p.hand.tail))
-        updatedBattleTurn = BattleTurn(newCtx, playedCards = state.playedCards.updated(input.playerId, input.card))
+        updatedBattleTurn = BattleTurn(newCtx, playedCards = state.playedCards.updated(input.playerId, playedCard))
         nextState         = if updatedBattleTurn.missingPlays.isEmpty then resolveBattle(updatedBattleTurn) else updatedBattleTurn
-        _ <- logger.debug(input.playerId.ctx(playerIdKey))(s"Card played: ${input.card}")
+        _ <- logger.debug(input.playerId.ctx(playerIdKey))(s"Card played: $playedCard")
       yield nextState
 
     private def resolveBattle(battleTurn: BattleTurn): GameState =
@@ -149,12 +152,12 @@ object War:
 
     private def playCard(state: WarTurn, input: PlayCard): F[GameState] =
       for
-        _ <- checkPlayer(state.missingPlays, input.playerId)
-        _ <- checkPlayedCard(input)(state.context)
+        _          <- checkPlayer(state.missingPlays, input.playerId)
+        playedCard <- checkPlayedCard(input)(state.context)
         newCtx         = state.context.updatePlayer(input.playerId)(p => p.copy(hand = p.hand.tail))
-        updatedWarTurn = state.copy(context = newCtx).playCard(input.playerId, input.card)
+        updatedWarTurn = state.copy(context = newCtx).playCard(input.playerId, playedCard)
         nextState      = if updatedWarTurn.allCardPlayed then resolveWarRound(updatedWarTurn) else updatedWarTurn
-        _ <- logger.debug(input.playerId.ctx(playerIdKey))(s"Card played: ${input.card}")
+        _ <- logger.debug(input.playerId.ctx(playerIdKey))(s"Card played: $playedCard")
       yield nextState
 
     private def resolveWarRound(warTurn: WarTurn): GameState =

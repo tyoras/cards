@@ -22,8 +22,8 @@ trait GameProtocol[F[_]]:
   def connectPlayer(gameId: FUUID, gameType: GameType, player: User.Existing): F[OutputMessage]
   def authPlayer(gameId: FUUID, gameType: GameType, jwt: JwtToken): F[OutputMessage]
   def registerActiveGame(gameId: FUUID, game: ActiveGame[F, ?, ?]): F[Unit]
-  def currentState[State : Encoder](gameId: FUUID, gameType: GameTyp[State, ?], playerId: FUUID): F[OutputMessage]
-  def submitInput[State : Encoder, Input <: GameInput](gameId: FUUID, gameType: GameTyp[State, Input], playerId: FUUID, input: Input): F[List[OutputMessage]]
+  def currentState[State](gameId: FUUID, gameType: GameTyp[State, ?], playerId: FUUID): F[OutputMessage]
+  def submitInput[State, Input <: GameInput](gameId: FUUID, gameType: GameTyp[State, Input], playerId: FUUID, input: Input): F[List[OutputMessage]]
   def endGame(gameId: FUUID, gameType: GameType): F[List[OutputMessage]]
   def disconnect(playerRef: Ref[F, Option[ConnectedPlayer]]): F[OutputMessage]
 
@@ -82,31 +82,35 @@ object GameProtocol:
               games.copy(warGames = games.warGames.updated(gameId, warGame))
             case _ => games
 
-        override def currentState[State : Encoder](gameId: FUUID, gameType: GameTyp[State, ?], playerId: FUUID): F[OutputMessage] =
+        override def currentState[State](gameId: FUUID, gameType: GameTyp[State, ?], playerId: FUUID): F[OutputMessage] =
+          import gameType.given
           (for
             game      <- gamesRef.evalModify(games => findActiveGame(gameId, gameType, games))
             gameState <- game.currentState
-          // TODO filter context by user ??
-          yield OutputMessage.GameState(gameId, playerId, gameState.asJson)).handleError {
+            playerGameState: gameType.PlayerState = gameState.filterForPlayer(playerId)
+          yield OutputMessage.GameState(gameId, playerId, playerGameState.asJson)).handleError {
             case e: ProtocolError.ActiveGameNotFound =>
               OutputMessage.ProtocolError(gameId, playerId, e.code, e.getMessage)
             case e => OutputMessage.GameError(gameId, playerId, "state_failure", e.getMessage)
           }
 
-        override def submitInput[State : Encoder, Input <: GameInput](
+        override def submitInput[State, Input <: GameInput](
             gameId: FUUID,
             gameType: GameTyp[State, Input],
             playerId: FUUID,
             input: Input
         ): F[List[OutputMessage]] =
+          import gameType.given
           (for
             _           <- checkInputPlayer(expectedPlayerId = playerId, input.playerId, gameId, gameType)
             game        <- gamesRef.evalModify(findActiveGame(gameId, gameType, _))
             players     <- game.playerIds
             gameState   <- game.submitInput(input)
             endMessages <- game.isFinished.flatMap(finished => if finished then endGame(gameId, gameType) else Nil.pure)
-            // TODO filter context by user ??
-            output = players.toList.map(OutputMessage.GameState(gameId, _, gameState.asJson))
+            output = players.toList.map { recipient =>
+              val playerGameState: gameType.PlayerState = gameState.filterForPlayer(recipient)
+              OutputMessage.GameState(gameId, recipient, playerGameState.asJson)
+            }
           yield output ::: endMessages).handleError {
             case e: (ProtocolError.IllegalGameInput | ProtocolError.ActiveGameNotFound) =>
               List(OutputMessage.ProtocolError(gameId, playerId, e.code, e.getMessage))

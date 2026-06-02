@@ -120,7 +120,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
   "pickCard by card" should "return None with an empty hand" in {
     forAll(cardGen -> "card") { card =>
       val hand = Nil
-      hand.pickCard(card) shouldBe (None -> hand)
+      hand.pickCard(card.id) shouldBe (None -> hand)
     }
   }
 
@@ -130,7 +130,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
       whenever(distinctHand.nonEmpty) {
         val expectedCard                = distinctHand.head
         val handWithoutCardToPick       = distinctHand.tail
-        val (pickedCard, remainingHand) = distinctHand.pickCard(expectedCard)
+        val (pickedCard, remainingHand) = distinctHand.pickCard(expectedCard.id)
         pickedCard.value shouldBe expectedCard
         (remainingHand should contain).theSameElementsInOrderAs(handWithoutCardToPick)
       }
@@ -143,7 +143,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
       whenever(distinctHand.nonEmpty) {
         val card                  = distinctHand.head
         val handWithoutCardToPick = distinctHand.tail
-        handWithoutCardToPick.pickCard(card) shouldBe (None -> handWithoutCardToPick)
+        handWithoutCardToPick.pickCard(card.id) shouldBe (None -> handWithoutCardToPick)
       }
     }
   }
@@ -153,7 +153,7 @@ class CardsSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPropertyC
       whenever(hand.nonEmpty) {
         val card                           = hand.head
         val handWithSeveralCardOccurrences = card :: hand
-        val (pickedCard, remainingHand)    = handWithSeveralCardOccurrences.pickCard(card)
+        val (pickedCard, remainingHand)    = handWithSeveralCardOccurrences.pickCard(card.id)
         pickedCard.value shouldBe card
         (remainingHand should contain).theSameElementsInOrderAs(hand)
       }

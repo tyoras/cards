@@ -63,25 +63,25 @@ class WarInputSpec extends AnyFlatSpec with Matchers {
     end.toString shouldBe end.label
   }
 
-  "GameInput.PlayCard" should "have correct label with card and player id" in {
-    val playCard = PlayCard(playerId, card)
+  "GameInput.PlayCard" should "have correct label with card and player ids" in {
+    val playCard = PlayCard(playerId, card.id)
     playCard.label should include("Play card")
-    playCard.label should include(card.toString)
+    playCard.label should include(card.id)
     playCard.label should include(playerId.toString)
   }
 
   it should "return player id" in {
-    val playCard = PlayCard(playerId, card)
+    val playCard = PlayCard(playerId, card.id)
     playCard.playerId shouldBe playerId
   }
 
-  it should "return card" in {
-    val playCard: PlayCard = PlayCard(playerId, card)
-    playCard.card shouldBe card
+  it should "return card id" in {
+    val playCard: PlayCard = PlayCard(playerId, card.id)
+    playCard.cardId shouldBe card.id
   }
 
   it should "return label as toString" in {
-    val playCard = PlayCard(playerId, card)
+    val playCard = PlayCard(playerId, card.id)
     playCard.toString shouldBe playCard.label
   }
 }

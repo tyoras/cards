@@ -5,8 +5,8 @@ import cats.effect.std.Dispatcher
 import io.tyoras.cards.cli.remote.client.{ChatClient, WarClient}
 import io.tyoras.cards.cli.remote.game.war.WarTUI.{Msg, State}
 import io.tyoras.cards.cli.tui.*
-import io.tyoras.cards.domain.game.war.model.{GameState, PlayerId}
-import io.tyoras.cards.domain.game.war.*
+import io.tyoras.cards.domain.game.war.model.{PlayerGameState, PlayerId}
+import io.tyoras.cards.domain.game.war.model.PlayerGameState.*
 import layoutz.*
 import layoutz.Key.{Char as _, *}
 import cats.syntax.all.*
@@ -16,7 +16,6 @@ import io.tyoras.cards.cli.tui.TUI.Message
 import io.tyoras.cards.cli.tui.TUI.Message.Notification
 import io.tyoras.cards.cli.tui.TUI.Message.Notification.Error
 import io.tyoras.cards.domain.card.Card
-import io.tyoras.cards.domain.game.war.model.GameState.{BattleTurn, Finish, Init, PlayerWinTurn, WarTurn}
 import layoutz.Border.Round
 import layoutz.Color.{Blue, BrightWhite, Full, Red}
 import layoutz.Style.{Blink, Bold}
@@ -26,7 +25,7 @@ trait WarTUI[F[_]] extends TUI[F, State, Msg]
 object WarTUI:
   enum State(val messages: List[Message], val currentMsg: String, val chatActive: Boolean, val tick: Int):
     case Loading(tack: Int = 0, msgs: List[Message] = List.empty, crtMsg: String = "", active: Boolean = false) extends State(msgs, crtMsg, active, tack)
-    case RenderState(gameState: GameState, msgs: List[Message] = List.empty, tack: Int, crtMsg: String = "", writingInChat: Boolean = false)
+    case RenderState(gameState: PlayerGameState, msgs: List[Message] = List.empty, tack: Int, crtMsg: String = "", writingInChat: Boolean = false)
         extends State(msgs, crtMsg, writingInChat, tack)
 
     def incrementTick(inc: Int = 1): State =
@@ -59,7 +58,7 @@ object WarTUI:
     case MoveUp
     case MoveDown
     case LoadGameState
-    case GameStateLoaded(gameState: GameState, messages: List[Message])
+    case GameStateLoaded(gameState: PlayerGameState, messages: List[Message])
     case SendReady
     case SendPlayCard(card: Card)
     case Tick
@@ -73,7 +72,7 @@ object WarTUI:
       banner: String,
       playerId: PlayerId,
       playerNames: Map[PlayerId, String],
-      internalState: Ref[F, Option[GameState]],
+      internalState: Ref[F, Option[PlayerGameState]],
       messages: Ref[F, List[Message]],
       warClient: WarClient[F],
       chatClient: ChatClient.ConnectedClient[F]
@@ -159,8 +158,8 @@ object WarTUI:
             gameState match
               case s: Init if s.notReady.contains(playerId)           => Msg.SendReady.some
               case s: PlayerWinTurn if s.notAcked.contains(playerId)  => Msg.SendReady.some
-              case s: BattleTurn if s.missingPlays.contains(playerId) => gameState.pickFirstCard(playerId).map(Msg.SendPlayCard(_))
-              case s: WarTurn if s.missingPlays.contains(playerId)    => gameState.pickFirstCard(playerId).map(Msg.SendPlayCard(_))
+              case s: BattleTurn if s.missingPlays.contains(playerId) => s.pickFirstCard.map(Msg.SendPlayCard(_))
+              case s: WarTurn if s.missingPlays.contains(playerId)    => s.pickFirstCard.map(Msg.SendPlayCard(_))
               case _                                                  => None
           case _ => None
 
@@ -201,7 +200,7 @@ object WarTUI:
         )
 
       private def renderBattleTurn(state: BattleTurn, chatWidth: Int): (Element, List[Element]) =
-        section(s"Turn ${state.context.turnNumber} : Battle")(
+        section(s"Turn ${state.turn} : Battle")(
           layout(
             "Everyone play one card and the best one win all the played cards...",
             br,
@@ -209,7 +208,7 @@ object WarTUI:
             br,
             if state.missingPlays.contains(playerId) then
               layout(
-                section("Card to play")(renderCard(state.pickFirstCard(playerId).get)),
+                section("Card to play")(renderCard(state.pickFirstCard.get)),
                 br,
                 "Press <space> to play your card...".style(Blink)
               )
@@ -230,12 +229,11 @@ object WarTUI:
         )
 
       private def renderWarTurn(state: WarTurn, chatWidth: Int): (Element, List[Element]) =
-        val ctx           = state.context
         val round         = state.currentRound
         val missingHidden = state.missingHidden.contains(playerId)
         val action        = if missingHidden then "give a hidden card as prize for the war" else "play your next card"
-        val nextCard      = if missingHidden then renderCardBack() else renderCard(ctx.pickFirstCard(playerId).get)
-        section(s"Turn ${state.context.turnNumber} : War between ${round.involvedPlayers.map(playerNames).mkString_("[", " | ", "]")}")(
+        val nextCard      = if missingHidden then renderCardBack() else renderCard(state.pickFirstCard.get)
+        section(s"Turn ${state.turn} : War between ${round.involvedPlayers.map(playerNames).mkString_("[", " | ", "]")}")(
           layout(
             "Every player involved in the war have to play one hidden card and one visible card.",
             "The player with the best visible card win all the played cards.",
@@ -276,12 +274,12 @@ object WarTUI:
         )
 
       private def renderPlayerWinTurn(state: PlayerWinTurn, chatWidth: Int): (Element, List[Element]) =
-        val ctx        = state.context
+        val turn       = state.turn - 1
         val winnerName = playerNames(state.winnerId)
         val winner     = if state.winnerId == playerId then "You have" else s"Player $winnerName has"
-        section(s"Turn ${ctx.turnNumber - 1} : Result")(
+        section(s"Turn $turn : Result")(
           layout(
-            s"$winner won turn ${ctx.turnNumber - 1} and won ${state.wonCards.size} cards.",
+            s"$winner won turn $turn and won ${state.wonCards.size} cards.",
             br,
             section("Won cards")(row(state.wonCards.toSeq.map(renderCard(_, title = winnerName.some))*).bg(BrightWhite)),
             if state.eliminated.nonEmpty then
@@ -305,8 +303,7 @@ object WarTUI:
         )
 
       private def renderFinish(state: Finish): (Element, List[Element]) =
-        val ctx = state.context
-        val rankRows = ctx.eliminations.zipWithIndex.map((elimination, index) =>
+        val rankRows = state.eliminations.zipWithIndex.map((elimination, index) =>
           Seq(
             s"${index + 2}".style(Bold).color(if index == 0 then Full(253) else if index == 1 then Full(130) else Blue),
             playerNames(elimination.playerId).style(Bold),
@@ -314,7 +311,7 @@ object WarTUI:
           )
         )
 
-        section(s"Game finished after ${ctx.turnNumber - 1} turns.")(
+        section(s"Game finished after ${state.turn - 1} turns.")(
           layout(
             rowTight("The winner is ", playerNames(state.winnerId).style(Bold).color(Full(220)), " !"),
             br,

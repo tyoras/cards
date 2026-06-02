@@ -1,7 +1,7 @@
 package io.tyoras.cards.domain.game.schnapsen.model
 
 import io.tyoras.cards.domain.card.Rank.Jack
-import io.tyoras.cards.domain.game.schnapsen.{PlayerId, findPossibleMarriages}
+import io.tyoras.cards.domain.game.schnapsen.{PlayerId, baseDeck, findPossibleMarriages}
 import io.tyoras.cards.domain.card.{Card, Hand}
 import io.tyoras.cards.domain.game.schnapsen.model.Role.*
 
@@ -29,8 +29,9 @@ sealed abstract class EarlyGame(game: GameRound, currentRole: Role) extends Play
   def playableCards: Hand
 
 case class EarlyGameForehandTurn(round: GameRound, ongoingMarriage: Option[Marriage] = None) extends EarlyGame(round, Forehand) with ForehandTurn:
-  override val label: String             = "Early game - forehand turn"
-  lazy val trumpJack: Card               = Card(round.trumpSuit, Jack(2))
+  override val label: String = "Early game - forehand turn"
+  lazy val trumpJack: Card =
+    baseDeck.find(c => c.suit == round.trumpSuit && c.rank.isInstanceOf[Jack]).getOrElse(throw new IllegalArgumentException("Trump jack not found"))
   lazy val canExchangeTrumpJack: Boolean = currentPlayer.hand.contains(trumpJack)
   override lazy val playableCards: Hand  = ongoingMarriage.fold(currentPlayer.hand)(m => List(m.king, m.queen))
 

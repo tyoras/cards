@@ -74,7 +74,7 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
       battleTurn <- war.submitInput(Ready(playerIds.last))
       context   = battleTurn.context
       firstCard = context.players(playerIds.head).hand.head
-      state <- war.submitInput(GameInput.PlayCard(playerIds.head, firstCard))
+      state <- war.submitInput(GameInput.PlayCard(playerIds.head, firstCard.id))
     } yield state shouldBe a[BattleTurn]
   }
 
@@ -85,7 +85,7 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
       _          <- war.submitInput(Ready(playerIds.head))
       battleTurn <- war.submitInput(Ready(playerIds.last))
       invalidCard = Card(Spade, Ace())
-      result <- war.submitInput(GameInput.PlayCard(playerIds.head, invalidCard)).attempt
+      result <- war.submitInput(GameInput.PlayCard(playerIds.head, invalidCard.id)).attempt
     } yield result.isLeft shouldBe true
   }
 
@@ -97,8 +97,8 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
       battleTurn <- war.submitInput(Ready(playerIds.last))
       context   = battleTurn.context
       firstCard = context.players(playerIds.head).hand.head
-      _      <- war.submitInput(GameInput.PlayCard(playerIds.head, firstCard))
-      result <- war.submitInput(GameInput.PlayCard(playerIds.head, firstCard)).attempt
+      _      <- war.submitInput(GameInput.PlayCard(playerIds.head, firstCard.id))
+      result <- war.submitInput(GameInput.PlayCard(playerIds.head, firstCard.id)).attempt
     } yield result.isLeft shouldBe true
   }
 
@@ -112,8 +112,8 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
       context = battleTurn.context
       card1   = context.players(playerIds.head).hand.head
       card2   = context.players(playerIds.last).hand.head
-      _     <- war.submitInput(GameInput.PlayCard(playerIds.head, card1))
-      state <- war.submitInput(GameInput.PlayCard(playerIds.last, card2))
+      _     <- war.submitInput(GameInput.PlayCard(playerIds.head, card1.id))
+      state <- war.submitInput(GameInput.PlayCard(playerIds.last, card2.id))
     } yield if card1.value != card2.value then state shouldBe a[PlayerWinTurn] else state shouldBe a[WarTurn]
   }
 
@@ -127,8 +127,8 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
       context = battleTurn.context
       card1   = context.players(playerIds.head).hand.head
       card2   = context.players(playerIds.last).hand.head
-      _       <- war.submitInput(GameInput.PlayCard(playerIds.head, card1))
-      winTurn <- war.submitInput(GameInput.PlayCard(playerIds.last, card2))
+      _       <- war.submitInput(GameInput.PlayCard(playerIds.head, card1.id))
+      winTurn <- war.submitInput(GameInput.PlayCard(playerIds.last, card2.id))
       result <-
         if winTurn.isInstanceOf[PlayerWinTurn] then war.submitInput(Ready(playerIds.head))
         else IO.pure(winTurn)
@@ -145,8 +145,8 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
       context = battleTurn.context
       card1   = context.players(playerIds.head).hand.head
       card2   = context.players(playerIds.last).hand.head
-      _       <- war.submitInput(GameInput.PlayCard(playerIds.head, card1))
-      winTurn <- war.submitInput(GameInput.PlayCard(playerIds.last, card2))
+      _       <- war.submitInput(GameInput.PlayCard(playerIds.head, card1.id))
+      winTurn <- war.submitInput(GameInput.PlayCard(playerIds.last, card2.id))
       result <-
         if winTurn.isInstanceOf[PlayerWinTurn] then
           for {
@@ -184,7 +184,7 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
       init <- war.currentState
       playerId    = init.context.players.keys.head
       invalidCard = Card(Heart, King())
-      _     <- war.submitInput(GameInput.PlayCard(playerId, invalidCard))
+      _     <- war.submitInput(GameInput.PlayCard(playerId, invalidCard.id))
       state <- war.currentState
     } yield state shouldBe init
   }

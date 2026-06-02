@@ -43,6 +43,6 @@ def displayDeck[F[_] : Monad : Console](deck: Deck): F[Unit] =
 
 def displayCardChoice[F[_] : Console](playableCards: Hand): F[Unit] =
   val choices = playableCards.zipWithIndex.map { case (c: Card, i: Int) =>
-    s"\t${i + 1} : Play $c"
+    s"\t${i + 1} : Play ${c.emoji}"
   }
   Console[F].println(s"${choices.mkString("\n")}")

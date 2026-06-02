@@ -47,7 +47,7 @@ object WarClient:
         sendGameInput(Ready(creds.userId))
 
       override def playCard(card: Card): F[Unit] =
-        sendGameInput(PlayCard(creds.userId, card))
+        sendGameInput(PlayCard(creds.userId, card.id))
 
       override def getState: F[Unit] =
         sendCommand(StateCommand(gameId))

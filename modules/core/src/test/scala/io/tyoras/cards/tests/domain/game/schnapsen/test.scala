@@ -74,7 +74,7 @@ val gameRoundGen: Gen[GameRound] = for
   context   <- gameContextGen
   deck      <- deckGen
   trumpCard <- Gen.oneOf(deck)
-  (_, d2) = deck.pickCard(trumpCard)
+  (_, d2) = deck.pickCard(trumpCard.id)
   p1 <- playerGen(context.player1.id.some, context.player1.name.some, trumpCard.suit.some)
   p2 <- playerGen(context.player2.id.some, context.player2.name.some, trumpCard.suit.some)
   playerIds = Seq(p1.id, p2.id)

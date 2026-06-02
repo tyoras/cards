@@ -149,7 +149,7 @@ class CodecsSpec extends AnyFlatSpec with Matchers:
   }
 
   "WarInput.GameInput.PlayCard encoder and decoder" should "round-trip correctly" in {
-    val playCard: WarInput = WarInput.GameInput.PlayCard(playerId1, player1FirstCard)
+    val playCard: WarInput = WarInput.GameInput.PlayCard(playerId1, player1FirstCard.id)
     val json               = playCard.asJson
     json.hcursor.get[String]("input_type") shouldBe Right("PlayCard")
     val decoded = decode[WarInput](json.noSpaces)

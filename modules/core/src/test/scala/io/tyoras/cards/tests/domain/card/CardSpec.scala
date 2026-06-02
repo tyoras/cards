@@ -22,7 +22,23 @@ class CardSpec extends AnyFlatSpec with Matchers:
     heartKing.compareTo(spadeKing) should be(0)
   }
 
-  "toString" should "work" in {
-    val expected = s"$RESET$RED🂾$RESET"
+  "toString" should "work and not be colored" in {
+    val expected = "🂾"
     heartKing.toString should be(expected)
+  }
+
+  "emoji" should "work and be colored" in {
+    val expected = s"$RESET$RED🂾$RESET"
+    heartKing.emoji should be(expected)
+  }
+
+  "Cards json serialization" should "work" in {
+    import io.circe.parser.decode
+    import io.circe.syntax.*
+    import io.tyoras.cards.domain.card.given
+
+    val card = Card(Heart, King())
+    val json = card.asJson.spaces2
+
+    decode[Card](json) should be(Right(card))
   }

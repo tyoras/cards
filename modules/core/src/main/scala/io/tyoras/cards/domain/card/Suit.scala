@@ -11,7 +11,7 @@ enum Color(consoleColor: String):
 
   def colorize(s: String): String = s"$RESET$consoleColor$s$RESET"
 
-enum Suit(val color: Color, symbol: String):
+enum Suit(val color: Color, val symbol: String):
   case Heart   extends Suit(Red, "♥")
   case Diamond extends Suit(Red, "♦")
   case Club    extends Suit(Black, "♣")

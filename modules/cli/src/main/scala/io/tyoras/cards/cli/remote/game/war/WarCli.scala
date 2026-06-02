@@ -15,12 +15,11 @@ import io.tyoras.cards.cli.tui.TUI
 import io.tyoras.cards.cli.tui.TUI.Message
 import io.tyoras.cards.cli.tui.TUI.Message.Notification
 import io.tyoras.cards.domain.game.GameTyp.War
-import io.tyoras.cards.domain.game.war.model.GameState
 import io.tyoras.cards.shared.protocol.game.OutputMessage as GameOutputMessage
 import io.tyoras.cards.shared.protocol.chat.OutputMessage as ChatOutputMessage
 import org.http4s.jdkhttpclient.{JdkHttpClient, JdkWSClient}
 import org.typelevel.log4cats.*
-import io.tyoras.cards.domain.game.war.codecs.given
+import io.tyoras.cards.domain.game.war.model.PlayerGameState
 
 import java.net.http.HttpClient
 import scala.concurrent.duration.DurationInt
@@ -91,7 +90,7 @@ object WarCli:
 
     private def handleGameOutput(
         warClient: WarClient[F],
-        gameStateRef: Ref[F, Option[GameState]],
+        gameStateRef: Ref[F, Option[PlayerGameState]],
         messagesRef: Ref[F, List[Message]],
         logger: SelfAwareStructuredLogger[F]
     ) =
@@ -100,7 +99,7 @@ object WarCli:
         .evalTap {
           case GameOutputMessage.GameState(_, _, state) =>
             logger.debug("Received new game state") *>
-              Async[F].fromEither(state.as[GameState]).map(_.some).flatMap(gameStateRef.set)
+              Async[F].fromEither(state.as[PlayerGameState]).map(_.some).flatMap(gameStateRef.set)
           case GameOutputMessage.GameError(_, _, code, msg) =>
             logger.warn(s"Game error $code : $msg") *>
               messagesRef.update(_ :+ Notification.Error(s"Error $code : $msg"))

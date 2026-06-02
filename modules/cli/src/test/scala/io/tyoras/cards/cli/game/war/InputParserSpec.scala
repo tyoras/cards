@@ -79,7 +79,7 @@ class InputParserSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
   it should "return PlayCard input with first card in BattleTurn state" in {
     val battleTurn = GameState.BattleTurn(context)
     parser.parse(battleTurn, playerId1, "").asserting { inputs =>
-      inputs.head shouldBe GameInput.PlayCard(playerId1, card1)
+      inputs.head shouldBe GameInput.PlayCard(playerId1, card1.id)
       inputs.size shouldBe 1
     }
   }
@@ -98,7 +98,7 @@ class InputParserSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
     val round   = WarTurn.BattleRound(NonEmptySet.of(playerId1, playerId2), Map.empty, Map.empty)
     val warTurn = WarTurn(context, NonEmptyList.one(round))
     parser.parse(warTurn, playerId1, "").asserting { inputs =>
-      inputs.head shouldBe GameInput.PlayCard(playerId1, card1)
+      inputs.head shouldBe GameInput.PlayCard(playerId1, card1.id)
       inputs.size shouldBe 1
     }
   }
