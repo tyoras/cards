@@ -8,10 +8,11 @@ import dev.profunktor.auth.jwt.JwtToken
 import io.chrisdavenport.fuuid.FUUID
 import io.circe.*
 import io.circe.syntax.*
-import io.tyoras.cards.domain.auth.{AuthError, AuthService}
+import io.tyoras.cards.domain.auth.AuthService
+import io.tyoras.cards.domain.auth.model.AuthError
 import io.tyoras.cards.domain.game.war.War
 import io.tyoras.cards.domain.game.*
-import io.tyoras.cards.domain.user.User
+import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.shared.protocol.game.OutputMessage
 import io.tyoras.cards.shared.protocol.game.OutputMessage.{PlayerConnectionSuccess, PlayerDisconnected}
 import org.typelevel.log4cats.LoggerFactory

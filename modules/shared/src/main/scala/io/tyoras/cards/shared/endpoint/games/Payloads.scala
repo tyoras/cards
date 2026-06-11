@@ -3,16 +3,16 @@ package io.tyoras.cards.shared.endpoint.games
 import cats.data.NonEmptyList
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.circe.*
-import io.circe.derivation.{Configuration, ConfiguredCodec}
+import io.circe.derivation.ConfiguredCodec
 import io.circe.{Codec, Decoder, Encoder}
 import io.scalaland.chimney.Transformer
 import io.tyoras.cards.domain.game.Game.Existing
 import io.tyoras.cards.domain.game.GameTyp
+import io.tyoras.cards.util.codecs.json.given
 
 import java.time.ZonedDateTime
 
 object Payloads:
-  given Configuration = Configuration.default.withSnakeCaseMemberNames
   object Request:
     final case class Creation(players: List[FUUID]) derives Codec
 

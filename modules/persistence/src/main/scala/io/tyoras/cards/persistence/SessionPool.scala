@@ -4,6 +4,7 @@ import cats.effect.std.Console
 import cats.effect.{Resource, Sync, Temporal}
 import cats.syntax.all.*
 import fs2.io.net.Network
+import io.tyoras.cards.persistence.config.DatabaseConfig
 import io.tyoras.cards.persistence.flyway.NativeImageResourceProvider
 import org.flywaydb.core.Flyway
 import org.typelevel.otel4s.metrics.Meter

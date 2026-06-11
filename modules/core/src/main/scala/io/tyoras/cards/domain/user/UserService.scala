@@ -5,6 +5,7 @@ import cats.effect.Clock
 import cats.syntax.all.*
 import io.chrisdavenport.cats.effect.time.implicits.ClockOps
 import io.chrisdavenport.fuuid.FUUID
+import io.tyoras.cards.domain.user.model.User
 
 trait UserService[F[_]]:
   def create(user: User.Data, withId: Option[FUUID] = None): F[User.Existing]

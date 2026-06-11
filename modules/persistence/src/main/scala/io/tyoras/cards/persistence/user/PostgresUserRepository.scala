@@ -4,7 +4,8 @@ import cats.effect.{Clock, Resource, Sync}
 import cats.syntax.all.*
 import io.chrisdavenport.cats.effect.time.implicits.*
 import io.chrisdavenport.fuuid.FUUID
-import io.tyoras.cards.domain.user.{User, UserRepository}
+import io.tyoras.cards.domain.user.UserRepository
+import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.persistence.PersistenceError
 import skunk.*
 

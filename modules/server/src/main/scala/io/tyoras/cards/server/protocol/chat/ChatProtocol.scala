@@ -4,7 +4,8 @@ import cats.effect.{Ref, Sync}
 import cats.syntax.all.*
 import cats.data.Validated.*
 import dev.profunktor.auth.jwt.JwtToken
-import io.tyoras.cards.domain.auth.{AuthError, AuthService}
+import io.tyoras.cards.domain.auth.AuthService
+import io.tyoras.cards.domain.auth.model.AuthError
 import io.tyoras.cards.shared.protocol.chat.*
 import io.tyoras.cards.shared.protocol.chat.OutputMessage.*
 import org.typelevel.log4cats.LoggerFactory

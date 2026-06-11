@@ -4,7 +4,8 @@ import cats.effect.{Async, Sync}
 import cats.syntax.all.*
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
-import io.tyoras.cards.domain.user.{User, UserService}
+import io.tyoras.cards.domain.user.UserService
+import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.server.endpoints.Endpoint
 import io.tyoras.cards.shared.endpoint.users.Payloads.Request.Creation
 import io.tyoras.cards.shared.endpoint.users.Payloads.Response.User.given

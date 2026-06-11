@@ -56,7 +56,7 @@ case class LateGameDealerTurn(round: GameRound, forehandCard: Card) extends Late
           case Nil            => currentPlayer.hand
           case trumpSuitCards => trumpSuitCards
       case sameSuit =>
-        sameSuit.filter(_.value > forehandCard.value) match
+        sameSuit.filter(_ > forehandCard) match
           case Nil         => sameSuit
           case higherCards => higherCards
   override def toString = s"${super.toString}\n\tForehand card\t$forehandCard"

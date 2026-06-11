@@ -2,7 +2,7 @@ package io.tyoras.cards.tests.endpoint.auth
 
 import io.circe.parser.parse
 import io.circe.syntax.*
-import io.tyoras.cards.domain.auth.LoginAttempt
+import io.tyoras.cards.domain.auth.model.LoginAttempt
 import io.tyoras.cards.shared.endpoint.auth.Payloads.Request
 import io.tyoras.cards.util.validation.BasicValidation.MissingFieldError
 import io.tyoras.cards.util.validation.StringValidation.{BlankFieldError, TooLongError}

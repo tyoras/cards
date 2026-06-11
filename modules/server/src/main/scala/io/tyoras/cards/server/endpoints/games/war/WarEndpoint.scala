@@ -23,7 +23,8 @@ import io.tyoras.cards.shared.protocol.game.OutputMessage.{DiscardMessage, GameE
 import io.tyoras.cards.domain.game.war.War
 import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.war.model.GameState
-import io.tyoras.cards.domain.user.{User, UserService}
+import io.tyoras.cards.domain.user.UserService
+import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.server.endpoints.ErrorHandling.ApiError.InvalidRequest
 import org.http4s.server.websocket.WebSocketBuilder2
 import org.http4s.websocket.WebSocketFrame

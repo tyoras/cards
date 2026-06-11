@@ -1,6 +1,7 @@
 package io.tyoras.cards.domain.user
 
 import io.chrisdavenport.fuuid.FUUID
+import io.tyoras.cards.domain.user.model.User
 
 trait UserRepository[F[_]]:
   def writeMany(users: List[User]): F[List[User.Existing]]

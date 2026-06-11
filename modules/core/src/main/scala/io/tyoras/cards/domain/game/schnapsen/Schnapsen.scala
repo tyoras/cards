@@ -165,7 +165,7 @@ private class SchnapsenImplem[F[_]](fsm: FinalStateMachine[F, GameState])(l: Str
   }
 
   private def winTurn(winner: Player, c1: Card, c2: Card): InternalGameState[F, Unit] = StateT { state =>
-    val updatedScore    = winner.score + c1.rank.value + c2.rank.value + winner.potentialMarriagePoints
+    val updatedScore    = winner.score + c1.value + c2.value + winner.potentialMarriagePoints
     val updatedWonCards = winner.wonCards ++ List(c1, c2)
     val updatedWinner   = winner.copy(wonCards = updatedWonCards, score = updatedScore)
     val updatedState    =

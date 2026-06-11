@@ -12,8 +12,9 @@ import com.comcast.ip4s.*
 import dev.profunktor.auth.JwtAuthMiddleware
 import dev.profunktor.auth.jwt.JwtAuth
 import fs2.io.net.Network
-import io.tyoras.cards.domain.auth.{AuthConfig, AuthService}
-import io.tyoras.cards.domain.user.User
+import io.tyoras.cards.domain.auth.AuthService
+import io.tyoras.cards.domain.auth.config.AuthConfig
+import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.server.config.HttpConfig
 import org.http4s.server.websocket.WebSocketBuilder2
 

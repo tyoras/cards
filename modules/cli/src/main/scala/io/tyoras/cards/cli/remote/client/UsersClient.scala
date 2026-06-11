@@ -3,8 +3,8 @@ package io.tyoras.cards.cli.remote.client
 import cats.effect.Async
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.cli.remote.config.CardsClientConfig
-import io.tyoras.cards.domain.auth.UserName
-import io.tyoras.cards.domain.user.User
+import io.tyoras.cards.domain.auth.model.UserName
+import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.shared.endpoint.users.Payloads
 import io.tyoras.cards.shared.endpoint.users.Payloads.Response.User.given
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder

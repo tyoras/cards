@@ -1,7 +1,7 @@
 package io.tyoras.cards.persistence.game
 
 import io.chrisdavenport.fuuid.FUUID
-import io.tyoras.cards.persistence.{fuuid, timestampTZ}
+import io.tyoras.cards.persistence.codecs.skunk.{fuuid, timestampTZ}
 import skunk.*
 import skunk.circe.codec.all.*
 import skunk.implicits.*

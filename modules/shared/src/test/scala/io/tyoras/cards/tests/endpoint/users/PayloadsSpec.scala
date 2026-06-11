@@ -4,7 +4,7 @@ import io.chrisdavenport.fuuid.FUUID
 import io.circe.parser.parse
 import io.circe.syntax.*
 import io.scalaland.chimney.Transformer
-import io.tyoras.cards.domain.user.User
+import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.shared.endpoint.users.Payloads.{Request, Response}
 import io.tyoras.cards.util.validation.BasicValidation.MissingFieldError
 import io.tyoras.cards.util.validation.StringValidation.{BlankFieldError, TooLongError}

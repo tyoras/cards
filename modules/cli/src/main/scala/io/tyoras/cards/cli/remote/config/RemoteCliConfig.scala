@@ -1,6 +1,6 @@
 package io.tyoras.cards.cli.remote.config
 
-import io.tyoras.cards.domain.auth.{Password, UserName}
+import io.tyoras.cards.domain.auth.model.{Password, UserName}
 import org.http4s.Uri
 import pureconfig.ConfigReader
 import pureconfig.module.http4s.given

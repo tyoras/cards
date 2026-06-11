@@ -8,7 +8,6 @@ import io.tyoras.cards.domain.game.schnapsen.*
 import io.tyoras.cards.domain.game.schnapsen.model.*
 import org.scalacheck.{Arbitrary, Gen}
 import cats.effect.unsafe.implicits.global
-import io.tyoras.cards.domain.card.Rank.*
 
 import java.time.{ZoneId, ZonedDateTime}
 
@@ -28,11 +27,11 @@ val cardGen: Gen[Card] = Gen.oneOf(baseDeck)
 
 def marriageGen(trumpSuit: Option[Suit] = None): Gen[Marriage] = for
   suit <- suitGen
-  king  = Card(suit, King(4))
-  queen = Card(suit, Queen(3))
+  marriedKing  = king(suit)
+  marriedQueen = queen(suit)
   ts <- trumpSuit.fold(suitGen)(ts => Gen.const(ts))
   status = Marriage.Status.of(trumpSuit.getOrElse(ts), suit)
-yield Marriage(king, queen, status)
+yield Marriage(marriedKing, marriedQueen, status)
 
 def marriagesGen(trumpSuit: Option[Suit] = None): Gen[List[Marriage]] = Gen.containerOf[Set, Marriage](marriageGen(trumpSuit)).map(_.toList)
 

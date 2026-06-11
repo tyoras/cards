@@ -4,15 +4,15 @@ import cats.syntax.all.*
 import dev.profunktor.auth.jwt.JwtToken
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.circe.given
-import io.circe.derivation.{Configuration, ConfiguredCodec}
+import io.circe.derivation.ConfiguredCodec
 import io.circe.{Decoder, Encoder}
-import io.tyoras.cards.domain.auth.{LoginAttempt, Password, UserName}
+import io.tyoras.cards.domain.auth.model.{LoginAttempt, Password, UserName}
 import io.tyoras.cards.util.validation.StringValidation.*
 import io.tyoras.cards.util.validation.syntax.*
 import io.tyoras.cards.util.validation.{ParentField, ValidationResult, Validator}
+import io.tyoras.cards.util.codecs.json.given
 
 object Payloads:
-  given Configuration = Configuration.default.withSnakeCaseMemberNames
   object Request:
     final case class Login(username: Option[String], password: Option[String]) derives ConfiguredCodec
     object Login:

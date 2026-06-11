@@ -123,8 +123,8 @@ object War:
       yield nextState
 
     private def resolveBattle(battleTurn: BattleTurn): GameState =
-      val highestRank = battleTurn.playedCards.values.maxBy(_.value)
-      val winners     = battleTurn.playedCards.filter(_._2.value == highestRank.value).keySet.toNes
+      val highestCard = battleTurn.playedCards.values.max
+      val winners     = battleTurn.playedCards.filter(_._2.value == highestCard.value).keySet.toNes
       winners.toList match
         case winnerId :: Nil =>
           val wonCards = battleTurn.playedCards.values.toList
@@ -167,8 +167,8 @@ object War:
         // in case does not happen to have hidden cards we draw cards from a second deck instead
         else if warTurn.currentRound.hiddenPlayedCards.nonEmpty then warTurn.currentRound.hiddenPlayedCards
         else warTurn.currentRound.involvedPlayers.foldLeft(Map.empty[PlayerId, Card])((cards, id) => cards.updated(id, warDeck.shuffled.head))
-      val highestRank = fightingCards.values.maxBy(_.value)
-      val winners     = fightingCards.filter(_._2.value == highestRank.value).keySet.toNes
+      val highestCard = fightingCards.values.max
+      val winners     = fightingCards.filter(_._2.value == highestCard.value).keySet.toNes
       winners.toList match
         case winnerId :: Nil =>
           val wonCards = warTurn.heap.toList

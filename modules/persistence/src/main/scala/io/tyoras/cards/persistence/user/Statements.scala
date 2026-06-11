@@ -1,8 +1,8 @@
 package io.tyoras.cards.persistence.user
 
 import io.chrisdavenport.fuuid.FUUID
-import io.tyoras.cards.domain.user.User
-import io.tyoras.cards.persistence.{fuuid, timestampTZ}
+import io.tyoras.cards.domain.user.model.User
+import io.tyoras.cards.persistence.codecs.skunk.{fuuid, timestampTZ}
 import skunk.*
 import skunk.codec.all.*
 import skunk.implicits.*

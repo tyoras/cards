@@ -5,6 +5,7 @@ import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.card.Suit.*
 import io.tyoras.cards.domain.card.Card
 import io.tyoras.cards.domain.game.schnapsen.model.*
+import io.tyoras.cards.domain.game.schnapsen.{king, queen, kingRank, queenRank}
 import io.tyoras.cards.domain.game.schnapsen.model.Marriage.Status.{Common, Royal}
 import io.tyoras.cards.domain.game.schnapsen.model.Role.*
 import org.scalatest.EitherValues
@@ -130,9 +131,9 @@ class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCh
   "Marriage suit constructor" should "have both the king and the queen of the suit for common marriage" in {
     forAll(suitGen -> "suit") { suit =>
       val commonMarriage = Marriage(suit)
-      commonMarriage.king.rank shouldBe King(4)
+      commonMarriage.king.rank shouldBe kingRank
       commonMarriage.king.suit shouldBe suit
-      commonMarriage.queen.rank shouldBe Queen(3)
+      commonMarriage.queen.rank shouldBe queenRank
       commonMarriage.queen.suit shouldBe suit
       commonMarriage.status shouldBe Common
     }
@@ -141,9 +142,9 @@ class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCh
   it should "have both the king and the queen of the suit for royal marriage" in {
     forAll(suitGen -> "suit") { suit =>
       val royalMarriage = Marriage(suit, Royal)
-      royalMarriage.king.rank shouldBe King(4)
+      royalMarriage.king.rank shouldBe kingRank
       royalMarriage.king.suit shouldBe suit
-      royalMarriage.queen.rank shouldBe Queen(3)
+      royalMarriage.queen.rank shouldBe queenRank
       royalMarriage.queen.suit shouldBe suit
       royalMarriage.status shouldBe Royal
     }
@@ -151,12 +152,12 @@ class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCh
 
   "Marriage.toString" should "work for common marriage" in {
     val commonMarriage = Marriage(Diamond)
-    commonMarriage.toString shouldBe s"Common marriage between ${Card(Diamond, King(4))} and ${Card(Diamond, Queen(3))}"
+    commonMarriage.toString shouldBe s"Common marriage between ${king(Diamond)} and ${queen(Diamond).toString}"
   }
 
   it should "work for royal marriage" in {
     val commonMarriage = Marriage(Diamond, Royal)
-    commonMarriage.toString shouldBe s"Royal marriage between ${Card(Diamond, King(4))} and ${Card(Diamond, Queen(3))}"
+    commonMarriage.toString shouldBe s"Royal marriage between ${king(Diamond)} and ${queen(Diamond).toString}"
   }
 
   "GameContext.player" should "return an error when the id does not belong to one of the players" in {

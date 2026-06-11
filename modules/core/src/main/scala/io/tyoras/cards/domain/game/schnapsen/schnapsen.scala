@@ -11,10 +11,15 @@ import io.tyoras.cards.domain.game.schnapsen.model.Marriage.Status
 import io.tyoras.cards.domain.game.schnapsen.model.*
 import org.typelevel.log4cats.StructuredLogger
 
-val schnapsenRanks: Set[Rank] = Set(Ace(11), Ten(), King(4), Queen(3), Jack(2))
+val kingRank: Rank            = King(Card.Value(4))
+val queenRank: Rank           = Queen(Card.Value(3))
+val schnapsenRanks: Set[Rank] = Set(Ace(Card.Value(11)), Ten(), kingRank, queenRank, Jack(Card.Value(2)))
 val schnapsenSuits: Set[Suit] = allSuits
 
 lazy val baseDeck: Deck = Deck.create(schnapsenSuits, schnapsenRanks)
+
+def king(suit: Suit): Card  = Card(suit, kingRank)
+def queen(suit: Suit): Card = Card(suit, queenRank)
 
 type PlayerId = FUUID
 
@@ -48,7 +53,7 @@ private[schnapsen] def initGameRound[F[_]](ctx: GameContext)(logger: StructuredL
 
     def decide(d: Deck): F[(PlayerId, PlayerId)] = F.tailRecM(d) {
       case h1 :: h2 :: t if h1.rank.value == h2.rank.value => t.asLeft[(PlayerId, PlayerId)].pure[F]
-      case h1 :: h2 :: _                                   => (if h1.rank.value > h2.rank.value then (p1, p2) else (p2, p1)).asRight[Deck].pure[F]
+      case h1 :: h2 :: _                                   => (if h1.rank > h2.rank then (p1, p2) else (p2, p1)).asRight[Deck].pure[F]
       case Nil                                             => decideFirstDealer(context).asRight[Deck].sequence
       case _                                               => F.raiseError(DeckError("Impossible to select first player : odd deck size"))
     }

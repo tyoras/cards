@@ -35,7 +35,7 @@ class CardSpec extends AnyFlatSpec with Matchers:
   "Cards json serialization" should "work" in {
     import io.circe.parser.decode
     import io.circe.syntax.*
-    import io.tyoras.cards.domain.card.given
+    import io.tyoras.cards.domain.card.codecs.given
 
     val card = Card(Heart, King())
     val json = card.asJson.spaces2

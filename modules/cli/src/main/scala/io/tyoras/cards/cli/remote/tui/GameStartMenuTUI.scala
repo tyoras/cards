@@ -12,7 +12,7 @@ import io.tyoras.cards.cli.remote.tui.GameStartMenuTUI.*
 import io.tyoras.cards.cli.remote.tui.GameStartMenuTUI.MenuSelection.*
 import io.tyoras.cards.cli.remote.tui.GameStartMenuTUI.Mode.*
 import io.tyoras.cards.cli.tui.TUI
-import io.tyoras.cards.domain.user.User
+import io.tyoras.cards.domain.user.model.User
 import layoutz.*
 import cats.syntax.all.*
 import io.tyoras.cards.cli.tui.TUI.Message.Notification

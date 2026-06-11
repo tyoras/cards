@@ -5,7 +5,9 @@ import pdi.jwt.*
 import dev.profunktor.auth.jwt.*
 import cats.syntax.all.*
 import io.circe.syntax.*
-import io.tyoras.cards.domain.user.User
+import io.tyoras.cards.domain.auth.config.AuthConfig
+import io.tyoras.cards.domain.auth.model.UserClaim
+import io.tyoras.cards.domain.user.model.User
 
 trait JWTGenerator[F[_]]:
   def create(user: User.Existing): F[JwtToken]

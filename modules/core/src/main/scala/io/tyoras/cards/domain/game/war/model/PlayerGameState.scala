@@ -5,11 +5,14 @@ import cats.syntax.all.*
 import io.chrisdavenport.fuuid.circe.given
 import io.circe.derivation.*
 import io.circe.{Codec, Decoder, Encoder}
-import io.tyoras.cards.domain.card.{Card, Hand, given}
+import io.tyoras.cards.domain.card.{Card, Hand}
+import io.tyoras.cards.domain.card.codecs.given
 import io.tyoras.cards.domain.game.GameStateFilter
 import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.war.model.PlayerGameState.WarTurn.BattleRound
 import io.tyoras.cards.domain.game.war.model.{Elimination, GameState, PlayerId, Turn}
+
+import io.tyoras.cards.util.codecs.json.given
 
 type CardCount = Int
 
@@ -75,8 +78,6 @@ object PlayerGameState:
   final case class Exit(override val turn: Turn, override val playerId: PlayerId) extends PlayerGameState:
     override val code: String  = "exit"
     override val label: String = "Exit"
-
-  given Configuration = Configuration.default.withSnakeCaseMemberNames
 
   given ConfiguredCodec[BattleRound]     = ConfiguredCodec.derived
   given ConfiguredCodec[PlayerGameState] = ConfiguredCodec.derive(discriminator = Some("code"), transformMemberNames = renaming.snakeCase)

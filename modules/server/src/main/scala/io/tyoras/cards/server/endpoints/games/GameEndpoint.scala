@@ -12,7 +12,7 @@ import org.http4s.circe.*
 import org.http4s.circe.CirceEntityEncoder.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.{AuthedRoutes, Response}
-import io.tyoras.cards.domain.user.User
+import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.shared.endpoint.ErrorPayloads.Response.ApiMessage
 import io.tyoras.cards.shared.endpoint.games.Payloads
 import io.tyoras.cards.shared.endpoint.games.Payloads.Response.Game.given

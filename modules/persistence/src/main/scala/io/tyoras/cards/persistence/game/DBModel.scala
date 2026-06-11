@@ -7,7 +7,7 @@ import io.circe.syntax.*
 import io.circe.{Decoder, DecodingFailure, Encoder, Json}
 import io.tyoras.cards.domain.game.Game.Existing
 import io.tyoras.cards.domain.game.*
-import io.tyoras.cards.persistence.{fuuid, gameType, timestampTZ}
+import io.tyoras.cards.persistence.codecs.skunk.{fuuid, gameType, timestampTZ}
 import skunk.Codec
 import skunk.circe.codec.all.*
 

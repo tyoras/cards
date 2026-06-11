@@ -66,7 +66,7 @@ class WarInputSpec extends AnyFlatSpec with Matchers {
   "GameInput.PlayCard" should "have correct label with card and player ids" in {
     val playCard = PlayCard(playerId, card.id)
     playCard.label should include("Play card")
-    playCard.label should include(card.id)
+    playCard.label should include(card.id.toString)
     playCard.label should include(playerId.toString)
   }
 

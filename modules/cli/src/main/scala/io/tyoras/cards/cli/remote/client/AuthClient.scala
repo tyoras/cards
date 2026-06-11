@@ -7,7 +7,7 @@ import org.http4s.client.Client
 import org.http4s.circe.*
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
-import io.tyoras.cards.domain.auth.{Password, UserName}
+import io.tyoras.cards.domain.auth.model.{Password, UserName}
 import io.tyoras.cards.shared.endpoint.auth.Payloads
 import io.tyoras.cards.shared.endpoint.auth.Payloads.Response.SuccessfulLogin
 import cats.syntax.all.*

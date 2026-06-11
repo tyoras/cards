@@ -49,12 +49,22 @@ object Dependencies {
       val `fuuid-http4s`     = "io.chrisdavenport" %% "fuuid-http4s"     % fuuidVersion
     }
 
-    case object scalaland {
-      val chimney = "io.scalaland" %% "chimney" % "1.10.0"
-    }
-
     case object circe {
       val `circe-core` = "io.circe" %% s"circe-core" % "0.14.14"
+    }
+
+    case object github {
+      case object iltotore {
+        val ironVersion       = "3.3.1"
+        val iron              = "io.github.iltotore" %% "iron"            % ironVersion
+        val `iron-cats`       = "io.github.iltotore" %% "iron-cats"       % ironVersion
+        val `iron-circe`      = "io.github.iltotore" %% "iron-circe"      % ironVersion
+        val `iron-pureconfig` = "io.github.iltotore" %% "iron-pureconfig" % ironVersion
+      }
+    }
+
+    case object scalaland {
+      val chimney = "io.scalaland" %% "chimney" % "1.10.0"
     }
   }
 
@@ -120,6 +130,8 @@ object Dependencies {
     io.chrisdavenport.fuuid,
     io.chrisdavenport.`fuuid-circe`,
     io.circe.`circe-core`,
+    io.github.iltotore.iron,
+    io.github.iltotore.`iron-circe`,
     org.typelevel.`cats-core`,
     org.typelevel.`cats-effect`,
     org.typelevel.`cats-parse`,

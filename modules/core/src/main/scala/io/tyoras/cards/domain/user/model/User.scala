@@ -1,4 +1,4 @@
-package io.tyoras.cards.domain.user
+package io.tyoras.cards.domain.user.model
 
 import cats.Show
 import cats.implicits.toShow

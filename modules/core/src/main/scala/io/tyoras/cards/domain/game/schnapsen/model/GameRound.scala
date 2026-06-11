@@ -1,7 +1,6 @@
 package io.tyoras.cards.domain.game.schnapsen.model
 
-import io.tyoras.cards.domain.card.Rank.{King, Queen}
-import io.tyoras.cards.domain.game.schnapsen.PlayerId
+import io.tyoras.cards.domain.game.schnapsen.{PlayerId, king, queen}
 import io.tyoras.cards.domain.card.{Card, Deck, Hand, Suit}
 import io.tyoras.cards.domain.game.schnapsen.model.Marriage.Status.Common
 import io.tyoras.cards.domain.game.schnapsen.model.Role.*
@@ -46,7 +45,7 @@ case class Marriage(king: Card, queen: Card, status: Marriage.Status):
   override def toString: String = s"$status marriage between $king and $queen"
 object Marriage:
   def apply(suit: Suit, status: Status = Common): Marriage =
-    Marriage(Card(suit, King(4)), Card(suit, Queen(3)), status)
+    Marriage(king(suit), queen(suit), status)
 
   enum Status(val score: Int):
     case Royal  extends Status(40)

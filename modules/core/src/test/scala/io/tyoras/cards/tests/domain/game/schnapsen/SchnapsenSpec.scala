@@ -15,26 +15,26 @@ class SchnapsenSpec extends AnyFlatSpec with Matchers with ScalaCheckDrivenPrope
 
   "baseDeck" should "be the good one for Schnapsen" in {
     val expectedSchnapsenDeck = Set(
-      Card(Heart, Ace(11)),
+      Card(Heart, Ace(Card.Value(11))),
       Card(Heart, Ten()),
-      Card(Heart, King(4)),
-      Card(Heart, Queen(3)),
-      Card(Heart, Jack(2)),
-      Card(Diamond, Ace(11)),
+      Card(Heart, King(Card.Value(4))),
+      Card(Heart, Queen(Card.Value(3))),
+      Card(Heart, Jack(Card.Value(2))),
+      Card(Diamond, Ace(Card.Value(11))),
       Card(Diamond, Ten()),
-      Card(Diamond, King(4)),
-      Card(Diamond, Queen(3)),
-      Card(Diamond, Jack(2)),
-      Card(Spade, Ace(11)),
+      Card(Diamond, King(Card.Value(4))),
+      Card(Diamond, Queen(Card.Value(3))),
+      Card(Diamond, Jack(Card.Value(2))),
+      Card(Spade, Ace(Card.Value(11))),
       Card(Spade, Ten()),
-      Card(Spade, King(4)),
-      Card(Spade, Queen(3)),
-      Card(Spade, Jack(2)),
-      Card(Club, Ace(11)),
+      Card(Spade, King(Card.Value(4))),
+      Card(Spade, Queen(Card.Value(3))),
+      Card(Spade, Jack(Card.Value(2))),
+      Card(Club, Ace(Card.Value(11))),
       Card(Club, Ten()),
-      Card(Club, King(4)),
-      Card(Club, Queen(3)),
-      Card(Club, Jack(2))
+      Card(Club, King(Card.Value(4))),
+      Card(Club, Queen(Card.Value(3))),
+      Card(Club, Jack(Card.Value(2)))
     )
     baseDeck should contain theSameElementsAs expectedSchnapsenDeck
   }

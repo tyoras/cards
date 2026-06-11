@@ -1,9 +1,12 @@
 package io.tyoras.cards.domain.auth
 import cats.effect.Sync
-import io.tyoras.cards.domain.user.{User, UserService}
+import io.tyoras.cards.domain.user.UserService
+import io.tyoras.cards.domain.user.model.User
 import cats.syntax.all.*
 import dev.profunktor.auth.jwt.*
 import io.circe.parser.decode
+import io.tyoras.cards.domain.auth.config.AuthConfig
+import io.tyoras.cards.domain.auth.model.{AuthError, LoginAttempt, LoginSuccess, UserClaim}
 import pdi.jwt.JwtClaim
 import pdi.jwt.exceptions.JwtException
 

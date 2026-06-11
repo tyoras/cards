@@ -3,19 +3,19 @@ package io.tyoras.cards.shared.endpoint.users
 import cats.implicits.catsSyntaxTuple2Semigroupal
 import io.chrisdavenport.fuuid.FUUID
 import io.chrisdavenport.fuuid.circe.*
-import io.circe.derivation.{Configuration, ConfiguredCodec}
+import io.circe.derivation.ConfiguredCodec
 import io.circe.{Codec, Decoder, Encoder}
 import io.scalaland.chimney.Transformer
-import io.tyoras.cards.domain.user.User
-import io.tyoras.cards.domain.user.User.{Data, Existing}
+import io.tyoras.cards.domain.user.model.User
+import io.tyoras.cards.domain.user.model.User.{Data, Existing}
 import io.tyoras.cards.util.validation.*
 import io.tyoras.cards.util.validation.StringValidation.*
 import io.tyoras.cards.util.validation.syntax.*
+import io.tyoras.cards.util.codecs.json.given
 
 import java.time.ZonedDateTime
 
 object Payloads:
-  given Configuration = Configuration.default.withSnakeCaseMemberNames
   object Request:
     final case class Creation(name: Option[String], about: Option[String]) derives Codec
     object Creation:

@@ -3,24 +3,33 @@ package io.tyoras.cards.domain.card
 import cats.{Order, Show}
 import io.tyoras.cards.domain.card.Suit.*
 import io.tyoras.cards.domain.card.Rank.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.string.Blank
+import io.github.iltotore.iron.constraint.numeric.Positive0
 
-case class Card(id: CardId, suit: Suit, rank: Rank, customValue: Option[CardValue] = None) extends Ordered[Card]:
+case class Card(id: Card.ID, suit: Suit, rank: Rank, customValue: Option[Card.Value] = None) extends Ordered[Card]:
   override def toString: String = Card.emoji(this, colored = false)
 
-  override def compare(that: Card): Int = value.compare(that.value)
+  override def compare(that: Card): Int = value.value.compare(that.value.value)
 
   val color: Color = suit.color
 
-  val value: CardValue = customValue.getOrElse(rank.value)
+  val value: Card.Value = customValue.getOrElse(rank.value)
 
   val emoji: String = Card.emoji(this)
 
 object Card:
+  type ID = Card.ID.T
+  object ID extends RefinedType[String, Not[Blank]]
+
+  type Value = Card.Value.T
+  object Value extends RefinedSubtype[Int, Positive0]
+
   given Show[Card]  = Show.fromToString
   given Order[Card] = Order.fromOrdering
 
   def apply(suit: Suit, rank: Rank): Card =
-    val id = s"${rank.toString}${suit.symbol}"
+    val id = Card.ID.applyUnsafe(s"${rank.toString}${suit.symbol}")
     new Card(id, suit, rank, None)
 
   val cardBackEmoji: String = "🂠"

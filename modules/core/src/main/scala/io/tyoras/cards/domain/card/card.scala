@@ -10,10 +10,8 @@ lazy val redSuits: Set[Suit]   = allSuits.filter(_.color == Red)
 
 lazy val defaultRanks: Set[Rank] = Set(Ace(), King(), Queen(), Jack(), Ten(), Nine(), Eight(), Seven(), Six(), Five(), Four(), Three(), Two())
 
-type CardId    = String
-type CardValue = Int
-type Deck      = List[Card]
-type Hand      = List[Card]
+type Deck = List[Card]
+type Hand = List[Card]
 
 object Hand:
   val empty: Hand = List.empty
@@ -51,6 +49,6 @@ extension (cards: List[Card])
         val remainingHand = cards.take(n) ++ cards.drop(n + 1)
         (Some(card), remainingHand)
 
-  def pickCard(cardId: CardId): (Option[Card], Hand) =
+  def pickCard(cardId: Card.ID): (Option[Card], Hand) =
     val index = cards.indexWhere(_.id == cardId)
     pickCard(index)

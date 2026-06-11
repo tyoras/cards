@@ -1,12 +1,15 @@
 package io.tyoras.cards.domain.card
 
-import io.circe.derivation.{ConfiguredEnumDecoder, ConfiguredEnumEncoder}
-import io.circe.{Decoder, Encoder}
+import io.circe.derivation.{ConfiguredCodec, ConfiguredEnumCodec}
+import io.circe.{Codec, Decoder, Encoder, Json}
+import io.tyoras.cards.domain.card.{Card, Rank, Suit}
+import io.tyoras.cards.util.codecs.json.given
 
-given Encoder[Rank] = Encoder.derived
-given Encoder[Suit] = ConfiguredEnumEncoder.derive()
-given Encoder[Card] = Encoder.derived
-
-given Decoder[Rank] = Decoder.derived
-given Decoder[Suit] = ConfiguredEnumDecoder.derive()
-given Decoder[Card] = Decoder.derived
+object codecs:
+  given Codec[Rank]         = Codec.derived
+  given Codec[Suit]         = ConfiguredEnumCodec.derive()
+  given Encoder[Card.ID]    = id => Json.fromString(id.value)
+  given Decoder[Card.ID]    = Decoder.decodeString.emap(Card.ID.either)
+  given Encoder[Card.Value] = cValue => Json.fromInt(cValue.value)
+  given Decoder[Card.Value] = Decoder.decodeInt.emap(Card.Value.either)
+  given Codec[Card]         = ConfiguredCodec.derived

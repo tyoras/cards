@@ -1,7 +1,7 @@
 package io.tyoras.cards.server.endpoints
 
 import cats.Applicative
-import io.tyoras.cards.domain.user.User
+import io.tyoras.cards.domain.user.model.User
 import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.http4s.server.websocket.WebSocketBuilder2
 

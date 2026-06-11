@@ -3,6 +3,7 @@ package io.tyoras.cards.domain.auth
 import cats.effect.*
 import pdi.jwt.JwtClaim
 import cats.syntax.all.*
+import io.tyoras.cards.domain.auth.model.TokenExpiration
 
 import java.time.Clock
 

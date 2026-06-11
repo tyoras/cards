@@ -10,7 +10,7 @@ import cats.syntax.all.*
 import io.circe.{Codec, Decoder, Encoder}
 import io.tyoras.cards.domain.game
 import io.tyoras.cards.domain.game.war.codecs.given
-import io.tyoras.cards.domain.game.schnapsen.given
+import io.tyoras.cards.domain.game.schnapsen.codecs.given
 import io.tyoras.cards.domain.game.war.model.PlayerGameState.given
 import io.tyoras.cards.domain.game.schnapsen.model.PlayerGameState.given
 
