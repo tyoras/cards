@@ -25,6 +25,9 @@ object Card:
   type Value = Card.Value.T
   object Value extends RefinedSubtype[Int, Positive0]
 
+  type Count = Card.Count.T
+  object Count extends RefinedSubtype[Int, Positive0]
+
   given Show[Card]  = Show.fromToString
   given Order[Card] = Order.fromOrdering
 

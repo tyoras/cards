@@ -4,7 +4,7 @@ import cats.data.Validated
 import cats.syntax.option.*
 import io.tyoras.cards.util.validation.error.ErrorField
 
-object StringValidation:
+object string:
 
   final case class EmptyFieldError(fieldName: String) extends ErrorField:
     override def code                    = "empty"

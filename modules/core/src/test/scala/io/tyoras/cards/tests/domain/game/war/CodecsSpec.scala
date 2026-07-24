@@ -44,14 +44,14 @@ class CodecsSpec extends AnyFlatSpec with Matchers:
   }
 
   "Elimination encoder and decoder" should "round-trip correctly" in {
-    val elimination = Elimination(playerId1, 1)
+    val elimination = Elimination(playerId1, Turn(1))
     val json        = elimination.asJson
     val decoded     = decode[Elimination](json.noSpaces)
     decoded shouldBe Right(elimination)
   }
 
   "GameContext encoder and decoder" should "round-trip correctly with players and eliminations" in {
-    val context = GameContext(Map(playerId1 -> player1, playerId2 -> player2), ZonedDateTime.now(), Turn.firstTurn, List(Elimination(playerId1, 1)))
+    val context = GameContext(Map(playerId1 -> player1, playerId2 -> player2), ZonedDateTime.now(), Turn.firstTurn, List(Elimination(playerId1, Turn(1))))
     val json    = context.asJson
     val decoded = decode[GameContext](json.noSpaces)
     decoded shouldBe Right(context)

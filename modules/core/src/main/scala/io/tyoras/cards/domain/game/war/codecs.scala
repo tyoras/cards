@@ -3,13 +3,16 @@ package io.tyoras.cards.domain.game.war
 import io.circe.{Decoder, Encoder}
 import io.chrisdavenport.fuuid.circe.given
 import io.circe.derivation.{ConfiguredCodec, ConfiguredDecoder, ConfiguredEncoder, renaming}
-import io.tyoras.cards.domain.game.war.model.{Elimination, GameContext, GameState, Player, WarInput}
+import io.tyoras.cards.domain.game.war.model.{Elimination, GameContext, GameState, Player, Turn, WarInput}
 import io.tyoras.cards.domain.card.codecs.given
 import io.tyoras.cards.domain.game.war.model.GameState.WarTurn.BattleRound
 import io.tyoras.cards.util.codecs.json.given
+import io.github.iltotore.iron.circe.given
 
 object codecs:
 
+  given Encoder[Turn]                = summon
+  given Decoder[Turn]                = summon
   given ConfiguredCodec[Player]      = ConfiguredCodec.derived
   given ConfiguredCodec[Elimination] = ConfiguredCodec.derived
   given ConfiguredCodec[GameContext] = ConfiguredCodec.derived

@@ -11,10 +11,7 @@ import io.tyoras.cards.domain.game.GameStateFilter
 import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.war.model.PlayerGameState.WarTurn.BattleRound
 import io.tyoras.cards.domain.game.war.model.{Elimination, GameState, PlayerId, Turn}
-
 import io.tyoras.cards.util.codecs.json.given
-
-type CardCount = Int
 
 sealed trait PlayerGameState:
   val code: String
@@ -31,7 +28,7 @@ object PlayerGameState:
       override val turn: Turn,
       override val playerId: PlayerId,
       hand: Hand,
-      opponents: Map[PlayerId, CardCount],
+      opponents: Map[PlayerId, Card.Count],
       playedCards: Map[PlayerId, Card],
       missingPlays: Set[PlayerId]
   ) extends PlayerGameState:
@@ -43,7 +40,7 @@ object PlayerGameState:
       override val turn: Turn,
       override val playerId: PlayerId,
       hand: Hand,
-      opponents: Map[PlayerId, CardCount],
+      opponents: Map[PlayerId, Card.Count],
       battles: NonEmptyList[WarTurn.BattleRound],
       missingHidden: Set[PlayerId],
       missingPlays: Set[PlayerId]
@@ -60,7 +57,7 @@ object PlayerGameState:
       override val turn: Turn,
       override val playerId: PlayerId,
       hand: Hand,
-      opponents: Map[PlayerId, CardCount],
+      opponents: Map[PlayerId, Card.Count],
       winnerId: PlayerId,
       wonCards: Set[Card],
       eliminated: Set[PlayerId],
@@ -92,8 +89,8 @@ object PlayerGameState:
             BattleTurn(
               s.context.turnNumber,
               playerId,
-              s.context.player(playerId).map(_.hand).getOrElse(Nil),
-              s.context.players.view.mapValues(_.hand.size).toMap,
+              s.context.playerHand(playerId),
+              s.context.playersCardCount,
               s.playedCards,
               s.missingPlays
             )
@@ -102,8 +99,8 @@ object PlayerGameState:
             WarTurn(
               s.context.turnNumber,
               playerId,
-              s.context.player(playerId).map(_.hand).getOrElse(Nil),
-              s.context.players.view.mapValues(_.hand.size).toMap,
+              s.context.playerHand(playerId),
+              s.context.playersCardCount,
               battles,
               s.missingHidden,
               s.missingPlays
@@ -112,8 +109,8 @@ object PlayerGameState:
             PlayerWinTurn(
               s.context.turnNumber,
               playerId,
-              s.context.player(playerId).map(_.hand).getOrElse(Nil),
-              s.context.players.view.mapValues(_.hand.size).toMap,
+              s.context.playerHand(playerId),
+              s.context.playersCardCount,
               s.winnerId,
               s.wonCards,
               s.eliminated,

@@ -1,7 +1,7 @@
 package io.tyoras.cards.shared.protocol.chat
 
 import io.chrisdavenport.fuuid.FUUID
-import io.tyoras.cards.util.validation.StringValidation.*
+import io.tyoras.cards.util.validation.string.*
 import io.tyoras.cards.util.validation.ValidationResult
 import io.tyoras.cards.util.validation.syntax.*
 import io.chrisdavenport.fuuid.circe.*

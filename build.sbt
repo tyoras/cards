@@ -10,8 +10,7 @@ ThisBuild / tlJdkRelease     := Some(25)
 
 lazy val commonSettings = Seq(
   update / evictionWarningOptions := EvictionWarningOptions.empty,
-  scalafmtPrintDiff               := true,
-  scalacOptions ++= Seq("-Jsun-misc-unsafe-memory-access=allow")
+  scalafmtPrintDiff               := true
 )
 
 ThisBuild / coverageMinimumStmtTotal := 75

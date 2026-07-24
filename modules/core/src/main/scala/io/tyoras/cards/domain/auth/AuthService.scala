@@ -25,7 +25,7 @@ object AuthService:
     new AuthService[F]:
       override def login(attempt: LoginAttempt): F[LoginSuccess] =
         for
-          read  <- userService.readByName(attempt.userName.trim)
+          read  <- userService.readByName(attempt.userName)
           user  <- Sync[F].fromOption(read, AuthError.UnknownUser(attempt.userName))
           token <- jwtGenerator.create(user)
         yield LoginSuccess(token, user)
@@ -34,8 +34,11 @@ object AuthService:
         (claim: JwtClaim) => decode[UserClaim](claim.content).fold(_ => none[User.Existing].pure, c => userService.readById(c.userId))
 
       override def authenticate(jwt: JwtToken): F[User.Existing] =
-        jwtDecode(jwt, jwtAuth).flatMap(authenticator(jwt)).flatMap(Sync[F].fromOption(_, AuthError.UnknownUser("user from jwt"))).adaptError {
-          case e: JwtException => AuthError.InvalidToken(e.getMessage)
-        }
+        jwtDecode(jwt, jwtAuth)
+          .flatMap(authenticator(jwt))
+          .flatMap(Sync[F].fromOption(_, AuthError.UnknownUser(User.Name.applyUnsafe("user from jwt"))))
+          .adaptError { case e: JwtException =>
+            AuthError.InvalidToken(e.getMessage)
+          }
 
   }

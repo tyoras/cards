@@ -22,15 +22,15 @@ abstract class TUI[F[_], State, Msg] extends LayoutzApp[State, Msg]:
   protected def appLayout(elements: layoutz.Element*): layoutz.Element = {
     box("")(
       layout(
-        banner(Text(pageBanner)).border(Border.Double).bg(Black).color(BrightGreen).center() +: elements*
+        banner(Text(pageBanner)).border(Border.Double).colorBg(Black).color(BrightGreen).center() +: elements*
       ).center(appWidth)
-    ).bg(BrightGreen).color(BrightBlack)
+    ).colorBg(BrightGreen).color(BrightBlack)
   }
 
   protected def notificationCard(notif: Option[TUI.Message.Notification]): Element =
     notif.fold(Empty) {
       case TUI.Message.Notification.Info(info) => statusCard(Text("Info"), Text(info))
-      case TUI.Message.Notification.Error(err) => statusCard(Text("Error"), Text(err)).bg(Yellow).color(Black)
+      case TUI.Message.Notification.Error(err) => statusCard(Text("Error"), Text(err)).colorBg(Yellow).color(Black)
     }
 
   protected def chatElement(messages: List[Message], currentMsg: String, active: Boolean): Element =

@@ -7,6 +7,7 @@ import io.chrisdavenport.fuuid.http4s.FUUIDVar
 import io.tyoras.cards.domain.user.UserService
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.server.endpoints.Endpoint
+import io.tyoras.cards.server.endpoints.params.given
 import io.tyoras.cards.shared.endpoint.users.Payloads.Request.Creation
 import io.tyoras.cards.shared.endpoint.users.Payloads.Response.User.given
 import org.http4s.circe.CirceEntityEncoder.*
@@ -41,7 +42,7 @@ object UserEndpoint:
         case DELETE -> Root / "users" / FUUIDVar(id) as u  => deleteById(id)
       }
 
-      object PartialName extends QueryParamDecoderMatcher[String]("name")
+      object PartialName extends QueryParamDecoderMatcher[User.Name]("name")
 
       private def create(payload: Creation): F[Response[F]] = for
         validated <- payload.validateF
@@ -60,7 +61,7 @@ object UserEndpoint:
         response    = Response[F](status).withEntity(transformed)
       yield response
 
-      private def searchByName(name: String): F[Response[F]] =
+      private def searchByName(name: User.Name): F[Response[F]] =
         userService.readManyByPartialName(name).map(_.transformInto[List[Payloads.Response.User]]).flatMap(Ok(_))
 
       private val listAll: F[Response[F]] =

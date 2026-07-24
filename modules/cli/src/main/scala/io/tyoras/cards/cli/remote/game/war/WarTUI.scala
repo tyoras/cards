@@ -204,7 +204,7 @@ object WarTUI:
           layout(
             "Everyone play one card and the best one win all the played cards...",
             br,
-            section("Played cards")(row(state.playedCards.toSeq.map((id, card) => renderCard(card, title = playerNames(id).some))*).bg(BrightWhite)),
+            section("Played cards")(row(state.playedCards.toSeq.map((id, card) => renderCard(card, title = playerNames(id).some))*).colorBg(BrightWhite)),
             br,
             if state.missingPlays.contains(playerId) then
               layout(
@@ -245,7 +245,7 @@ object WarTUI:
                 playerNames(id).style(Bold) +: state.battles.toList.map(round =>
                   row(
                     List(round.hiddenPlayedCards.get(id).as(renderCardBack()), round.fightingCards.get(id).map(renderCard(_))).flatten*
-                  ).bg(BrightWhite)
+                  ).colorBg(BrightWhite)
                 )
               )
               table(headers, rows).border(Border.None)
@@ -281,7 +281,7 @@ object WarTUI:
           layout(
             s"$winner won turn $turn and won ${state.wonCards.size} cards.",
             br,
-            section("Won cards")(row(state.wonCards.toSeq.map(renderCard(_, title = winnerName.some))*).bg(BrightWhite)),
+            section("Won cards")(row(state.wonCards.toSeq.map(renderCard(_, title = winnerName.some))*).colorBg(BrightWhite)),
             if state.eliminated.nonEmpty then
               section("Players eliminated during this turn")(kv(state.eliminated.toSeq.map(playerNames(_) -> "Eliminated ❌".color(Red))*))
             else empty,

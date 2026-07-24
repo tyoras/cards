@@ -60,21 +60,21 @@ class GameContextSpec extends AnyFlatSpec with Matchers {
   }
 
   "GameContext.eliminatePlayer" should "add elimination record" in {
-    val context = GameContext(Map(playerId1 -> player1), startedAt, 5)
+    val context = GameContext(Map(playerId1 -> player1), startedAt, Turn(5))
     val updated = context.eliminatePlayer(playerId1)
-    updated.eliminations should contain(Elimination(playerId1, 5))
+    updated.eliminations should contain(Elimination(playerId1, Turn(5)))
   }
 
   it should "preserve existing eliminations" in {
-    val context = GameContext(Map(playerId1 -> player1, playerId2 -> player2), startedAt, 3, List(Elimination(playerId2, 2)))
+    val context = GameContext(Map(playerId1 -> player1, playerId2 -> player2), startedAt, Turn(3), List(Elimination(playerId2, Turn(2))))
     val updated = context.eliminatePlayer(playerId1)
     updated.eliminations should have size 2
-    updated.eliminations should contain(Elimination(playerId1, 3))
-    updated.eliminations should contain(Elimination(playerId2, 2))
+    updated.eliminations should contain(Elimination(playerId1, Turn(3)))
+    updated.eliminations should contain(Elimination(playerId2, Turn(2)))
   }
 
   "GameContext.incrementTurnNumber" should "increment turn number by one" in {
-    val context = GameContext(Map(playerId1 -> player1), startedAt, 5)
+    val context = GameContext(Map(playerId1 -> player1), startedAt, Turn(5))
     context.incrementTurnNumber.turnNumber shouldBe 6
   }
 
@@ -87,8 +87,8 @@ class GameContextSpec extends AnyFlatSpec with Matchers {
     val context = GameContext(
       Map(playerId1 -> player1, playerId2 -> player2, playerId3 -> playerWithEmptyHand),
       startedAt,
-      5,
-      List(Elimination(playerId2, 3), Elimination(playerId3, 4))
+      Turn(5),
+      List(Elimination(playerId2, Turn(3)), Elimination(playerId3, Turn(4)))
     )
     context.allEliminated shouldBe true
   }
@@ -106,8 +106,8 @@ class GameContextSpec extends AnyFlatSpec with Matchers {
     val context = GameContext(
       Map(playerId1 -> player1, playerId2 -> player2, playerId3 -> playerWithEmptyHand),
       startedAt,
-      3,
-      List(Elimination(playerId3, 2))
+      Turn(3),
+      List(Elimination(playerId3, Turn(2)))
     )
     context.allEliminated shouldBe false
   }

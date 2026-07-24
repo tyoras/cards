@@ -3,6 +3,7 @@ package io.tyoras.cards.cli.remote.client
 import cats.data.NonEmptyList
 import cats.effect.{Async, Resource}
 import io.chrisdavenport.fuuid.FUUID
+import io.scalaland.chimney.partial.Error
 import io.tyoras.cards.cli.remote.auth.AuthProvider
 import io.tyoras.cards.domain.game.GameType
 import org.http4s.{AuthScheme, Credentials, Headers, MediaType}
@@ -13,6 +14,12 @@ import org.http4s.client.middleware.RetryPolicy.exponentialBackoff
 
 import java.time.ZonedDateTime
 import scala.concurrent.duration.DurationInt
+import scala.util.control.NoStackTrace
+
+enum ClientError(detail: String) extends Exception(s"Client error: $detail") with NoStackTrace:
+  case CallError(e: Throwable) extends ClientError(s"Error while making the request: ${e.getMessage}")
+  case TransformationError(errors: NonEmptyList[Error])
+      extends ClientError(s"Error while transforming the response to domain model: ${errors.map(_.asErrorPathMessage).toList.mkString(", ")}")
 
 final case class Game(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, gameType: GameType, players: NonEmptyList[FUUID])
 

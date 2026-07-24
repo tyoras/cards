@@ -19,10 +19,12 @@ object PostgresUserRepository:
 
       override def insert(data: User.Data, withId: Option[FUUID] = None): F[User.Existing] =
         sessionPool.use { session =>
+          val daoData = UserDAO.Data.fromDomain(data)
           withId
-            .fold(session.prepareR(Statements.Insert.one).use(_.unique(data))) { id =>
-              session.prepareR(Statements.Insert.oneWithId).use(_.unique(id -> data))
+            .fold(session.prepareR(Statements.Insert.one).use(_.unique(daoData))) { id =>
+              session.prepareR(Statements.Insert.oneWithId).use(_.unique(id -> daoData))
             }
+            .flatMap(_.toDomain)
             .adaptErr { case SqlState.UniqueViolation(ex) =>
               PersistenceError("already_exist", "User already exist")
             }
@@ -32,21 +34,22 @@ object PostgresUserRepository:
         sessionPool.use { session =>
           for
             now     <- Clock[F].getZonedDateTimeUTC
-            updated <- session.prepareR(Statements.Update.one).use(_.unique(user -> now))
-          yield updated
+            updated <- session.prepareR(Statements.Update.one).use(_.unique(UserDAO.Existing.fromDomain(user) -> now))
+            result  <- Sync[F].fromEither(updated.toDomain)
+          yield result
         }
 
       override def readManyById(ids: List[FUUID]): F[List[User.Existing]] =
-        sessionPool.use(_.prepareR(Statements.Select.many(ids.size)).use(_.stream(ids, chunkSize).compile.toList))
+        sessionPool.use(_.prepareR(Statements.Select.many(ids.size)).use(_.stream(ids, chunkSize).evalMap(_.toDomain[F]).compile.toList))
 
-      override def readManyByPartialName(name: String): F[List[User.Existing]] =
-        sessionPool.use(_.prepareR(Statements.Select.byPartialName).use(_.stream(name, chunkSize).compile.toList))
+      override def readManyByPartialName(name: User.Name): F[List[User.Existing]] =
+        sessionPool.use(_.prepareR(Statements.Select.byPartialName).use(_.stream(name, chunkSize).evalMap(_.toDomain[F]).compile.toList))
 
-      override def readManyByName(names: List[String]): F[List[User.Existing]] =
-        sessionPool.use(_.prepareR(Statements.Select.manyByName(names.size)).use(_.stream(names, chunkSize).compile.toList))
+      override def readManyByName(names: List[User.Name]): F[List[User.Existing]] =
+        sessionPool.use(_.prepareR(Statements.Select.manyByName(names.size)).use(_.stream(names, chunkSize).evalMap(_.toDomain[F]).compile.toList))
 
       override def readAll: F[List[User.Existing]] =
-        sessionPool.use(_.prepareR(Statements.Select.all).use(_.stream(Void, chunkSize).compile.toList))
+        sessionPool.use(_.prepareR(Statements.Select.all).use(_.stream(Void, chunkSize).evalMap(_.toDomain[F]).compile.toList))
 
       override def deleteMany(users: List[User.Existing]): F[Unit] =
         sessionPool.use(_.prepareR(Statements.Delete.many(users.size)).use(_.execute(users.map(_.id)).void))

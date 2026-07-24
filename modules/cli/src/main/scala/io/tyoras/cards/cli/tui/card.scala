@@ -32,7 +32,7 @@ private def renderSmallCardBack(title: Option[String] = None): Element =
   renderSmallCard("? ", title)
 
 private def renderSmallCard(value: String, title: Option[String]): Element =
-  box(title.getOrElse(""))(value.leftAlign(5), empty, value.rightAlign(5)).border(Round).color(Black).bg(BrightWhite)
+  box(title.getOrElse(""))(value.leftAlign(5), empty, value.rightAlign(5)).border(Round).color(Black).colorBg(BrightWhite)
 
 private def renderBigCard(card: Card, title: Option[String] = None): Element =
   val suit   = card.suit.toString
@@ -172,7 +172,7 @@ private def renderBigCard(card: Card, title: Option[String] = None): Element =
     card.rank.toString.leftAlign(cardWidth),
     layout(inside*).center(),
     card.rank.toString.rightAlign(cardWidth)
-  ).border(Round).color(Black).bg(BrightWhite)
+  ).border(Round).color(Black).colorBg(BrightWhite)
 
 private def renderBigCardBack(title: Option[String] = None): Element =
   box(title.getOrElse(""))(
@@ -187,4 +187,4 @@ private def renderBigCardBack(title: Option[String] = None): Element =
       "".rightAlign(cardWidth - 1)
     ).center(),
     row(Spade.toString.leftAlign((cardWidth - 1) / 2), Heart.toString.rightAlign(cardWidth / 2))
-  ).border(Round).color(Black).bg(BrightWhite)
+  ).border(Round).color(Black).colorBg(BrightWhite)

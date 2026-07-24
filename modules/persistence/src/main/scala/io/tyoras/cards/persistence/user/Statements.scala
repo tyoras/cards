@@ -1,59 +1,54 @@
 package io.tyoras.cards.persistence.user
 
 import io.chrisdavenport.fuuid.FUUID
-import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.persistence.codecs.skunk.{fuuid, timestampTZ}
 import skunk.*
 import skunk.codec.all.*
 import skunk.implicits.*
 
 import java.time.ZonedDateTime
-import skunk.Codec.given
 
 object Statements:
-  extension (data: User.Data.type) def codec: Codec[User.Data] = (varchar(100) *: varchar).to[User.Data]
-
-  extension (user: User.Existing.type) def codec: Codec[User.Existing] = (fuuid *: timestampTZ *: timestampTZ *: User.Data.codec).to[User.Existing]
 
   object Insert:
-    val one: Query[User.Data, User.Existing] =
+    val one: Query[UserDAO.Data, UserDAO.Existing] =
       sql"""INSERT INTO users (name, about)
-            VALUES ${User.Data.codec.values}
+            VALUES ${UserDAO.Data.codec.values}
             RETURNING *
-         """.query(User.Existing.codec)
+         """.query(UserDAO.Existing.codec)
 
-    val oneWithId: Query[FUUID *: User.Data *: EmptyTuple, User.Existing] =
+    val oneWithId: Query[FUUID *: UserDAO.Data *: EmptyTuple, UserDAO.Existing] =
       sql"""INSERT INTO users (id, name, about)
-            VALUES(${fuuid ~ User.Data.codec})
+            VALUES(${fuuid ~ UserDAO.Data.codec})
             RETURNING *
-         """.query(User.Existing.codec)
+         """.query(UserDAO.Existing.codec)
 
-    def many(size: Int): Query[List[User.Data], User.Existing] =
+    def many(size: Int): Query[List[UserDAO.Data], UserDAO.Existing] =
       sql"""INSERT INTO users (name, about)
-            VALUES(${User.Data.codec.list(size)})
+            VALUES(${UserDAO.Data.codec.list(size)})
             RETURNING *
-         """.query(User.Existing.codec)
+         """.query(UserDAO.Existing.codec)
 
   object Update:
-    val one: Query[User.Existing *: ZonedDateTime *: EmptyTuple, User.Existing] =
+    val one: Query[UserDAO.Existing *: ZonedDateTime *: EmptyTuple, UserDAO.Existing] =
       sql"""UPDATE users
             SET name = ${varchar(100)}, about = $varchar, updated_at = $timestampTZ
             WHERE id = $fuuid
             RETURNING *
-         """.query(User.Existing.codec).contramap { case (data, updatedAt) => (data.name, data.about, updatedAt, data.id) }
+         """.query(UserDAO.Existing.codec).contramap { case (existing, updatedAt) => (existing.data.name, existing.data.about, updatedAt, existing.id) }
 
   object Select:
-    val all: Query[Void, User.Existing] =
-      sql"""SELECT * FROM users ORDER BY created_at""".query(User.Existing.codec)
+    val all: Query[Void, UserDAO.Existing] =
+      sql"""SELECT * FROM users ORDER BY created_at""".query(UserDAO.Existing.codec)
 
-    val byPartialName: Query[String, User.Existing] =
-      sql"""SELECT * FROM users WHERE name ~ ${varchar(100)} ORDER BY created_at""".query(User.Existing.codec)
+    val byPartialName: Query[String, UserDAO.Existing] =
+      sql"""SELECT * FROM users WHERE name ~ ${varchar(100)} ORDER BY created_at""".query(UserDAO.Existing.codec)
 
-    def many(size: Int): Query[List[FUUID], User.Existing] =
-      sql"""SELECT * FROM users WHERE id IN (${fuuid.list(size)}) ORDER BY created_at""".query(User.Existing.codec)
+    def many(size: Int): Query[List[FUUID], UserDAO.Existing] =
+      sql"""SELECT * FROM users WHERE id IN (${fuuid.list(size)}) ORDER BY created_at""".query(UserDAO.Existing.codec)
 
-    def manyByName(size: Int): Query[List[String], User.Existing] =
-      sql"""SELECT * FROM users WHERE name IN (${varchar(100).list(size)}) ORDER BY created_at""".query(User.Existing.codec)
+    def manyByName(size: Int): Query[List[String], UserDAO.Existing] =
+      sql"""SELECT * FROM users WHERE name IN (${varchar(100).list(size)}) ORDER BY created_at""".query(UserDAO.Existing.codec)
 
   object Delete:
     val all: Command[Void] =

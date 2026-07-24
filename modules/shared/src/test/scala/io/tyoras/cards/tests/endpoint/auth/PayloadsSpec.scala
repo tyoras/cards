@@ -2,10 +2,12 @@ package io.tyoras.cards.tests.endpoint.auth
 
 import io.circe.parser.parse
 import io.circe.syntax.*
-import io.tyoras.cards.domain.auth.model.LoginAttempt
+import io.tyoras.cards.domain.auth.model.{LoginAttempt, Password}
+import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.shared.endpoint.auth.Payloads.Request
+import io.tyoras.cards.tests.endpoint.auth.PayloadsSpec.*
 import io.tyoras.cards.util.validation.BasicValidation.MissingFieldError
-import io.tyoras.cards.util.validation.StringValidation.{BlankFieldError, TooLongError}
+import io.tyoras.cards.util.validation.iron.IronFieldError
 import io.tyoras.cards.util.validation.syntax.*
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
@@ -17,7 +19,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
     val login  = Request.Login(username = Some("john"), password = Some("secret123"))
     val result = login.validateE[LoginAttempt]
 
-    result should be(Right(LoginAttempt("john", "secret123")))
+    result should be(Right(LoginAttempt(User.Name("john"), Password("secret123"))))
   }
 
   it should "return missing username error when username is absent" in {
@@ -45,21 +47,21 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
     val login  = Request.Login(username = Some("   "), password = Some("secret123"))
     val result = login.validateE[LoginAttempt]
 
-    result.left.value.errors should contain(BlankFieldError("username"))
+    result.left.value.errors should contain(IronFieldError("username", expectedUserNameError))
   }
 
   it should "return blank password error when password is blank" in {
     val login  = Request.Login(username = Some("john"), password = Some("   "))
     val result = login.validateE[LoginAttempt]
 
-    result.left.value.errors should contain(BlankFieldError("password"))
+    result.left.value.errors should contain(IronFieldError("password", expectedPasswordError))
   }
 
   it should "return blank error for both fields when both are blank" in {
     val login  = Request.Login(username = Some("  "), password = Some(""))
     val result = login.validateE[LoginAttempt]
 
-    (result.left.value.errors should contain).`allOf`(BlankFieldError("username"), BlankFieldError("password"))
+    (result.left.value.errors should contain).`allOf`(IronFieldError("username", expectedUserNameError), IronFieldError("password", expectedPasswordError))
   }
 
   it should "return username too long error when username exceeds max length" in {
@@ -67,7 +69,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
     val login        = Request.Login(username = Some(longUsername), password = Some("secret123"))
     val result       = login.validateE[LoginAttempt]
 
-    result.left.value.errors should contain(TooLongError("username", 100))
+    result.left.value.errors should contain(IronFieldError("username", expectedUserNameError))
   }
 
   it should "validate successfully when username is exactly at max length" in {
@@ -75,21 +77,21 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
     val login       = Request.Login(username = Some(maxUsername), password = Some("secret123"))
     val result      = login.validateE[LoginAttempt]
 
-    result should be(Right(LoginAttempt(maxUsername, "secret123")))
+    result should be(Right(LoginAttempt(User.Name.assume(maxUsername), Password("secret123"))))
   }
 
   it should "validate successfully when username contains special characters" in {
     val login  = Request.Login(username = Some("user@example.com"), password = Some("pAssw0rd!"))
     val result = login.validateE[LoginAttempt]
 
-    result should be(Right(LoginAttempt("user@example.com", "pAssw0rd!")))
+    result should be(Right(LoginAttempt(User.Name("user@example.com"), Password("pAssw0rd!"))))
   }
 
   it should "validate successfully when password contains whitespace in the middle" in {
     val login  = Request.Login(username = Some("john"), password = Some("pass word"))
     val result = login.validateE[LoginAttempt]
 
-    result should be(Right(LoginAttempt("john", "pass word")))
+    result should be(Right(LoginAttempt(User.Name("john"), Password("pass word"))))
   }
 
   "Login request decoder" should "decode snake_case JSON to Login case class" in {
@@ -143,3 +145,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
 
     decoded.toOption.get should be(originalLogin)
   }
+
+object PayloadsSpec:
+  val expectedUserNameError = "User name must be a non-blank string with a maximum length of 100 characters."
+  val expectedPasswordError = "Password must be a non-blank string with a minimum length of 8 characters."

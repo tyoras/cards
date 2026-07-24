@@ -6,8 +6,9 @@ import io.circe.syntax.*
 import io.scalaland.chimney.Transformer
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.shared.endpoint.users.Payloads.{Request, Response}
+import io.tyoras.cards.tests.endpoint.users.PayloadsSpec.*
 import io.tyoras.cards.util.validation.BasicValidation.MissingFieldError
-import io.tyoras.cards.util.validation.StringValidation.{BlankFieldError, TooLongError}
+import io.tyoras.cards.util.validation.iron.IronFieldError
 import io.tyoras.cards.util.validation.syntax.*
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
@@ -25,7 +26,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
     val creation = Request.Creation(name = Some("John Doe"), about = Some("A test user"))
     val result   = creation.validateE[User.Data]
 
-    result should be(Right(User.Data("John Doe", "A test user")))
+    result should be(Right(User.Data(User.Name("John Doe"), User.About("A test user"))))
   }
 
   it should "return missing name error when name is absent" in {
@@ -53,21 +54,21 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
     val creation = Request.Creation(name = Some("   "), about = Some("A test user"))
     val result   = creation.validateE[User.Data]
 
-    result.left.value.errors should contain(BlankFieldError("name"))
+    result.left.value.errors should contain(IronFieldError("name", expectedUserNameError))
   }
 
   it should "return blank about error when about is blank" in {
     val creation = Request.Creation(name = Some("John Doe"), about = Some("   "))
     val result   = creation.validateE[User.Data]
 
-    result.left.value.errors should contain(BlankFieldError("about"))
+    result.left.value.errors should contain(IronFieldError("about", expectedUserAboutError))
   }
 
   it should "return blank errors for both fields when both are blank" in {
     val creation = Request.Creation(name = Some(""), about = Some(""))
     val result   = creation.validateE[User.Data]
 
-    (result.left.value.errors should contain).`allOf`(BlankFieldError("name"), BlankFieldError("about"))
+    (result.left.value.errors should contain).`allOf`(IronFieldError("name", expectedUserNameError), IronFieldError("about", expectedUserAboutError))
   }
 
   it should "return name too long error when name exceeds max length" in {
@@ -75,7 +76,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
     val creation = Request.Creation(name = Some(longName), about = Some("A test user"))
     val result   = creation.validateE[User.Data]
 
-    result.left.value.errors should contain(TooLongError("name", 100))
+    result.left.value.errors should contain(IronFieldError("name", expectedUserNameError))
   }
 
   it should "validate successfully when name is exactly at max length" in {
@@ -83,25 +84,25 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
     val creation = Request.Creation(name = Some(maxName), about = Some("About"))
     val result   = creation.validateE[User.Data]
 
-    result should be(Right(User.Data(maxName, "About")))
+    result should be(Right(User.Data(User.Name.assume(maxName), User.About("About"))))
   }
 
   it should "validate successfully when name contains special characters" in {
     val creation = Request.Creation(name = Some("John O'Donnell-Smith"), about = Some("A user with special chars"))
     val result   = creation.validateE[User.Data]
 
-    result should be(Right(User.Data("John O'Donnell-Smith", "A user with special chars")))
+    result should be(Right(User.Data(User.Name("John O'Donnell-Smith"), User.About("A user with special chars"))))
   }
 
   it should "validate successfully when name and about contain unicode characters" in {
     val creation = Request.Creation(name = Some("Jean-François"), about = Some("Über cool user"))
     val result   = creation.validateE[User.Data]
 
-    result should be(Right(User.Data("Jean-François", "Über cool user")))
+    result should be(Right(User.Data(User.Name("Jean-François"), User.About("Über cool user"))))
   }
 
   it should "validate successfully when about is very long" in {
-    val longAbout = "This is a very long description about the user. " * 10
+    val longAbout = "This is a very long description about the user." * 10
     val creation  = Request.Creation(name = Some("John"), about = Some(longAbout))
     val result    = creation.validateE[User.Data]
 
@@ -112,14 +113,14 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
     val creation = Request.Creation(name = Some("Jean Claude"), about = Some("A user"))
     val result   = creation.validateE[User.Data]
 
-    result should be(Right(User.Data("Jean Claude", "A user")))
+    result should be(Right(User.Data(User.Name("Jean Claude"), User.About("A user"))))
   }
 
-  it should "preserve leading and trailing whitespace in about" in {
+  it should "return validation error for leading and trailing whitespace in about" in {
     val creation = Request.Creation(name = Some("John"), about = Some("  About text  "))
     val result   = creation.validateE[User.Data]
 
-    result should be(Right(User.Data("John", "  About text  ")))
+    result.left.value.errors should contain(IronFieldError("about", expectedUserAboutError))
   }
 
   "Creation request decoder" should "decode snake_case JSON to Creation case class" in {
@@ -159,7 +160,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
   }
 
   "Transformer from Existing to Response.User" should "transform Existing user to Response.User" in {
-    val userData     = User.Data("John Doe", "A test user")
+    val userData     = User.Data(User.Name("John Doe"), User.About("A test user"))
     val existingUser = User.Existing(testUserId, now, now, userData)
 
     val transformer  = summon[Transformer[User.Existing, Response.User]]
@@ -169,7 +170,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
   }
 
   it should "extract name from user data" in {
-    val userData     = User.Data("Alice", "Alice's bio")
+    val userData     = User.Data(User.Name("Alice"), User.About("Alice's bio"))
     val existingUser = User.Existing(testUserId, now, now, userData)
 
     val transformer  = summon[Transformer[User.Existing, Response.User]]
@@ -179,7 +180,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
   }
 
   it should "extract about from user data" in {
-    val userData     = User.Data("Bob", "Bob's bio")
+    val userData     = User.Data(User.Name("Bob"), User.About("Bob's bio"))
     val existingUser = User.Existing(testUserId, now, now, userData)
 
     val transformer  = summon[Transformer[User.Existing, Response.User]]
@@ -190,7 +191,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
 
   it should "preserve user id during transformation" in {
     val userId       = FUUID.fromUUID(UUID.randomUUID())
-    val userData     = User.Data("Test", "Test bio")
+    val userData     = User.Data(User.Name("Test"), User.About("Test bio"))
     val existingUser = User.Existing(userId, now, now, userData)
 
     val transformer  = summon[Transformer[User.Existing, Response.User]]
@@ -201,7 +202,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
 
   it should "preserve createdAt timestamp during transformation" in {
     val createdAt    = ZonedDateTime.now().minusDays(1)
-    val userData     = User.Data("Test", "Bio")
+    val userData     = User.Data(User.Name("Test"), User.About("Bio"))
     val existingUser = User.Existing(testUserId, createdAt, now, userData)
 
     val transformer  = summon[Transformer[User.Existing, Response.User]]
@@ -212,7 +213,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
 
   it should "preserve updatedAt timestamp during transformation" in {
     val updatedAt    = ZonedDateTime.now()
-    val userData     = User.Data("Test", "Bio")
+    val userData     = User.Data(User.Name("Test"), User.About("Bio"))
     val existingUser = User.Existing(testUserId, now, updatedAt, userData)
 
     val transformer  = summon[Transformer[User.Existing, Response.User]]
@@ -222,7 +223,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
   }
 
   it should "transform user with special characters in name and about" in {
-    val userData     = User.Data("François Müller", "Über cool bio with émojis")
+    val userData     = User.Data(User.Name("François Müller"), User.About("Über cool bio with émojis"))
     val existingUser = User.Existing(testUserId, now, now, userData)
 
     val transformer  = summon[Transformer[User.Existing, Response.User]]
@@ -231,3 +232,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
     responseUser.name should be("François Müller")
     responseUser.about should be("Über cool bio with émojis")
   }
+
+object PayloadsSpec:
+  val expectedUserNameError  = "User name must be a non-blank string with a maximum length of 100 characters."
+  val expectedUserAboutError = "User description must be a non-blank string."

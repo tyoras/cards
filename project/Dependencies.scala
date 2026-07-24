@@ -5,7 +5,7 @@ object Dependencies {
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.5.34"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.5.38"
       }
     }
   }
@@ -55,22 +55,25 @@ object Dependencies {
 
     case object github {
       case object iltotore {
-        val ironVersion       = "3.3.1"
+        val ironVersion       = "3.3.2"
         val iron              = "io.github.iltotore" %% "iron"            % ironVersion
         val `iron-cats`       = "io.github.iltotore" %% "iron-cats"       % ironVersion
+        val `iron-chimney`    = "io.github.iltotore" %% "iron-chimney"    % ironVersion
         val `iron-circe`      = "io.github.iltotore" %% "iron-circe"      % ironVersion
         val `iron-pureconfig` = "io.github.iltotore" %% "iron-pureconfig" % ironVersion
       }
     }
 
     case object scalaland {
-      val chimney = "io.scalaland" %% "chimney" % "1.10.0"
+      val chimneyVersion = "1.11.0"
+      val chimney        = "io.scalaland" %% "chimney"      % chimneyVersion
+      val `chimney-cats` = "io.scalaland" %% "chimney-cats" % chimneyVersion
     }
   }
 
   case object org {
     case object flywaydb {
-      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "12.7.0"
+      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "12.11.0"
     }
 
     case object http4s {
@@ -84,7 +87,7 @@ object Dependencies {
     }
 
     case object postgresql {
-      val postgresql = "org.postgresql" % "postgresql" % "42.7.11"
+      val postgresql = "org.postgresql" % "postgresql" % "42.7.13"
     }
 
     case object scalacheck {
@@ -118,7 +121,7 @@ object Dependencies {
 
   case object xyz {
     case object matthieucourt {
-      val layoutz = "xyz.matthieucourt" %% "layoutz" % "0.7.0"
+      val layoutz = "xyz.matthieucourt" %% "layoutz" % "0.8.0"
     }
   }
 
@@ -131,6 +134,7 @@ object Dependencies {
     io.chrisdavenport.`fuuid-circe`,
     io.circe.`circe-core`,
     io.github.iltotore.iron,
+    io.github.iltotore.`iron-cats`,
     io.github.iltotore.`iron-circe`,
     org.typelevel.`cats-core`,
     org.typelevel.`cats-effect`,
@@ -149,6 +153,7 @@ object Dependencies {
     io.chrisdavenport.`cats-effect-time`,
     io.chrisdavenport.fuuid,
     io.circe.`circe-core`,
+    io.github.iltotore.`iron-chimney`,
     org.flywaydb.`flyway-database-postgresql`,
     org.postgresql.postgresql,
     org.tpolecat.`skunk-core`,
@@ -172,6 +177,8 @@ object Dependencies {
     com.monovore.decline,
     com.monovore.`decline-effect`,
     io.chrisdavenport.`cats-effect-time`,
+    io.github.iltotore.`iron-pureconfig`,
+    io.scalaland.`chimney-cats`,
     org.http4s.`http4s-circe`,
     org.http4s.`http4s-jdk-http-client`,
     org.typelevel.`cats-core`,
@@ -196,6 +203,7 @@ object Dependencies {
     io.chrisdavenport.fuuid,
     io.chrisdavenport.`fuuid-circe`,
     io.chrisdavenport.`fuuid-http4s`,
+    io.github.iltotore.`iron-pureconfig`,
     io.scalaland.chimney,
     io.circe.`circe-core`,
     org.http4s.`http4s-ember-server`,
@@ -214,7 +222,10 @@ object Dependencies {
     io.chrisdavenport.fuuid,
     io.chrisdavenport.`fuuid-circe`,
     io.circe.`circe-core`,
+    io.github.iltotore.`iron-cats`,
+    io.github.iltotore.`iron-chimney`,
     io.scalaland.chimney,
+    io.scalaland.`chimney-cats`,
     org.typelevel.`cats-core`
   )
 

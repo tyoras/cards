@@ -10,9 +10,9 @@ trait UserRepository[F[_]]:
 
   def readManyById(ids: List[FUUID]): F[List[User.Existing]]
 
-  def readManyByPartialName(name: String): F[List[User.Existing]]
+  def readManyByPartialName(name: User.Name): F[List[User.Existing]]
 
-  def readManyByName(names: List[String]): F[List[User.Existing]]
+  def readManyByName(names: List[User.Name]): F[List[User.Existing]]
 
   def readAll: F[List[User.Existing]]
 

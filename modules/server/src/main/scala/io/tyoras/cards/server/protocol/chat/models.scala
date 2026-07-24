@@ -2,7 +2,7 @@ package io.tyoras.cards.server.protocol.chat
 
 import io.tyoras.cards.shared.protocol.chat.ChatUser
 import io.tyoras.cards.util.validation.ValidationResult
-import io.tyoras.cards.util.validation.StringValidation.*
+import io.tyoras.cards.util.validation.string.*
 import io.tyoras.cards.util.validation.syntax.*
 
 final case class Room private (room: String)

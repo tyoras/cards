@@ -5,7 +5,7 @@ import cats.effect.unsafe.IORuntime
 import cats.syntax.all.*
 import io.tyoras.cards.tests.util.validation.ValidationSpec.{FakeDomainObject, FakeDomainSubObject, FakeInput, FakeInputSubObject}
 import io.tyoras.cards.util.validation.BasicValidation.*
-import io.tyoras.cards.util.validation.StringValidation.*
+import io.tyoras.cards.util.validation.string.*
 import io.tyoras.cards.util.validation.*
 import io.tyoras.cards.util.validation.syntax.*
 import io.tyoras.cards.util.validation.error.ValidationError
