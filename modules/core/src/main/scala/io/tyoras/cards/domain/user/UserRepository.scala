@@ -2,6 +2,7 @@ package io.tyoras.cards.domain.user
 
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.user.model.User
+import fs2.Stream
 
 trait UserRepository[F[_]]:
   def writeMany(users: List[User]): F[List[User.Existing]]
@@ -14,7 +15,7 @@ trait UserRepository[F[_]]:
 
   def readManyByName(names: List[User.Name]): F[List[User.Existing]]
 
-  def readAll: F[List[User.Existing]]
+  def readAll: Stream[F, User.Existing]
 
   def deleteMany(users: List[User.Existing]): F[Unit]
 

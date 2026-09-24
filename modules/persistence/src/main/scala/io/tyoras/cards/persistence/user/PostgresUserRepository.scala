@@ -8,6 +8,7 @@ import io.tyoras.cards.domain.user.UserRepository
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.persistence.PersistenceError
 import skunk.*
+import fs2.Stream
 
 object PostgresUserRepository:
   def of[F[_] : Sync](sessionPool: Resource[F, Session[F]]): F[UserRepository[F]] = Sync[F].delay {
@@ -24,7 +25,7 @@ object PostgresUserRepository:
             .fold(session.prepareR(Statements.Insert.one).use(_.unique(daoData))) { id =>
               session.prepareR(Statements.Insert.oneWithId).use(_.unique(id -> daoData))
             }
-            .flatMap(_.toDomain)
+            .flatMap(_.toDomainF)
             .adaptErr { case SqlState.UniqueViolation(ex) =>
               PersistenceError("already_exist", "User already exist")
             }
@@ -40,16 +41,21 @@ object PostgresUserRepository:
         }
 
       override def readManyById(ids: List[FUUID]): F[List[User.Existing]] =
-        sessionPool.use(_.prepareR(Statements.Select.many(ids.size)).use(_.stream(ids, chunkSize).evalMap(_.toDomain[F]).compile.toList))
+        sessionPool.use(_.prepareR(Statements.Select.many(ids.size)).use(_.stream(ids, chunkSize).evalMap(_.toDomainF[F]).compile.toList))
 
       override def readManyByPartialName(name: User.Name): F[List[User.Existing]] =
-        sessionPool.use(_.prepareR(Statements.Select.byPartialName).use(_.stream(name, chunkSize).evalMap(_.toDomain[F]).compile.toList))
+        sessionPool.use(_.prepareR(Statements.Select.byPartialName).use(_.stream(name, chunkSize).evalMap(_.toDomainF[F]).compile.toList))
 
       override def readManyByName(names: List[User.Name]): F[List[User.Existing]] =
-        sessionPool.use(_.prepareR(Statements.Select.manyByName(names.size)).use(_.stream(names, chunkSize).evalMap(_.toDomain[F]).compile.toList))
+        sessionPool.use(_.prepareR(Statements.Select.manyByName(names.size)).use(_.stream(names, chunkSize).evalMap(_.toDomainF[F]).compile.toList))
 
-      override def readAll: F[List[User.Existing]] =
-        sessionPool.use(_.prepareR(Statements.Select.all).use(_.stream(Void, chunkSize).evalMap(_.toDomain[F]).compile.toList))
+      override def readAll: Stream[F, User.Existing] = {
+        for
+          session  <- Stream.resource(sessionPool)
+          prepared <- Stream.resource(session.prepareR(Statements.Select.all))
+          results  <- prepared.stream(Void, chunkSize).evalMap(_.toDomainF[F])
+        yield results
+      }
 
       override def deleteMany(users: List[User.Existing]): F[Unit] =
         sessionPool.use(_.prepareR(Statements.Delete.many(users.size)).use(_.execute(users.map(_.id)).void))

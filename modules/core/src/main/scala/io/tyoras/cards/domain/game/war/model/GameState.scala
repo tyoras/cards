@@ -60,8 +60,9 @@ object GameState:
     lazy val notAcked: Set[PlayerId] = context.players.keySet.diff(acked)
 
   final case class Finish(override val context: GameContext, winnerId: PlayerId) extends GameState:
-    override val code: String  = "finish"
-    override val label: String = "Finish"
+    override val code: String       = "finish"
+    override val label: String      = "Finish"
+    lazy val losers: List[PlayerId] = context.players.keySet.filterNot(_ == winnerId).toList
 
   final case class Exit(override val context: GameContext) extends GameState:
     override val code: String  = "exit"

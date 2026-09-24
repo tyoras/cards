@@ -4,6 +4,7 @@ import cats.Monad
 import cats.syntax.all.*
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.user.model.User
+import fs2.Stream
 
 trait UserService[F[_]]:
   def create(user: User.Data, withId: Option[FUUID] = None): F[User.Existing]
@@ -18,7 +19,7 @@ trait UserService[F[_]]:
 
   def readManyByPartialName(name: User.Name): F[List[User.Existing]]
 
-  def readAll: F[List[User.Existing]]
+  def readAll: Stream[F, User.Existing]
 
   def update(user: User.Existing): F[User.Existing]
 
@@ -53,7 +54,7 @@ object UserService:
     override def readManyByPartialName(name: User.Name): F[List[User.Existing]] =
       userRepo.readManyByPartialName(name)
 
-    override val readAll: F[List[User.Existing]] =
+    override val readAll: Stream[F, User.Existing] =
       userRepo.readAll
 
     override def update(user: User.Existing): F[User.Existing] =

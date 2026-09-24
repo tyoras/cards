@@ -1,0 +1,10 @@
+{
+  "id" : "A♥",
+  "suit" : "Heart",
+  "rank" : {
+    "Ace" : {
+      "value" : 14
+    }
+  },
+  "custom_value" : null
+}

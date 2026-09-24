@@ -17,6 +17,7 @@ sealed abstract class User extends Product with Serializable:
   def withUpdatedAbout(newAbout: User.About, updateDate: ZonedDateTime): ThisType
 
 object User:
+  type ID   = FUUID
   type Name = Name.T
   object Name
       extends RefinedSubtype[String, DescribedAs[Not[
@@ -26,7 +27,7 @@ object User:
   type About = About.T
   object About extends RefinedSubtype[String, DescribedAs[Not[Blank] & Trimmed, "User description must be a non-blank string."]]
 
-  final case class Existing(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: Data) extends User:
+  final case class Existing(id: User.ID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: Data) extends User:
     override protected type ThisType = Existing
 
     override def name: User.Name = data.name

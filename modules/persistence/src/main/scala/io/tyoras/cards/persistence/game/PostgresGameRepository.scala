@@ -44,12 +44,12 @@ object PostgresGameRepository:
           yield result
         }
 
-      override def readAll[State : Decoder](finished: Boolean): F[List[Game.Existing[State]]] =
-        sessionPool.use(
-          _.prepareR(Statements.Select.all(finished)).use(
-            _.stream(Void, chunkSize).chunkAdjacent.through(toExisting[F, State]).compile.toList
-          )
-        )
+      override def readAll[State : Decoder](finished: Boolean): Stream[F, Game.Existing[State]] =
+        for
+          session  <- Stream.resource(sessionPool)
+          prepared <- Stream.resource(session.prepareR(Statements.Select.all(finished)))
+          results  <- prepared.stream(Void, chunkSize).chunkAdjacent.through(toExisting[F, State])
+        yield results
 
       override def readManyById[State : Decoder](ids: List[FUUID]): F[List[Game.Existing[State]]] =
         sessionPool.use(

@@ -50,7 +50,9 @@ object Dependencies {
     }
 
     case object circe {
-      val `circe-core` = "io.circe" %% s"circe-core" % "0.14.14"
+      val circeVersion   = "0.14.14"
+      val `circe-core`   = "io.circe" %% s"circe-core"   % circeVersion
+      val `circe-golden` = "io.circe" %% s"circe-golden" % "0.5.1"
     }
 
     case object github {
@@ -115,6 +117,7 @@ object Dependencies {
       val `cats-effect`                   = "org.typelevel" %% "cats-effect"                   % "3.7.0"
       val `cats-effect-testing-scalatest` = "org.typelevel" %% "cats-effect-testing-scalatest" % "1.8.0"
       val `cats-parse`                    = "org.typelevel" %% "cats-parse"                    % "1.1.0"
+      val `discipline-scalatest`          = "org.typelevel" %% "discipline-scalatest"          % "2.3.0"
       val `log4cats-slf4j`                = "org.typelevel" %% "log4cats-slf4j"                % "2.8.0"
     }
   }
@@ -143,10 +146,12 @@ object Dependencies {
   )
 
   lazy val coreTestDeps = Seq(
+    io.circe.`circe-golden`,
     org.scalacheck.scalacheck,
     org.scalatest.scalatest,
     org.scalatestplus.`scalacheck-1-15`,
-    org.typelevel.`cats-effect-testing-scalatest`
+    org.typelevel.`cats-effect-testing-scalatest`,
+    org.typelevel.`discipline-scalatest`
   ).map(_ % Test)
 
   lazy val persistenceDeps = Seq(

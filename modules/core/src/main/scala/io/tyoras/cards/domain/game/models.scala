@@ -13,7 +13,15 @@ import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.schnapsen.codecs.given
 import io.tyoras.cards.domain.game.war.model.PlayerGameState.given
 import io.tyoras.cards.domain.game.schnapsen.model.PlayerGameState.given
+import io.tyoras.cards.domain.user.model.User
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.numeric.Interval.Closed
+import io.github.iltotore.iron.constraint.numeric.Positive0
 
+/** Filter information that should remain unknown to the players from the game state
+  * @tparam State
+  *   the game state
+  */
 trait GameStateFilter[State]:
   type PlayerState
   extension (gameState: State) def filterForPlayer(playerId: FUUID): PlayerState
@@ -26,12 +34,13 @@ trait GameInput:
   def playerId: FUUID
 
 type GameType = GameTyp[?, ?]
-sealed abstract class GameTyp[S, I <: GameInput : Decoder](val label: String, val minPlayers: Int, val maxPlayers: Int)(using
+sealed abstract class GameTyp[S : Codec, I <: GameInput : Decoder](val label: String, val minPlayers: Int, val maxPlayers: Int)(using
     filter: GameStateFilter[S]
 ):
   type State       = S
   type PlayerState = GameStateFilter[S]#PlayerState
   type Input       = I
+  given Codec[State]   = Codec[S]
   given Decoder[Input] = Decoder[I]
 
   given GameStateFilter[State] = filter
@@ -59,17 +68,20 @@ sealed abstract class Game[State] extends Product with Serializable:
   protected type ThisType <: Game[State]
 
   def gameType: GameTyp[State, ?]
-  def players: NonEmptyList[FUUID]
+  def players: NonEmptyList[User.ID]
   def state: State
   def withUpdatedState(newState: State): ThisType
 
 object Game:
+  type Count      = Int :| Positive0
+  type Percentage = Double :| Closed[0.0, 100.0]
+
   final case class Existing[State](id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: Data[State]) extends Game[State]:
     override protected type ThisType = Existing[State]
 
-    override def gameType: GameTyp[State, ?]  = data.gameType
-    override def players: NonEmptyList[FUUID] = data.players
-    override def state: State                 = data.state
+    override def gameType: GameTyp[State, ?]    = data.gameType
+    override def players: NonEmptyList[User.ID] = data.players
+    override def state: State                   = data.state
 
     override def withUpdatedState(newState: State): ThisType =
       copy(data = data.withUpdatedState(newState))
@@ -77,7 +89,7 @@ object Game:
   object Existing:
     given [State]: Show[Existing[State]] = e => s"id = ${e.id} | created_at = ${e.createdAt} | updated_at = ${e.updatedAt} | ${e.data.show}"
 
-  final case class Data[State](gameType: GameTyp[State, ?], players: NonEmptyList[FUUID], state: State, createdBy: FUUID, finishedAt: Option[ZonedDateTime])
+  final case class Data[State](gameType: GameTyp[State, ?], players: NonEmptyList[User.ID], state: State, createdBy: User.ID, finishedAt: Option[ZonedDateTime])
       extends Game[State]:
     override protected type ThisType = Data[State]
 

@@ -1,6 +1,6 @@
 package io.tyoras.cards.domain.game.schnapsen
 
-import io.circe.derivation.{ConfiguredDecoder, ConfiguredEncoder}
+import io.circe.derivation.{ConfiguredCodec, renaming}
 import io.circe.{Decoder, Encoder}
 import io.tyoras.cards.domain.game.schnapsen.model.*
 import io.chrisdavenport.fuuid.circe.given
@@ -25,7 +25,5 @@ object codecs:
   given Decoder[TalonClosing]    = Decoder.derived
   given Decoder[GameRound]       = Decoder.derived
 
-  given Encoder[GameState]      = ConfiguredEncoder.derive(discriminator = Some("code"))
-  given Decoder[GameState]      = ConfiguredDecoder.derive(discriminator = Some("code"))
-  given Encoder[SchnapsenInput] = ConfiguredEncoder.derive(discriminator = Some("input_type"))
-  given Decoder[SchnapsenInput] = ConfiguredDecoder.derive(discriminator = Some("input_type"))
+  given ConfiguredCodec[GameState]      = ConfiguredCodec.derive(discriminator = Some("code"), transformMemberNames = renaming.snakeCase)
+  given ConfiguredCodec[SchnapsenInput] = ConfiguredCodec.derive(discriminator = Some("input_type"), transformMemberNames = renaming.snakeCase)

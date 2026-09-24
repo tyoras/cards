@@ -15,6 +15,8 @@ import io.scalaland.chimney.partial.Result
 import io.scalaland.chimney.cats.*
 import io.scalaland.chimney.partial.syntax.*
 import io.github.iltotore.iron.cats.*
+import io.tyoras.cards.domain.game.{GameTyp, GameType}
+import io.tyoras.cards.domain.game.stats.model.PlayerGameStat
 
 import java.time.ZonedDateTime
 
@@ -46,3 +48,9 @@ object Payloads:
               yield DomainUser.Data(name, about)
           )
           .buildTransformer
+
+    final case class UserGameStats(game: GameType, won: Int, draw: Int, lost: Int, updatedAt: ZonedDateTime) derives ConfiguredCodec
+
+    object UserGameStats:
+      given Transformer[PlayerGameStat.Existing, Response.UserGameStats] =
+        Transformer.define[PlayerGameStat.Existing, Response.UserGameStats].enableMethodAccessors.buildTransformer

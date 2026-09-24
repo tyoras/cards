@@ -4,6 +4,7 @@ import cats.Functor
 import io.chrisdavenport.fuuid.FUUID
 import io.circe.{Decoder, Encoder}
 import cats.syntax.all.*
+import fs2.Stream
 
 trait GameService[F[_]]:
   def create[State : Encoder : Decoder](game: Game.Data[State], withId: Option[FUUID] = None): F[Game.Existing[State]]
@@ -14,7 +15,7 @@ trait GameService[F[_]]:
 
   def readManyByUser[State : Decoder](userId: FUUID, finished: Boolean): F[List[Game.Existing[State]]]
 
-  def readAll[State : Decoder](finished: Boolean): F[List[Game.Existing[State]]]
+  def readAll[State : Decoder](finished: Boolean): Stream[F, Game.Existing[State]]
 
   def delete(game: Game.Existing[?]): F[Unit] =
     deleteMany(List(game))
@@ -37,7 +38,7 @@ object GameService:
     override def readManyByUser[State : Decoder](userId: FUUID, finished: Boolean): F[List[Game.Existing[State]]] =
       gameRepo.readManyByUser(userId, finished)
 
-    override def readAll[State : Decoder](finished: Boolean): F[List[Game.Existing[State]]] =
+    override def readAll[State : Decoder](finished: Boolean): Stream[F, Game.Existing[State]] =
       gameRepo.readAll(finished)
 
     override def deleteMany(games: List[Game.Existing[?]]): F[Unit] =

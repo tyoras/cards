@@ -27,7 +27,9 @@ lazy val core = (project in file("modules/core"))
     buildInfoKeys    := Seq[BuildInfoKey](version),
     buildInfoPackage := "io.tyoras.cards",
     buildInfoOptions += BuildInfoOption.BuildTime,
-    coverageExcludedPackages := ".*BuildInfo.scala"
+    coverageExcludedPackages := ".*BuildInfo.scala",
+    // needed by the circe golden codec tests
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
   )
   .enablePlugins(BuildInfoPlugin)
 

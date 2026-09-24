@@ -2,6 +2,7 @@ package io.tyoras.cards.domain.game
 
 import io.chrisdavenport.fuuid.FUUID
 import io.circe.{Decoder, Encoder}
+import fs2.Stream
 
 trait GameRepository[F[_]]:
 
@@ -9,7 +10,7 @@ trait GameRepository[F[_]]:
 
   def update[State : Decoder : Encoder](game: Game.Existing[State]): F[Game.Existing[State]]
 
-  def readAll[State : Decoder](finished: Boolean): F[List[Game.Existing[State]]]
+  def readAll[State : Decoder](finished: Boolean): Stream[F, Game.Existing[State]]
 
   def readManyById[State : Decoder](ids: List[FUUID]): F[List[Game.Existing[State]]]
 

@@ -31,14 +31,3 @@ class CardSpec extends AnyFlatSpec with Matchers:
     val expected = s"$RESET$RED🂾$RESET"
     heartKing.emoji should be(expected)
   }
-
-  "Cards json serialization" should "work" in {
-    import io.circe.parser.decode
-    import io.circe.syntax.*
-    import io.tyoras.cards.domain.card.codecs.given
-
-    val card = Card(Heart, King())
-    val json = card.asJson.spaces2
-
-    decode[Card](json) should be(Right(card))
-  }

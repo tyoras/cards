@@ -8,10 +8,12 @@ import fs2.io.net.Network
 import io.tyoras.cards.domain.auth.{AuthService, JWTGenerator, JwtExpiration}
 import io.tyoras.cards.server.config.*
 import io.tyoras.cards.domain.game.GameService
+import io.tyoras.cards.domain.game.stats.GameStatService
 import io.tyoras.cards.domain.user.UserService
 import io.tyoras.cards.persistence.game.PostgresGameRepository
 import io.tyoras.cards.persistence.user.PostgresUserRepository
 import io.tyoras.cards.persistence.SessionPool
+import io.tyoras.cards.persistence.game.stats.PostgresGameStatRepository
 import io.tyoras.cards.server.endpoints.auth.AuthEndpoint
 import io.tyoras.cards.server.endpoints.chat.ChatEndpoint
 import io.tyoras.cards.server.endpoints.games.GameEndpoint
@@ -44,13 +46,15 @@ object Main extends IOApp:
       userService = UserService.of(userRepo)
       jwtExpiration <- Resource.eval(JwtExpiration.make)
       jwtGenerator = JWTGenerator.make(jwtExpiration, config.auth)
-      gameRepo <- Resource.eval(PostgresGameRepository.of[F](dbSessionPool))
-      gameService = GameService.of(gameRepo)
+      gameRepo     <- Resource.eval(PostgresGameRepository.of[F](dbSessionPool))
+      gameStatRepo <- Resource.eval(PostgresGameStatRepository.of[F](dbSessionPool))
+      gameService     = GameService.of(gameRepo)
+      gameStatService = GameStatService.of[F](gameStatRepo)
       // FIXME usage of insecure naive auth
       authService  <- Resource.eval(AuthService.naive(userService, jwtGenerator, config.auth))
       chatProtocol <- Resource.eval(ChatProtocol.make(authService))
-      gameProtocol <- GameProtocol.make(authService, gameService)
-      userEndpoint <- Resource.eval(UserEndpoint.of(userService))
+      gameProtocol <- GameProtocol.make(authService, gameService, gameStatService)
+      userEndpoint <- Resource.eval(UserEndpoint.of(userService, gameStatService))
       gameEndpoint <- Resource.eval(GameEndpoint.of(gameService))
       warEndpoint  <- WarEndpoint.make(gameService, userService, gameProtocol, chatProtocol)
       authEndpoint <- Resource.eval(AuthEndpoint.of(authService))

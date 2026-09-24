@@ -43,7 +43,7 @@ object Statements:
       val finished    = sql"g.finished_at IS NOT NULL"
       sql"""SELECT g.id, g.created_at, g.updated_at, g.game_type, g.state, g.created_by, g.finished_at, p.player_id
            FROM games g INNER JOIN gamesplayers p ON g.id = p.game_id
-           WHERE ${if isFinished then finished else notFinished} NULL
+           WHERE ${if isFinished then finished else notFinished}
            ORDER BY g.created_at
            """.query(GameReadDBModel.codec *: fuuid)
     }
