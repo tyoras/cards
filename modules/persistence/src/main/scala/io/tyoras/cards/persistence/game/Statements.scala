@@ -32,10 +32,10 @@ object Statements:
   object Update:
     val one: Query[GameUpdateDBModel, GameReadDBModel] =
       sql"""UPDATE games
-            SET state = $jsonb, updated_at = $timestampTZ
+            SET state = $jsonb, updated_at = $timestampTZ, finished_at = ${timestampTZ.opt}
             WHERE id = $fuuid AND updated_at = $timestampTZ
             RETURNING *
-         """.query(GameReadDBModel.codec).contramap(e => e.state *: e.updateDate *: e.id *: e.previousUpdate *: EmptyTuple)
+         """.query(GameReadDBModel.codec).contramap(e => e.state *: e.updateDate *: e.finishedAt *: e.id *: e.previousUpdate *: EmptyTuple)
 
   object Select:
     def all(isFinished: Boolean): Query[Void, GameReadDBModel *: FUUID *: EmptyTuple] = {

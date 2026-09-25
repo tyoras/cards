@@ -20,10 +20,10 @@ object GameCreationDBModel:
   def fromGameData[State : Encoder](data: Game.Data[State]): GameCreationDBModel =
     GameCreationDBModel(data.gameType, data.state.asJson, data.createdBy, data.finishedAt)
 
-final case class GameUpdateDBModel(state: Json, updateDate: ZonedDateTime, id: FUUID, previousUpdate: ZonedDateTime)
+final case class GameUpdateDBModel(state: Json, updateDate: ZonedDateTime, finishedAt: Option[ZonedDateTime], id: FUUID, previousUpdate: ZonedDateTime)
 object GameUpdateDBModel:
   def fromExisingGame[State : Encoder](existing: Existing[State], updateDate: ZonedDateTime): GameUpdateDBModel =
-    GameUpdateDBModel(existing.data.state.asJson, updateDate, existing.id, existing.updatedAt)
+    GameUpdateDBModel(existing.data.state.asJson, updateDate, existing.data.finishedAt, existing.id, existing.updatedAt)
 
 final case class GameReadDBModel(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: GameCreationDBModel):
   def toExistingGame[State : Decoder](players: NonEmptyList[FUUID]): Either[DecodingFailure, Game.Existing[State]] =

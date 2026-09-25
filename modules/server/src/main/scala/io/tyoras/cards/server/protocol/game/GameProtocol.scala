@@ -1,6 +1,6 @@
 package io.tyoras.cards.server.protocol.game
 
-import cats.effect.{Async, Resource}
+import cats.effect.{Async, Clock, Resource}
 import cats.effect.kernel.Ref
 import cats.effect.std.AtomicCell
 import cats.syntax.all.*
@@ -134,10 +134,10 @@ object GameProtocol:
               currentState <- activeGame.currentState
               found        <- findActiveGameData[gameType.State](gameId)
               gameData     <- Async[F].fromOption(found, ProtocolError.ActiveGameNotFound(gameId, gameType))
-              // TODO set finishedAt date
-              _ <- gameService.update(gameData.withUpdatedState(currentState))
-              _ <- endGameSpecific(gameType, currentState)
-            yield games.copy(warGames = games.warGames - gameId) -> List(OutputMessage.GameEnded(gameId))
+              finishedAt   <- Clock[F].realTimeZonedDateTime
+              _            <- gameService.finish(gameId, currentState, finishedAt)
+              _            <- endGameSpecific(gameType, currentState)
+            yield games.removeGame(gameType, gameId) -> List(OutputMessage.GameEnded(gameId))
           )
 
         private def endGameSpecific(gameType: GameType, state: gameType.State): F[Unit] =
@@ -146,9 +146,9 @@ object GameProtocol:
               (state match
                 case finish: war.model.GameState.Finish =>
                   gameStatService.updatePlayersStats(gameType, winners = List(finish.winnerId), draws = Nil, losers = finish.losers).void
-                case _ => Async[F].unit
-              ) *> logger.info(s"Finishing war game in state: $state")
-            case _ => Async[F].unit
+                case _ => logger.warn(s"War game $gameType ended in a non-finish state: $state")
+              ) *> logger.info(s"Finished war game in state: $state")
+            case _ => logger.warn("End game specific logic not implemented for game type: $gameType")
 
         override def disconnect(playerRef: Ref[F, Option[ConnectedPlayer]]): F[OutputMessage] = {
           playerRef

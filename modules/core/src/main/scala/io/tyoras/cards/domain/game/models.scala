@@ -24,14 +24,14 @@ import io.github.iltotore.iron.constraint.numeric.Positive0
   */
 trait GameStateFilter[State]:
   type PlayerState
-  extension (gameState: State) def filterForPlayer(playerId: FUUID): PlayerState
+  extension (gameState: State) def filterForPlayer(playerId: User.ID): PlayerState
   def codec: Codec[PlayerState]
 object GameStateFilter:
   def apply[State](using filter: GameStateFilter[State]): GameStateFilter[State] = filter
 
 trait GameInput:
   def label: String
-  def playerId: FUUID
+  def playerId: User.ID
 
 type GameType = GameTyp[?, ?]
 sealed abstract class GameTyp[S : Codec, I <: GameInput : Decoder](val label: String, val minPlayers: Int, val maxPlayers: Int)(using
@@ -71,12 +71,14 @@ sealed abstract class Game[State] extends Product with Serializable:
   def players: NonEmptyList[User.ID]
   def state: State
   def withUpdatedState(newState: State): ThisType
+  def withFinishedAt(finishedAt: ZonedDateTime): ThisType
 
 object Game:
+  type ID         = FUUID
   type Count      = Int :| Positive0
   type Percentage = Double :| Closed[0.0, 100.0]
 
-  final case class Existing[State](id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: Data[State]) extends Game[State]:
+  final case class Existing[State](id: Game.ID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: Data[State]) extends Game[State]:
     override protected type ThisType = Existing[State]
 
     override def gameType: GameTyp[State, ?]    = data.gameType
@@ -85,6 +87,9 @@ object Game:
 
     override def withUpdatedState(newState: State): ThisType =
       copy(data = data.withUpdatedState(newState))
+
+    override def withFinishedAt(finishedAt: ZonedDateTime): ThisType =
+      copy(data = data.copy(finishedAt = Some(finishedAt)))
 
   object Existing:
     given [State]: Show[Existing[State]] = e => s"id = ${e.id} | created_at = ${e.createdAt} | updated_at = ${e.updatedAt} | ${e.data.show}"
@@ -95,6 +100,8 @@ object Game:
 
     override def withUpdatedState(newState: State): ThisType = copy(state = newState)
 
+    override def withFinishedAt(finishedAt: ZonedDateTime): ThisType = copy(finishedAt = Some(finishedAt))
+
   object Data:
     given [State]: Show[Data[State]] = d =>
       s"""game = ${d.gameType} | players = ${d.players.toList
@@ -102,4 +109,7 @@ object Game:
 
 abstract class GameError(val code: String, msg: String) extends Exception(msg) with NoStackTrace
 object GameError:
-  case object NoPlayersError extends GameError("no_players", "Game without any players")
+  case object NoPlayersError           extends GameError("no_players", "Game without any players")
+  case class GameNotFound(id: Game.ID) extends GameError("game_not_found", s"Game with id $id not found")
+  case class GameAlreadyFinished(id: Game.ID)
+      extends GameError("game_already_finished", s"Game with id $id is already finished so it cannot be updated anymore.")
