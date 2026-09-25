@@ -21,5 +21,6 @@ logs
 .metals/
 .bloop/
 project/metals.sbt
-project/project
+project/project/*
+!project/project/sbt-updates.sbt
 

@@ -1,10 +1,9 @@
 import Dependencies.*
 
 ThisBuild / organization := "io.tyoras"
-ThisBuild / scalaVersion := "3.8.3"
+ThisBuild / scalaVersion := "3.9.0"
 
 ThisBuild / tlBaseVersion    := "0.1"
-ThisBuild / scapegoatVersion := "3.3.4"
 ThisBuild / tlFatalWarnings  := false // no need for fatal warnings in this project
 ThisBuild / tlJdkRelease     := Some(25)
 
@@ -44,6 +43,7 @@ lazy val cli = (project in file("modules/cli"))
   .settings(
     commonSettings,
     run / connectInput := true,
+    run / fork := true,
     cliPackagingSettings,
     libraryDependencies ++= cliDeps ++ cliTestDeps
   )

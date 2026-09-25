@@ -5,7 +5,7 @@ object Dependencies {
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.5.38"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.6.4"
       }
     }
   }
@@ -42,15 +42,15 @@ object Dependencies {
 
   case object io {
     case object chrisdavenport {
-      val `cats-effect-time` = "io.chrisdavenport" %% "cats-effect-time" % "0.2.1"
-      val fuuidVersion       = "0.8.0-M2"
+      val `cats-effect-time` = "io.chrisdavenport" %% "cats-effect-time" % "0.3.0"
+      val fuuidVersion       = "0.8.0-M4"
       val fuuid              = "io.chrisdavenport" %% "fuuid"            % fuuidVersion
       val `fuuid-circe`      = "io.chrisdavenport" %% "fuuid-circe"      % fuuidVersion
       val `fuuid-http4s`     = "io.chrisdavenport" %% "fuuid-http4s"     % fuuidVersion
     }
 
     case object circe {
-      val circeVersion   = "0.14.14"
+      val circeVersion   = "0.14.16"
       val `circe-core`   = "io.circe" %% s"circe-core"   % circeVersion
       val `circe-golden` = "io.circe" %% s"circe-golden" % "0.5.1"
     }
@@ -75,11 +75,11 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "12.11.0"
+      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "13.8.0"
     }
 
     case object http4s {
-      val http4sVersion            = "0.23.33"
+      val http4sVersion            = "0.23.37"
       val `http4s-ember-server`    = dep("ember-server")
       val `http4s-circe`           = dep("circe")
       val `http4s-dsl`             = dep("dsl")
@@ -93,7 +93,7 @@ object Dependencies {
     }
 
     case object scalacheck {
-      val scalacheck = "org.scalacheck" %% "scalacheck" % "1.19.0"
+      val scalacheck = "org.scalacheck" %% "scalacheck" % "1.20.0"
     }
 
     case object scalatest {
@@ -101,7 +101,7 @@ object Dependencies {
     }
 
     case object scalatestplus {
-      val `scalacheck-1-15` = "org.scalatestplus" %% "scalacheck-1-19" % "3.2.20.0"
+      val `scalacheck-1-20` = "org.scalatestplus" %% "scalacheck-1-20" % "3.2.20.0"
     }
 
     case object tpolecat {
@@ -114,7 +114,7 @@ object Dependencies {
 
     case object typelevel {
       val `cats-core`                     = "org.typelevel" %% "cats-core"                     % "2.13.0"
-      val `cats-effect`                   = "org.typelevel" %% "cats-effect"                   % "3.7.0"
+      val `cats-effect`                   = "org.typelevel" %% "cats-effect"                   % "3.7.1"
       val `cats-effect-testing-scalatest` = "org.typelevel" %% "cats-effect-testing-scalatest" % "1.8.0"
       val `cats-parse`                    = "org.typelevel" %% "cats-parse"                    % "1.1.0"
       val `discipline-scalatest`          = "org.typelevel" %% "discipline-scalatest"          % "2.3.0"
@@ -149,7 +149,7 @@ object Dependencies {
     io.circe.`circe-golden`,
     org.scalacheck.scalacheck,
     org.scalatest.scalatest,
-    org.scalatestplus.`scalacheck-1-15`,
+    org.scalatestplus.`scalacheck-1-20`,
     org.typelevel.`cats-effect-testing-scalatest`,
     org.typelevel.`discipline-scalatest`
   ).map(_ % Test)
@@ -171,7 +171,7 @@ object Dependencies {
   lazy val persistenceTestDeps = Seq(
     org.scalacheck.scalacheck,
     org.scalatest.scalatest,
-    org.scalatestplus.`scalacheck-1-15`
+    org.scalatestplus.`scalacheck-1-20`
   ).map(_ % Test)
 
   lazy val cliDeps = Seq(

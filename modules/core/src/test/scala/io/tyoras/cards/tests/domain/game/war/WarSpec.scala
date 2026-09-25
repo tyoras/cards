@@ -6,7 +6,7 @@ import cats.effect.testing.scalatest.AsyncIOSpec
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.card.Suit.{Heart, Spade}
-import io.tyoras.cards.domain.card.{Card, Rank}
+import io.tyoras.cards.domain.card.Card
 import io.tyoras.cards.domain.game.war.War
 import io.tyoras.cards.domain.game.war.model.GameState.*
 import io.tyoras.cards.domain.game.war.model.*

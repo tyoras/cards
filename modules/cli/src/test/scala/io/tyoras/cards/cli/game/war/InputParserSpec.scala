@@ -8,7 +8,7 @@ import io.tyoras.cards.cli.local.game.war.WarCliError.{InvalidInput, InvalidStat
 import io.tyoras.cards.cli.local.game.war.InputParser
 import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.card.Suit.*
-import io.tyoras.cards.domain.card.{Card, Hand, Rank}
+import io.tyoras.cards.domain.card.{Card, Hand}
 import io.tyoras.cards.domain.game.war.model.*
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.Ready
 import io.tyoras.cards.domain.game.war.model.GameState.{Exit, Finish, Init, PlayerWinTurn, WarTurn}

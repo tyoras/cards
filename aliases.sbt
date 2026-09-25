@@ -11,7 +11,7 @@ addCommandAlias("fmtCheck", "scalafmtSbtCheck; scalafmtCheckAll")
 addCommandAlias("fmt", "scalafmtSbt; scalafmtAll")
 addCommandAlias(
   "dep",
-  "reload plugins; dependencyUpdates; reload return; dependencyUpdates",
+  ";dependencyUpdates; reload plugins; dependencyUpdates; reload return",
 )
 
 onLoadMessage +=

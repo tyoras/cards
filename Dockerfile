@@ -1,4 +1,4 @@
-FROM sbtscala/scala-sbt:graalvm-community-25.0.1_1.12.8_3.8.3 AS builder
+FROM sbtscala/scala-sbt:graalvm-community-25.0.2_1.13.0_3.9.0 AS builder
 
 ARG MODULE
 
