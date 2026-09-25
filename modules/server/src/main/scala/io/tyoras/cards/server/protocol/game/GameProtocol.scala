@@ -26,6 +26,7 @@ trait GameProtocol[F[_]]:
   def registerActiveGame(gameId: FUUID, game: ActiveGame[F, ?, ?]): F[Unit]
   def currentState[State](gameId: FUUID, gameType: GameTyp[State, ?], playerId: FUUID): F[OutputMessage]
   def submitInput[State, Input <: GameInput](gameId: FUUID, gameType: GameTyp[State, Input], playerId: FUUID, input: Input): F[List[OutputMessage]]
+  def saveGame(gameId: FUUID, gameType: GameType): F[Game.Existing[gameType.State]]
   def endGame(gameId: FUUID, gameType: GameType): F[List[OutputMessage]]
   def disconnect(playerRef: Ref[F, Option[ConnectedPlayer]]): F[OutputMessage]
 
@@ -126,6 +127,18 @@ object GameProtocol:
         private def checkInputPlayer(expectedPlayerId: FUUID, inputPlayerId: FUUID, gameId: FUUID, gameType: GameType): F[Unit] =
           ProtocolError.IllegalGameInput(expectedPlayerId, inputPlayerId, gameId, gameType).raiseError.unlessA(expectedPlayerId == inputPlayerId)
 
+        override def saveGame(gameId: FUUID, gameType: GameType): F[Game.Existing[gameType.State]] =
+          import gameType.given
+          gamesRef.evalModify(games =>
+            for
+              activeGame   <- findActiveGame[gameType.State, gameType.Input](gameId, gameType, games).map(_._2)
+              currentState <- activeGame.currentState
+              found        <- findActiveGameData[gameType.State](gameId)
+              gameData     <- Async[F].fromOption(found, ProtocolError.ActiveGameNotFound(gameId, gameType))
+              updated      <- gameService.update(gameData.withUpdatedState(currentState))
+            yield games -> updated
+          ) <* logger.info(s"Saved game state for $gameType game $gameId")
+
         override def endGame(gameId: FUUID, gameType: GameType): F[List[OutputMessage]] =
           import gameType.given
           gamesRef.evalModify(games =>
@@ -174,6 +187,6 @@ object GameProtocol:
         }
     })(protocol =>
       protocol.activeGames.flatMap(_.warGames.toList.traverse_ { (id, game) =>
-        protocol.endGame(id, game.gameType)
+        protocol.saveGame(id, game.gameType)
       })
     )
