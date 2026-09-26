@@ -11,7 +11,7 @@ import io.tyoras.cards.util.fsm.concurrent.SynchronizedConcurrentFSM
 import io.chrisdavenport.cats.effect.time.implicits.*
 import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.game.GameError.NoPlayersError
-import io.tyoras.cards.domain.game.{ActiveGame, GameTyp}
+import io.tyoras.cards.domain.game.{ActiveGame, Game, GameTyp}
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.*
 import io.tyoras.cards.domain.game.war.model.GameState.*
 import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.*
@@ -37,19 +37,21 @@ object War:
     for
       logger  <- LoggerFactory.create[F]
       context <- initGameContext(playerIds)
-      _       <- logger.debug(s"Starting new War game with initial game context : $context")
+      id      <- FUUID.randomFUUID
+      _       <- logger.debug(s"Starting new War game ($id) with initial game context : $context")
       fsm     <- SynchronizedConcurrentFSM.create[F, GameState](Init(context))
-    yield new WarFSM[F](fsm)
+    yield new WarFSM[F](id, fsm)
 
-  def fromState[F[_] : Async : LoggerFactory](state: GameState): F[War[F]] =
+  def fromState[F[_] : Async : LoggerFactory](id: Game.ID, state: GameState): F[War[F]] =
     for
       logger <- LoggerFactory.create[F]
       _      <- logger.debug(s"Resuming War game from state : $state")
       fsm    <- SynchronizedConcurrentFSM.create[F, GameState](state)
-    yield new WarFSM[F](fsm)
+    yield new WarFSM[F](id, fsm)
 
-  private class WarFSM[F[_] : Async : LoggerFactory](fsm: FinalStateMachine[F, GameState]) extends War[F]:
+  private class WarFSM[F[_] : Async : LoggerFactory](id: Game.ID, fsm: FinalStateMachine[F, GameState]) extends War[F]:
     private val logger                             = LoggerFactory.getLogger
+    override val gameId: Game.ID                   = id
     override def currentState: F[GameState]        = fsm.getCurrentState
     override def isFinished: F[Boolean]            = currentState.map(_.isInstanceOf[Finish])
     override val playerIds: F[NonEmptyList[FUUID]] =

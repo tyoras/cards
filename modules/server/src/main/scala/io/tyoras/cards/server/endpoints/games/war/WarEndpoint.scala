@@ -79,7 +79,7 @@ object WarEndpoint:
         players   <- playersValidation(payload.players)
         war       <- War(payload.players)
         initState <- war.currentState
-        created   <- gameService.create(Game.Data[GameState](GameTyp.War, payload.players, initState, user.id, None))
+        created   <- gameService.create(Game.Data[GameState](GameTyp.War, payload.players, initState, user.id, None), war.gameId.some)
         _         <- gameProtocol.registerActiveGame(created.id, war)
         _         <- createGameChat(created.id, players)
         response  <- Created(Payloads.Response.Game.fromExistingGame(created))
@@ -99,7 +99,7 @@ object WarEndpoint:
       private def listPlayerGames(player: User.Existing): F[Response[F]] =
         for
           games       <- gameProtocol.activeGames
-          playerGames <- games.warGames.toList.filterA { case (gameId, game) => game.playerIds.map(_.exists(_ == player.id)) }.map(_.map(_._1))
+          playerGames <- games.filtered(GameTyp.War).filterA(_.playerIds.map(_.exists(_ == player.id))).map(_.map(_.gameId))
           response    <- Ok(playerGames)
         yield response
 

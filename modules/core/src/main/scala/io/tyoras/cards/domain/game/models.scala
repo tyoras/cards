@@ -58,6 +58,7 @@ object GameTyp:
   }
 
 trait ActiveGame[F[_], State, Input <: GameInput]:
+  def gameId: Game.ID
   def gameType: GameTyp[State, Input]
   def playerIds: F[NonEmptyList[FUUID]]
   def currentState: F[State]
