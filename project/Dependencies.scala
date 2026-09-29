@@ -11,6 +11,12 @@ object Dependencies {
   }
 
   case object com {
+    case object dimafeng {
+      val testContainersVersion             = "0.44.1"
+      val `testcontainers-scala-postgresql` = "com.dimafeng" %% "testcontainers-scala-postgresql" % testContainersVersion
+      val `testcontainers-scala-scalatest`  = "com.dimafeng" %% "testcontainers-scala-scalatest"  % testContainersVersion
+    }
+
     case object github {
       case object `jwt-scala` {
         val jwtScalaVersion = "11.0.4"
@@ -18,6 +24,7 @@ object Dependencies {
         val `jwt-circe`     = "com.github.jwt-scala" %% "jwt-circe" % jwtScalaVersion
 
       }
+
       case object pureconfig {
         val pureconfigVersion        = "0.17.10"
         val `pureconfig-core`        = "com.github.pureconfig" %% "pureconfig-core"        % pureconfigVersion
@@ -169,9 +176,12 @@ object Dependencies {
   )
 
   lazy val persistenceTestDeps = Seq(
+    com.dimafeng.`testcontainers-scala-postgresql`,
+    com.dimafeng.`testcontainers-scala-scalatest`,
     org.scalacheck.scalacheck,
     org.scalatest.scalatest,
-    org.scalatestplus.`scalacheck-1-20`
+    org.scalatestplus.`scalacheck-1-20`,
+    org.typelevel.`cats-effect-testing-scalatest`
   ).map(_ % Test)
 
   lazy val cliDeps = Seq(

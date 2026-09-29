@@ -12,9 +12,9 @@ sealed abstract class User extends Product with Serializable:
   protected type ThisType <: User
 
   def name: User.Name
-  def withUpdatedName(newName: User.Name, updateDate: ZonedDateTime): ThisType
+  def withUpdatedName(newName: User.Name): ThisType
   def about: User.About
-  def withUpdatedAbout(newAbout: User.About, updateDate: ZonedDateTime): ThisType
+  def withUpdatedAbout(newAbout: User.About): ThisType
 
 object User:
   type ID   = FUUID
@@ -32,21 +32,21 @@ object User:
 
     override def name: User.Name = data.name
 
-    override def withUpdatedName(newName: User.Name, updateDate: ZonedDateTime): ThisType =
-      copy(data = data.withUpdatedName(newName, updateDate), updatedAt = updateDate)
+    override def withUpdatedName(newName: User.Name): ThisType =
+      copy(data = data.withUpdatedName(newName))
 
     override def about: User.About = data.about
 
-    override def withUpdatedAbout(newAbout: User.About, updateDate: ZonedDateTime): ThisType =
-      copy(data = data.withUpdatedAbout(newAbout, updateDate), updatedAt = updateDate)
+    override def withUpdatedAbout(newAbout: User.About): ThisType =
+      copy(data = data.withUpdatedAbout(newAbout))
   object Existing:
     given Show[Existing] = e => s"id = ${e.id} | created_at = ${e.createdAt} | updated_at = ${e.updatedAt} | ${e.data.show}"
 
   final case class Data(name: User.Name, about: User.About) extends User:
     override protected type ThisType = Data
 
-    override def withUpdatedName(newName: User.Name, updateDate: ZonedDateTime): ThisType = copy(name = newName)
+    override def withUpdatedName(newName: User.Name): ThisType = copy(name = newName)
 
-    override def withUpdatedAbout(newAbout: User.About, updateDate: ZonedDateTime): ThisType = copy(about = newAbout)
+    override def withUpdatedAbout(newAbout: User.About): ThisType = copy(about = newAbout)
   object Data:
     given Show[Data] = d => s"""name = ${d.name} | about = ${d.about}"""
