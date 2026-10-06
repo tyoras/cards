@@ -10,4 +10,4 @@ import io.tyoras.cards.domain.auth.model.TokenExpiration
 given ConfigReader[TokenExpiration] = summon
 final case class ServerConfig(http: HttpConfig, database: DatabaseConfig, auth: AuthConfig) derives ConfigReader
 
-final case class HttpConfig(host: String, port: Int, corsAllowedOrigins: Set[Origin.Host])
+final case class HttpConfig(host: String, port: Int, adminPort: Int, corsAllowedOrigins: Set[Origin.Host])

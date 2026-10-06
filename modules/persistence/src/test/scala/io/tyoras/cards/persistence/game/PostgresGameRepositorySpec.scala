@@ -118,10 +118,9 @@ class PostgresGameRepositorySpec extends PgIntegrationTest with BeforeAndAfterEa
     }
     "reading a game" when {
       "the game does not already exist" should {
-        "return an empty result" in {
+        "return an empty result" in
           userRepo.flatMap(_.insert(existingPlayer.data, withId = existingPlayer.id.some)) *>
-            initPgRepo.flatMap(_.readManyById[gameType.State](List(gameId))).asserting(_ shouldBe Nil)
-        }
+          initPgRepo.flatMap(_.readManyById[gameType.State](List(gameId))).asserting(_ shouldBe Nil)
       }
       "the game already exist" should {
         "be able to read a single game by id" in {
@@ -139,10 +138,9 @@ class PostgresGameRepositorySpec extends PgIntegrationTest with BeforeAndAfterEa
     }
     "reading all games" when {
       "no game exist" should {
-        "return an empty result" in {
+        "return an empty result" in
           userRepo.flatMap(_.insert(existingPlayer.data, withId = existingPlayer.id.some)) *>
-            initPgRepo.flatMap(_.readAll[gameType.State](finished = false).compile.toList).asserting(_ shouldBe Nil)
-        }
+          initPgRepo.flatMap(_.readAll[gameType.State](finished = false).compile.toList).asserting(_ shouldBe Nil)
       }
       "some games already exist" should {
         "be able to read all games" in {
@@ -161,10 +159,9 @@ class PostgresGameRepositorySpec extends PgIntegrationTest with BeforeAndAfterEa
     }
     "reading all games for a user" when {
       "no game exist" should {
-        "return an empty result" in {
+        "return an empty result" in
           userRepo.flatMap(_.insert(existingPlayer.data, withId = existingPlayer.id.some)) *>
-            initPgRepo.flatMap(_.readManyByUser[gameType.State](existingPlayer.id, finished = false)).asserting(_ shouldBe Nil)
-        }
+          initPgRepo.flatMap(_.readManyByUser[gameType.State](existingPlayer.id, finished = false)).asserting(_ shouldBe Nil)
       }
       "some games already exist" should {
         "be able to read all games for a user" in {
@@ -183,10 +180,9 @@ class PostgresGameRepositorySpec extends PgIntegrationTest with BeforeAndAfterEa
     }
     "reading all finished games for a user" when {
       "no game exist" should {
-        "return an empty result" in {
+        "return an empty result" in
           userRepo.flatMap(_.insert(existingPlayer.data, withId = existingPlayer.id.some)) *>
-            initPgRepo.flatMap(_.readManyByUser[gameType.State](existingPlayer.id, finished = true)).asserting(_ shouldBe Nil)
-        }
+          initPgRepo.flatMap(_.readManyByUser[gameType.State](existingPlayer.id, finished = true)).asserting(_ shouldBe Nil)
       }
       "some finished games already exist" should {
         "be able to read all finished games for a user" in {
@@ -208,10 +204,9 @@ class PostgresGameRepositorySpec extends PgIntegrationTest with BeforeAndAfterEa
     }
     "deleting all games" when {
       "no game exist" should {
-        "return an empty result" in {
+        "return an empty result" in
           userRepo.flatMap(_.insert(existingPlayer.data, withId = existingPlayer.id.some)) *>
-            initPgRepo.flatMap(_.deleteAll).asserting(_ shouldBe ())
-        }
+          initPgRepo.flatMap(_.deleteAll).asserting(_ shouldBe ())
       }
       "some games already exist" should {
         "be able to delete all games" in {
@@ -229,9 +224,8 @@ class PostgresGameRepositorySpec extends PgIntegrationTest with BeforeAndAfterEa
     }
     "deleting many games" when {
       "no game exist" should {
-        "return an empty result" in {
+        "return an empty result" in
           initPgRepo.flatMap(_.deleteMany(List())).asserting(_ shouldBe ())
-        }
       }
       "some games already exist" should {
         "be able to delete many games" in {

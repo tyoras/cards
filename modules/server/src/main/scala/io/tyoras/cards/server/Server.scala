@@ -16,6 +16,7 @@ import io.tyoras.cards.domain.auth.AuthService
 import io.tyoras.cards.domain.auth.config.AuthConfig
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.server.config.HttpConfig
+import io.tyoras.cards.server.healtcheck.ServerHealthMonitor
 import org.http4s.server.websocket.WebSocketBuilder2
 
 import scala.util.chaining.*
@@ -24,7 +25,7 @@ trait Server[F[_]]:
   def serve: Resource[F, Unit]
 
 object Server:
-  def of[F[_] : Async : Network](config: HttpConfig, httpWSApp: HttpWsApp[F]): Server[F] = new Server[F] {
+  def of[F[_] : Async : Network](config: HttpConfig, httpWSApp: HttpWsApp[F], healthMonitor: ServerHealthMonitor[F]): Server[F] = new Server[F] {
     override val serve: Resource[F, Unit] =
       EmberServerBuilder
         .default[F]
@@ -34,6 +35,8 @@ object Server:
         .withErrorHandler(ErrorHandling.defaultErrorHandler)
         .build
         .void
+        .evalTap(_ => healthMonitor.serverLivenessProbe.up)
+        .onFinalize(healthMonitor.serverLivenessProbe.down)
   }
 
   type HttpWsApp[F[_]] = WebSocketBuilder2[F] => HttpApp[F]
@@ -58,3 +61,9 @@ object Server:
         "auth" -> authRoutes,
         "ws"   -> wsRoutes
       ).orNotFound.pipe(Logger.httpApp(logHeaders = true, logBody = true))
+
+  object AdminHttpApp:
+    def of[F[_] : Async](healthEndpoint: Endpoint[F]): HttpApp[F] =
+      Router(
+        "admin" -> healthEndpoint.routes
+      ).orNotFound
