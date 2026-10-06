@@ -39,9 +39,7 @@ object Main extends IOApp:
   private val defaultConfigSource                    = ConfigSource.resources("cards-server.conf")
   override def run(args: List[String]): IO[ExitCode] =
     val configSource = args.headOption.fold(defaultConfigSource)(ConfigSource.file)
-    init[IO](configSource).useForever
-      .as(ExitCode.Success)
-      .handleErrorWith(t => Console[IO].errorln(s"Service has failed to start ${t.getMessage})}").as(ExitCode.Error))
+    init[IO](configSource).useForever.as(ExitCode.Success)
 
   private def init[F[_] : Async : Parallel : Console : Network : Files : Tracer : Meter : LoggerFactory](configSource: ConfigSource): Resource[F, Unit] =
     for
