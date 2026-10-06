@@ -39,17 +39,6 @@
       ]
     },
     {
-      "type": "cats.effect.std.Semaphore$impl",
-      "fields": [
-        {
-          "name": "Done$lzy1"
-        },
-        {
-          "name": "Wait$lzy1"
-        }
-      ]
-    },
-    {
       "type": "cats.effect.unsafe.Head"
     },
     {
@@ -580,6 +569,9 @@
         },
         {
           "name": "io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy3"
+        },
+        {
+          "name": "io$circe$derivation$ConfiguredDecoder$$memberNames$lzy3"
         }
       ]
     },
@@ -592,26 +584,40 @@
       ]
     },
     {
-      "type": "io.tyoras.cards.domain.user.User$Data$",
+      "type": "io.tyoras.cards.domain.healthcheck.HealthMonitorService$$anon$1",
       "fields": [
         {
-          "name": "given_Show_Data$lzy1"
+          "name": "liveness$lzy1"
+        },
+        {
+          "name": "readiness$lzy1"
+        },
+        {
+          "name": "startup$lzy1"
         }
       ]
     },
     {
-      "type": "io.tyoras.cards.domain.user.User$Existing$",
+      "type": "io.tyoras.cards.domain.healthcheck.HealthStatus$CompositeHealth",
       "fields": [
         {
-          "name": "given_Show_Existing$lzy1"
+          "name": "status$lzy1"
         }
       ]
     },
     {
-      "type": "io.tyoras.cards.persistence.DatabaseConfig",
+      "type": "io.tyoras.cards.persistence.config.DatabaseConfig",
       "fields": [
         {
           "name": "jdbcUrl$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.persistence.user.UserDAO$Data$",
+      "fields": [
+        {
+          "name": "given_PartialTransformer_Data_Data$lzy1"
         }
       ]
     },
@@ -635,6 +641,30 @@
       ]
     },
     {
+      "type": "io.tyoras.cards.server.config.ServerConfig$package$",
+      "fields": [
+        {
+          "name": "given_ConfigReader_TokenExpiration$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.server.config.config$package$",
+      "fields": [
+        {
+          "name": "given_ConfigReader_Set$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.server.endpoints.admin.health.HealthEndpoint$$anon$1",
+      "fields": [
+        {
+          "name": "as$lzy1"
+        }
+      ]
+    },
+    {
       "type": "io.tyoras.cards.server.endpoints.auth.AuthEndpoint$$anon$1",
       "fields": [
         {
@@ -654,10 +684,16 @@
       "type": "io.tyoras.cards.server.endpoints.games.GameEndpoint$$anon$1",
       "fields": [
         {
+          "name": "FinishedParam$lzy1"
+        },
+        {
           "name": "UserIdParam$lzy1"
         },
         {
           "name": "as$lzy1"
+        },
+        {
+          "name": "given_EntityEncoder_F_Stream$lzy1"
         }
       ]
     },
@@ -673,6 +709,14 @@
       ]
     },
     {
+      "type": "io.tyoras.cards.server.endpoints.params$",
+      "fields": [
+        {
+          "name": "given_QueryParamDecoder_Name$lzy1"
+        }
+      ]
+    },
+    {
       "type": "io.tyoras.cards.server.endpoints.users.UserEndpoint$$anon$1",
       "fields": [
         {
@@ -683,6 +727,9 @@
         },
         {
           "name": "given_EntityDecoder_F_Creation$lzy1"
+        },
+        {
+          "name": "given_EntityEncoder_F_Stream$lzy1"
         }
       ]
     },
@@ -703,10 +750,13 @@
       ]
     },
     {
-      "type": "io.tyoras.cards.shared.endpoint.users.Payloads$",
+      "type": "io.tyoras.cards.shared.endpoint.admin.health.Payloads$Response$HealthStatus$",
       "fields": [
         {
-          "name": "given_Configuration$lzy1"
+          "name": "derived$ConfiguredCodec$lzy1"
+        },
+        {
+          "name": "given_Transformer_DomainHealthStatus_HealthStatus$lzy1"
         }
       ]
     },
@@ -717,10 +767,10 @@
           "name": "derived$ConfiguredCodec$lzy1"
         },
         {
-          "name": "given_Transformer_Existing_User$lzy1"
+          "name": "given_PartialTransformer_User_Existing$lzy1"
         },
         {
-          "name": "given_Transformer_User_Existing$lzy1"
+          "name": "given_Transformer_Existing_User$lzy1"
         }
       ]
     },
@@ -740,6 +790,14 @@
       "fields": [
         {
           "name": "given_ConfiguredCodec_OutputMessage$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.util.codecs.json$",
+      "fields": [
+        {
+          "name": "given_Configuration$lzy1"
         }
       ]
     },
@@ -780,9 +838,6 @@
       "type": "java.lang.ClassValue"
     },
     {
-      "type": "java.lang.Comparable"
-    },
-    {
       "type": "java.lang.Deprecated"
     },
     {
@@ -816,6 +871,12 @@
           "name": "TYPE"
         }
       ]
+    },
+    {
+      "type": "java.lang.Object"
+    },
+    {
+      "type": "java.lang.Object[]"
     },
     {
       "type": "java.lang.SecurityManager",
@@ -871,15 +932,6 @@
       "fields": [
         {
           "name": "TYPE"
-        }
-      ]
-    },
-    {
-      "type": "java.lang.invoke.VarHandle",
-      "methods": [
-        {
-          "name": "releaseFence",
-          "parameterTypes": []
         }
       ]
     },
@@ -1010,20 +1062,15 @@
     },
     {
       "type": "org.flywaydb.core.api.migration.baseline.BaselineMigrationConfigurationExtension",
+      "fields": [
+        {
+          "name": "baselineMigrationPrefix"
+        }
+      ],
       "methods": [
         {
           "name": "<init>",
           "parameterTypes": []
-        },
-        {
-          "name": "getBaselineMigrationPrefix",
-          "parameterTypes": []
-        },
-        {
-          "name": "setBaselineMigrationPrefix",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
         }
       ]
     },
@@ -1032,12 +1079,6 @@
     },
     {
       "type": "org.flywaydb.core.api.migration.baseline.BaselineResourceTypeProvider"
-    },
-    {
-      "type": "org.flywaydb.core.extensibility.ConfigurationExtension"
-    },
-    {
-      "type": "org.flywaydb.core.extensibility.Plugin"
     },
     {
       "type": "org.flywaydb.core.internal.NullFlywayTelemetryManager"
@@ -1061,9 +1102,6 @@
       "type": "org.flywaydb.core.internal.database.sqlite.SQLiteDatabaseType"
     },
     {
-      "type": "org.flywaydb.core.internal.jdbc.ErrorOverrideInitializerStub"
-    },
-    {
       "type": "org.flywaydb.core.internal.logging.slf4j.Slf4jLogCreator",
       "methods": [
         {
@@ -1076,7 +1114,22 @@
       "type": "org.flywaydb.core.internal.proprietaryStubs.AuthCommandExtensionStub"
     },
     {
+      "type": "org.flywaydb.core.internal.proprietaryStubs.AwsSecretsManagerSupportStub"
+    },
+    {
       "type": "org.flywaydb.core.internal.proprietaryStubs.CheckCommandExtensionStub"
+    },
+    {
+      "type": "org.flywaydb.core.internal.proprietaryStubs.CherryPickConfigurationExtensionStub",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.flywaydb.core.internal.proprietaryStubs.CherryPickSupportStub"
     },
     {
       "type": "org.flywaydb.core.internal.proprietaryStubs.DeployCommandExtensionStub"
@@ -1088,7 +1141,33 @@
       "type": "org.flywaydb.core.internal.proprietaryStubs.DiffTextCommandExtensionStub"
     },
     {
+      "type": "org.flywaydb.core.internal.proprietaryStubs.DryRunConfigurationExtensionStub",
+      "fields": [
+        {
+          "name": "cachedOutputStream"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.flywaydb.core.internal.proprietaryStubs.DryRunSupportStub"
+    },
+    {
+      "type": "org.flywaydb.core.internal.proprietaryStubs.ErrorOverrideInitializerStub"
+    },
+    {
+      "type": "org.flywaydb.core.internal.proprietaryStubs.ErrorOverridesSupportStub"
+    },
+    {
       "type": "org.flywaydb.core.internal.proprietaryStubs.GenerateCommandExtensionStub"
+    },
+    {
+      "type": "org.flywaydb.core.internal.proprietaryStubs.LicenseSupportStub"
     },
     {
       "type": "org.flywaydb.core.internal.proprietaryStubs.LicensingConfigurationExtensionStub"
@@ -1106,36 +1185,10 @@
       "type": "org.flywaydb.core.internal.proprietaryStubs.PrepareCommandExtensionStub"
     },
     {
-      "type": "org.flywaydb.core.internal.proprietaryStubs.UndoCommandExtensionStub"
+      "type": "org.flywaydb.core.internal.proprietaryStubs.ShouldExecuteEvaluatorStub"
     },
     {
-      "type": "org.flywaydb.core.internal.publishing.PublishingConfigurationExtension",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "isCheckDriftOnMigrate",
-          "parameterTypes": []
-        },
-        {
-          "name": "isPublishResult",
-          "parameterTypes": []
-        },
-        {
-          "name": "setCheckDriftOnMigrate",
-          "parameterTypes": [
-            "boolean"
-          ]
-        },
-        {
-          "name": "setPublishResult",
-          "parameterTypes": [
-            "boolean"
-          ]
-        }
-      ]
+      "type": "org.flywaydb.core.internal.proprietaryStubs.UndoCommandExtensionStub"
     },
     {
       "type": "org.flywaydb.core.internal.resource.CoreResourceTypeProvider"
@@ -1153,31 +1206,19 @@
       "type": "org.flywaydb.database.cockroachdb.CockroachDBDatabaseType"
     },
     {
+      "type": "org.flywaydb.database.cockroachdb.authentication.CockroachDBExternalAuthSupportStub"
+    },
+    {
       "type": "org.flywaydb.database.postgresql.PostgreSQLConfigurationExtension",
+      "fields": [
+        {
+          "name": "transactional"
+        }
+      ],
       "methods": [
         {
           "name": "<init>",
           "parameterTypes": []
-        },
-        {
-          "name": "getTransactional",
-          "parameterTypes": []
-        },
-        {
-          "name": "isTransactionalLock",
-          "parameterTypes": []
-        },
-        {
-          "name": "setTransactional",
-          "parameterTypes": [
-            "org.flywaydb.database.postgresql.TransactionalModel"
-          ]
-        },
-        {
-          "name": "setTransactionalLock",
-          "parameterTypes": [
-            "boolean"
-          ]
         }
       ]
     },
@@ -1185,7 +1226,7 @@
       "type": "org.flywaydb.database.postgresql.PostgreSQLDatabaseType"
     },
     {
-      "type": "org.flywaydb.database.postgresql.TransactionalModel"
+      "type": "org.flywaydb.database.postgresql.authentication.PostgreSQLExternalAuthSupportStub"
     },
     {
       "type": "org.http4s.Header$Raw$",
@@ -1208,6 +1249,9 @@
       "fields": [
         {
           "name": "application$divgraphql$lzy1"
+        },
+        {
+          "name": "application$divgraphql$minusresponse$plusjson$lzy1"
         },
         {
           "name": "application$lzy1"
@@ -8205,7 +8249,72 @@
       ]
     },
     {
+      "type": "org.typelevel.otel4s.trace.TraceState$MapBasedTraceState",
+      "fields": [
+        {
+          "name": "asMap$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.StringContext",
+      "fields": [
+        {
+          "name": "s$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.collection.immutable.ArraySeq$",
+      "fields": [
+        {
+          "name": "emptyImpl$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.collection.immutable.NumericRange",
+      "fields": [
+        {
+          "name": "hashCode$lzy1"
+        },
+        {
+          "name": "isEmpty$lzy1"
+        },
+        {
+          "name": "length$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.concurrent.ExecutionContext$",
+      "fields": [
+        {
+          "name": "global$lzy1"
+        },
+        {
+          "name": "opportunistic$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.math.BigDecimal$",
+      "fields": [
+        {
+          "name": "cache$lzy1"
+        }
+      ]
+    },
+    {
       "type": "scala.util.Either[]"
+    },
+    {
+      "type": "scala.util.matching.Regex$MatchIterator",
+      "fields": [
+        {
+          "name": "scala$util$matching$Regex$MatchData$$nameToIndex$lzy2"
+        }
+      ]
     },
     {
       "type": "scodec.Codec$",
@@ -8265,6 +8374,14 @@
       "type": "short[]"
     },
     {
+      "type": "skunk.Codec$",
+      "fields": [
+        {
+          "name": "twiddlesPrependOps$lzy1"
+        }
+      ]
+    },
+    {
       "type": "skunk.Codec$$anon$1",
       "fields": [
         {
@@ -8273,18 +8390,42 @@
       ]
     },
     {
-      "type": "skunk.Codec$$anon$4",
+      "type": "skunk.Codec$$anon$2",
       "fields": [
         {
-          "name": "empty$lzy3"
+          "name": "empty$lzy2"
         }
       ]
     },
     {
-      "type": "skunk.Encoder$$anon$2",
+      "type": "skunk.Codec$$anon$7",
       "fields": [
         {
-          "name": "empty$lzy2"
+          "name": "empty$lzy6"
+        }
+      ]
+    },
+    {
+      "type": "skunk.Decoder$",
+      "fields": [
+        {
+          "name": "twiddlesPrependOps$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "skunk.Encoder$",
+      "fields": [
+        {
+          "name": "twiddlesPrependOps$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "skunk.Encoder$$anon$4",
+      "fields": [
+        {
+          "name": "empty$lzy4"
         }
       ]
     },
@@ -8293,6 +8434,14 @@
       "fields": [
         {
           "name": "sql$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "skunk.Fragment$",
+      "fields": [
+        {
+          "name": "twiddlesPrependOps$lzy1"
         }
       ]
     },
@@ -8485,16 +8634,7 @@
       "type": "sun.util.resources.cldr.TimeZoneNames_en_US"
     },
     {
-      "type": "tools.jackson.databind.deser.Deserializers[]"
-    },
-    {
-      "type": "tools.jackson.databind.deser.KeyDeserializers[]"
-    },
-    {
-      "type": "tools.jackson.databind.deser.ValueInstantiators[]"
-    },
-    {
-      "type": "tools.jackson.databind.ser.Serializers[]"
+      "type": "tools.jackson.databind.ObjectMapper"
     },
     {
       "type": {
