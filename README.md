@@ -15,6 +15,6 @@ The project is designed around a set of modules :
 - [War](docs/war.md)
 
 ## Work in progress
-| Game                          | Logic | Local CLI | Web API | Remote CLI | persistence |
-|-------------------------------|---|----------|---------|------------|------------|
-| [Schnapsen](doc/schnapsen.md) | ✅ | ✅        | ❌ | ❌ | ❌ |
+| Game                           | Logic | Local CLI | Web API | Remote CLI | persistence |
+|--------------------------------|---|----------|---------|------------|------------|
+| [Schnapsen](docs/schnapsen.md) | ✅ | ✅        | ❌ | ❌ | ❌ |
