@@ -16,7 +16,7 @@ class DbProbeSpec extends PgIntegrationTest:
     "return UP status when database is reachable" in {
       testedProbe("test_db_probe").use { probe =>
         for
-          _      <- IO.sleep(500.millis) // Wait for the first scheduled check to complete
+          _      <- IO.sleep(1.second) // Wait for the first scheduled check to complete
           result <- probe.check
         yield {
           probe.name shouldBe "test_db_probe"
