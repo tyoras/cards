@@ -5,7 +5,7 @@ object Dependencies {
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.6.4"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.6.5"
       }
     }
   }
@@ -49,8 +49,8 @@ object Dependencies {
 
   case object io {
     case object chrisdavenport {
-      val `cats-effect-time` = "io.chrisdavenport" %% "cats-effect-time" % "0.3.0"
-      val fuuidVersion       = "0.8.0-M4"
+      val `cats-effect-time` = "io.chrisdavenport" %% "cats-effect-time" % "0.4.0"
+      val fuuidVersion       = "0.8.0"
       val fuuid              = "io.chrisdavenport" %% "fuuid"            % fuuidVersion
       val `fuuid-circe`      = "io.chrisdavenport" %% "fuuid-circe"      % fuuidVersion
       val `fuuid-http4s`     = "io.chrisdavenport" %% "fuuid-http4s"     % fuuidVersion
@@ -86,7 +86,7 @@ object Dependencies {
     }
 
     case object http4s {
-      val http4sVersion            = "0.23.37"
+      val http4sVersion            = "0.23.38"
       val `http4s-ember-server`    = dep("ember-server")
       val `http4s-circe`           = dep("circe")
       val `http4s-dsl`             = dep("dsl")
