@@ -82,7 +82,7 @@ object Dependencies {
 
   case object org {
     case object flywaydb {
-      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "13.8.0"
+      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "13.9.0"
     }
 
     case object http4s {
