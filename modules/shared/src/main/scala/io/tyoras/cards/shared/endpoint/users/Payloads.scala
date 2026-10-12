@@ -15,6 +15,7 @@ import io.scalaland.chimney.partial.Result
 import io.scalaland.chimney.cats.*
 import io.scalaland.chimney.partial.syntax.*
 import io.github.iltotore.iron.cats.*
+import io.tyoras.cards.domain.auth.model.{Password, PasswordChangeRequest}
 import io.tyoras.cards.domain.game.{GameTyp, GameType}
 import io.tyoras.cards.domain.game.stats.model.PlayerGameStat
 
@@ -22,13 +23,28 @@ import java.time.ZonedDateTime
 
 object Payloads:
   object Request:
-    final case class Creation(name: Option[String], about: Option[String]) derives Codec
+    final case class Creation(name: Option[String], password: Option[String], about: Option[String]) derives Codec
     object Creation:
-      given Validator[Creation, DomainUser.Data] = new:
+      given userDataValidator: Validator[Creation, DomainUser.Data] = new:
         override def validate(c: Creation)(using pf: Option[ParentField]): ValidationResult[DomainUser.Data] = (
           c.name.nestedMandatory[DomainUser.Name]("name"),
           c.about.nestedMandatory[DomainUser.About]("about")
         ).mapN(DomainUser.Data.apply)
+
+      given newUserValidator: Validator[Creation, (DomainUser.Data, Password)] = new:
+        override def validate(c: Creation)(using pf: Option[ParentField]): ValidationResult[(DomainUser.Data, Password)] = (
+          c.validate[DomainUser.Data],
+          c.password.nestedMandatory[Password]("password")
+        ).tupled
+
+    final case class PasswordChange(oldPassword: Option[String], newPassword: Option[String]) derives Codec
+    object PasswordChange:
+      given passwordChangeValidator(using userId: DomainUser.ID): Validator[PasswordChange, PasswordChangeRequest] = new:
+        override def validate(r: PasswordChange)(using pf: Option[ParentField]): ValidationResult[PasswordChangeRequest] = (
+          userId.valid,
+          r.oldPassword.nestedMandatory[Password]("old_password"),
+          r.newPassword.nestedMandatory[Password]("new_password")
+        ).mapN(PasswordChangeRequest.apply)
 
   object Response:
     final case class User(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, name: String, about: String) derives ConfiguredCodec

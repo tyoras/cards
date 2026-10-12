@@ -30,7 +30,7 @@ object GameEndpoint:
           case GET -> Root / "games" :? UserIdParam(userId) +& FinishedParam(finished) as u => listByUser(userId, finished)
           case GET -> Root / "games" :? FinishedParam(finished) as u                        => listAll(finished)
           case GET -> Root / "games" / FUUIDVar(id) as u                                    => searchById(id)
-          case DELETE -> Root / "games" / FUUIDVar(id) as u                                 => deleteById(id)
+          case DELETE -> Root / "games" / FUUIDVar(id) as u                                 => deleteById(id, u.id)
         }
 
       object UserIdParam   extends QueryParamDecoderMatcher[FUUID]("user_id")
@@ -45,8 +45,13 @@ object GameEndpoint:
       private def searchById(id: FUUID): F[Response[F]] =
         gameService.readById[Json](id).flatMap(_.fold(notFoundResponse)(Payloads.Response.Game.fromExistingGame(_).pipe(Ok(_))))
 
-      private def deleteById(id: FUUID): F[Response[F]] =
-        gameService.readById[Json](id).flatMap(_.fold(notFoundResponse)(gameService.delete(_) >> NoContent()))
+      private def deleteById(gameId: FUUID, userId: User.ID): F[Response[F]] =
+        gameService
+          .readById[Json](gameId)
+          .flatMap(_.fold(notFoundResponse) { game =>
+            if game.data.createdBy == userId then gameService.delete(game) >> NoContent()
+            else Forbidden()
+          })
 
       private val notFoundResponse = NotFound(ApiMessage("not_found", "Requested resource does not exist."))
     }

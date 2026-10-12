@@ -81,6 +81,10 @@ object Dependencies {
   }
 
   case object org {
+    case object bouncycastle {
+      val `bcpkix-jdk18on` = "org.bouncycastle" % "bcpkix-jdk18on" % "1.86"
+    }
+
     case object flywaydb {
       val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "13.9.0"
     }
@@ -146,6 +150,7 @@ object Dependencies {
     io.github.iltotore.iron,
     io.github.iltotore.`iron-cats`,
     io.github.iltotore.`iron-circe`,
+    org.bouncycastle.`bcpkix-jdk18on`,
     org.typelevel.`cats-core`,
     org.typelevel.`cats-effect`,
     org.typelevel.`cats-parse`,

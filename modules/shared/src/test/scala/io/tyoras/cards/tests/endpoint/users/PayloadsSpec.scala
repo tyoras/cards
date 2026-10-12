@@ -15,57 +15,68 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.time.ZonedDateTime
+import cats.syntax.all.*
+import io.tyoras.cards.domain.auth.model.Password
+
 import java.util.UUID
 
 class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
 
-  private val now        = ZonedDateTime.now()
-  private val testUserId = FUUID.fromUUID(UUID.randomUUID())
+  private val now           = ZonedDateTime.now()
+  private val testUserId    = FUUID.fromUUID(UUID.randomUUID())
+  private val validPassword = Password("passPass")
 
-  "Creation validator" should "validate successfully when name and about are provided" in {
-    val creation = Request.Creation(name = Some("John Doe"), about = Some("A test user"))
+  "User data validator" should "validate successfully when name and about are provided" in {
+    val creation = Request.Creation(name = Some("John Doe"), about = Some("A test user"), password = None)
+    val result   = creation.validateE[User.Data]
+
+    result should be(Right(User.Data(User.Name("John Doe"), User.About("A test user"))))
+  }
+
+  it should "ignore password field if present" in {
+    val creation = Request.Creation(name = Some("John Doe"), about = Some("A test user"), password = "pass".some)
     val result   = creation.validateE[User.Data]
 
     result should be(Right(User.Data(User.Name("John Doe"), User.About("A test user"))))
   }
 
   it should "return missing name error when name is absent" in {
-    val creation = Request.Creation(name = None, about = Some("A test user"))
+    val creation = Request.Creation(name = None, about = Some("A test user"), password = None)
     val result   = creation.validateE[User.Data]
 
     result.left.value.errors should contain(MissingFieldError("name"))
   }
 
   it should "return missing about error when about is absent" in {
-    val creation = Request.Creation(name = Some("John Doe"), about = None)
+    val creation = Request.Creation(name = Some("John Doe"), about = None, password = None)
     val result   = creation.validateE[User.Data]
 
     result.left.value.errors should contain(MissingFieldError("about"))
   }
 
   it should "return both missing errors when name and about are absent" in {
-    val creation = Request.Creation(name = None, about = None)
+    val creation = Request.Creation(name = None, about = None, password = None)
     val result   = creation.validateE[User.Data]
 
     (result.left.value.errors should contain).`allOf`(MissingFieldError("name"), MissingFieldError("about"))
   }
 
   it should "return blank name error when name is blank" in {
-    val creation = Request.Creation(name = Some("   "), about = Some("A test user"))
+    val creation = Request.Creation(name = Some("   "), about = Some("A test user"), password = None)
     val result   = creation.validateE[User.Data]
 
     result.left.value.errors should contain(IronFieldError("name", expectedUserNameError))
   }
 
   it should "return blank about error when about is blank" in {
-    val creation = Request.Creation(name = Some("John Doe"), about = Some("   "))
+    val creation = Request.Creation(name = Some("John Doe"), about = Some("   "), password = None)
     val result   = creation.validateE[User.Data]
 
     result.left.value.errors should contain(IronFieldError("about", expectedUserAboutError))
   }
 
   it should "return blank errors for both fields when both are blank" in {
-    val creation = Request.Creation(name = Some(""), about = Some(""))
+    val creation = Request.Creation(name = Some(""), about = Some(""), password = None)
     val result   = creation.validateE[User.Data]
 
     (result.left.value.errors should contain).`allOf`(IronFieldError("name", expectedUserNameError), IronFieldError("about", expectedUserAboutError))
@@ -73,7 +84,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
 
   it should "return name too long error when name exceeds max length" in {
     val longName = "a" * 101
-    val creation = Request.Creation(name = Some(longName), about = Some("A test user"))
+    val creation = Request.Creation(name = Some(longName), about = Some("A test user"), password = None)
     val result   = creation.validateE[User.Data]
 
     result.left.value.errors should contain(IronFieldError("name", expectedUserNameError))
@@ -81,21 +92,21 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
 
   it should "validate successfully when name is exactly at max length" in {
     val maxName  = "a" * 100
-    val creation = Request.Creation(name = Some(maxName), about = Some("About"))
+    val creation = Request.Creation(name = Some(maxName), about = Some("About"), password = None)
     val result   = creation.validateE[User.Data]
 
     result should be(Right(User.Data(User.Name.assume(maxName), User.About("About"))))
   }
 
   it should "validate successfully when name contains special characters" in {
-    val creation = Request.Creation(name = Some("John O'Donnell-Smith"), about = Some("A user with special chars"))
+    val creation = Request.Creation(name = Some("John O'Donnell-Smith"), about = Some("A user with special chars"), password = None)
     val result   = creation.validateE[User.Data]
 
     result should be(Right(User.Data(User.Name("John O'Donnell-Smith"), User.About("A user with special chars"))))
   }
 
   it should "validate successfully when name and about contain unicode characters" in {
-    val creation = Request.Creation(name = Some("Jean-François"), about = Some("Über cool user"))
+    val creation = Request.Creation(name = Some("Jean-François"), about = Some("Über cool user"), password = None)
     val result   = creation.validateE[User.Data]
 
     result should be(Right(User.Data(User.Name("Jean-François"), User.About("Über cool user"))))
@@ -103,52 +114,174 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
 
   it should "validate successfully when about is very long" in {
     val longAbout = "This is a very long description about the user." * 10
-    val creation  = Request.Creation(name = Some("John"), about = Some(longAbout))
+    val creation  = Request.Creation(name = Some("John"), about = Some(longAbout), password = None)
     val result    = creation.validateE[User.Data]
 
     result.isRight should be(true)
   }
 
   it should "preserve whitespace in the middle of name" in {
-    val creation = Request.Creation(name = Some("Jean Claude"), about = Some("A user"))
+    val creation = Request.Creation(name = Some("Jean Claude"), about = Some("A user"), password = None)
     val result   = creation.validateE[User.Data]
 
     result should be(Right(User.Data(User.Name("Jean Claude"), User.About("A user"))))
   }
 
   it should "return validation error for leading and trailing whitespace in about" in {
-    val creation = Request.Creation(name = Some("John"), about = Some("  About text  "))
+    val creation = Request.Creation(name = Some("John"), about = Some("  About text  "), password = None)
     val result   = creation.validateE[User.Data]
 
     result.left.value.errors should contain(IronFieldError("about", expectedUserAboutError))
   }
 
+  "New user creation validator" should "validate successfully when name and about are provided" in {
+    val creation = Request.Creation(name = Some("John Doe"), about = Some("A test user"), password = validPassword.some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result should be(Right(User.Data(User.Name("John Doe"), User.About("A test user")) -> validPassword))
+  }
+
+  it should "return missing name error when name is absent" in {
+    val creation = Request.Creation(name = None, about = Some("A test user"), password = validPassword.some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result.left.value.errors should contain(MissingFieldError("name"))
+  }
+
+  it should "return missing password error when password is absent" in {
+    val creation = Request.Creation(name = "name".some, about = Some("A test user"), password = None)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result.left.value.errors should contain(MissingFieldError("password"))
+  }
+
+  it should "return missing about error when about is absent" in {
+    val creation = Request.Creation(name = Some("John Doe"), about = None, password = validPassword.some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result.left.value.errors should contain(MissingFieldError("about"))
+  }
+
+  it should "return both missing errors when name and about are absent" in {
+    val creation = Request.Creation(name = None, about = None, password = validPassword.some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    (result.left.value.errors should contain).`allOf`(MissingFieldError("name"), MissingFieldError("about"))
+  }
+
+  it should "return blank name error when name is blank" in {
+    val creation = Request.Creation(name = Some("   "), about = Some("A test user"), password = validPassword.some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result.left.value.errors should contain(IronFieldError("name", expectedUserNameError))
+  }
+
+  it should "return blank password error when password is blank" in {
+    val creation = Request.Creation(name = Some("name"), about = Some("A test user"), password = "   ".some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result.left.value.errors should contain(IronFieldError("password", expectedUserPasswordError))
+  }
+
+  it should "return blank about error when about is blank" in {
+    val creation = Request.Creation(name = Some("John Doe"), about = Some("   "), password = validPassword.some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result.left.value.errors should contain(IronFieldError("about", expectedUserAboutError))
+  }
+
+  it should "return blank errors for both fields when both are blank" in {
+    val creation = Request.Creation(name = Some(""), about = Some(""), password = validPassword.some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    (result.left.value.errors should contain).`allOf`(IronFieldError("name", expectedUserNameError), IronFieldError("about", expectedUserAboutError))
+  }
+
+  it should "return name too long error when name exceeds max length" in {
+    val longName = "a" * 101
+    val creation = Request.Creation(name = Some(longName), about = Some("A test user"), password = validPassword.some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result.left.value.errors should contain(IronFieldError("name", expectedUserNameError))
+  }
+
+  it should "return password too short error when password is less than min length" in {
+    val creation = Request.Creation(name = Some("name"), about = Some("A test user"), password = "pass".some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result.left.value.errors should contain(IronFieldError("password", expectedUserPasswordError))
+  }
+
+  it should "validate successfully when name is exactly at max length" in {
+    val maxName  = "a" * 100
+    val creation = Request.Creation(name = Some(maxName), about = Some("About"), password = validPassword.some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result should be(Right(User.Data(User.Name.assume(maxName), User.About("About")) -> validPassword))
+  }
+
+  it should "validate successfully when name contains special characters" in {
+    val creation = Request.Creation(name = Some("John O'Donnell-Smith"), about = Some("A user with special chars"), password = validPassword.some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result should be(Right(User.Data(User.Name("John O'Donnell-Smith"), User.About("A user with special chars")) -> validPassword))
+  }
+
+  it should "validate successfully when name and about contain unicode characters" in {
+    val creation = Request.Creation(name = Some("Jean-François"), about = Some("Über cool user"), password = validPassword.some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result should be(Right(User.Data(User.Name("Jean-François"), User.About("Über cool user")) -> validPassword))
+  }
+
+  it should "validate successfully when about is very long" in {
+    val longAbout = "This is a very long description about the user." * 10
+    val creation  = Request.Creation(name = Some("John"), about = Some(longAbout), password = validPassword.some)
+    val result    = creation.validateE[(User.Data, Password)]
+
+    result.isRight should be(true)
+  }
+
+  it should "preserve whitespace in the middle of name" in {
+    val creation = Request.Creation(name = Some("Jean Claude"), about = Some("A user"), password = validPassword.some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result should be(Right(User.Data(User.Name("Jean Claude"), User.About("A user")) -> validPassword))
+  }
+
+  it should "return validation error for leading and trailing whitespace in about" in {
+    val creation = Request.Creation(name = Some("John"), about = Some("  About text  "), password = validPassword.some)
+    val result   = creation.validateE[(User.Data, Password)]
+
+    result.left.value.errors should contain(IronFieldError("about", expectedUserAboutError))
+  }
+
   "Creation request decoder" should "decode snake_case JSON to Creation case class" in {
-    val jsonString = """{"name": "John Doe", "about": "A test user"}"""
+    val jsonString = """{"name": "John Doe", "about": "A test user", "password": "passPass"}"""
     val decoded    = parse(jsonString).flatMap(_.as[Request.Creation])
 
-    decoded.toOption.get should be(Request.Creation(Some("John Doe"), Some("A test user")))
+    decoded.toOption.get should be(Request.Creation(Some("John Doe"), validPassword.some, Some("A test user")))
   }
 
   it should "handle missing name field" in {
-    val jsonString = """{"about": "A test user"}"""
+    val jsonString = """{"about": "A test user", "password": "passPass"}"""
     val decoded    = parse(jsonString).flatMap(_.as[Request.Creation])
 
-    decoded.toOption.get should be(Request.Creation(None, Some("A test user")))
+    decoded.toOption.get should be(Request.Creation(None, validPassword.some, Some("A test user")))
   }
 
   it should "handle missing about field" in {
-    val jsonString = """{"name": "John Doe"}"""
+    val jsonString = """{"name": "John Doe", "password": "passPass"}"""
     val decoded    = parse(jsonString).flatMap(_.as[Request.Creation])
 
-    decoded.toOption.get should be(Request.Creation(Some("John Doe"), None))
+    decoded.toOption.get should be(Request.Creation(Some("John Doe"), validPassword.some, None))
   }
 
   it should "handle empty JSON object" in {
     val jsonString = """{}"""
     val decoded    = parse(jsonString).flatMap(_.as[Request.Creation])
 
-    decoded.toOption.get should be(Request.Creation(None, None))
+    decoded.toOption.get should be(Request.Creation(None, None, None))
   }
 
   "Response User encoder" should "encode Response.User with snake_case field names" in {
@@ -234,5 +367,6 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
   }
 
 object PayloadsSpec:
-  val expectedUserNameError  = "User name must be a non-blank string with a maximum length of 100 characters."
-  val expectedUserAboutError = "User description must be a non-blank string."
+  val expectedUserNameError     = "User name must be a non-blank string with a maximum length of 100 characters."
+  val expectedUserAboutError    = "User description must be a non-blank string."
+  val expectedUserPasswordError = "Password must be a non-blank string with a minimum length of 8 characters."

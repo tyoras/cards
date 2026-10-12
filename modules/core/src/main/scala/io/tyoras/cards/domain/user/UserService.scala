@@ -9,8 +9,6 @@ import fs2.Stream
 trait UserService[F[_]]:
   def create(user: User.Data, withId: Option[FUUID] = None): F[User.Existing]
 
-  def createMany(users: List[User.Data]): F[List[User.Existing]]
-
   def readById(id: FUUID): F[Option[User.Existing]]
 
   def readByName(name: User.Name): F[Option[User.Existing]]
@@ -23,8 +21,6 @@ trait UserService[F[_]]:
 
   def update(user: User.Existing): F[User.Existing]
 
-  def updateMany(users: List[User.Existing]): F[List[User.Existing]]
-
   def delete(user: User.Existing): F[Unit]
 
   def deleteMany(users: List[User.Existing]): F[Unit]
@@ -35,9 +31,6 @@ object UserService:
   def of[F[_] : Monad](userRepo: UserRepository[F]): UserService[F] = new:
     override def create(user: User.Data, withId: Option[FUUID]): F[User.Existing] =
       userRepo.insert(user, withId)
-
-    override def createMany(users: List[User.Data]): F[List[User.Existing]] =
-      writeMany(users)
 
     private def writeMany[U <: User](users: List[U]): F[List[User.Existing]] =
       userRepo.writeMany(users)
@@ -58,10 +51,7 @@ object UserService:
       userRepo.readAll
 
     override def update(user: User.Existing): F[User.Existing] =
-      updateMany(List(user)).map(_.head)
-
-    override def updateMany(users: List[User.Existing]): F[List[User.Existing]] =
-      writeMany(users)
+      writeMany(List(user)).map(_.head)
 
     override def delete(user: User.Existing): F[Unit] =
       deleteMany(List(user))

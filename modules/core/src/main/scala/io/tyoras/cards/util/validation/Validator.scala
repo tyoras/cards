@@ -15,8 +15,8 @@ trait Validator[A, B]:
 
 object syntax:
   extension [A](a: A)
-    def validate[B](parentField: Option[ParentField] = None)(using v: Validator[A, B]): ValidationResult[B] =
-      v.validate(a)(using parentField)
+    def validate[B](using parentField: Option[ParentField] = None, v: Validator[A, B]): ValidationResult[B] =
+      v.validate(a)
 
     def validateE[B](using v: Validator[A, B]): Either[ValidationError, B] =
       v.validate(a).toEither.leftMap { c =>
@@ -41,7 +41,7 @@ object syntax:
 
     def nestedOptionalWithDefault[B](field: String)(using v: Validator[A, B]): ValidationResult[B] =
       val fullFieldName = completeFieldName(field)
-      a.validate(ParentField(fullFieldName).some)
+      a.validate(using ParentField(fullFieldName).some)
 
   extension [A](a: Option[A])(using pf: Option[ParentField] = None)
     /** Apply validators on a mandatory field after checking it is present. Use it for mandatory field.
@@ -73,12 +73,12 @@ object syntax:
     def nestedMandatory[B](field: String)(using v: Validator[A, B]): ValidationResult[B] =
       val fullFieldName = completeFieldName(field)
       isMandatory(fullFieldName, a).andThen {
-        _.validate(ParentField(fullFieldName).some)
+        _.validate(using ParentField(fullFieldName).some)
       }
 
     def nestedOptional[B](field: String)(using v: Validator[A, B]): ValidationResult[Option[B]] =
       a.fold(none[B].valid[NonEmptyChain[ErrorField]])(
-        _.validate(ParentField(completeFieldName(field)).some).map(_.some)
+        _.validate(using ParentField(completeFieldName(field)).some).map(_.some)
       )
 
 private def validateField[A](field: String, value: A, validators: ((String, A) => ValidationResult[A])*)(using pf: Option[ParentField]): ValidationResult[A] =

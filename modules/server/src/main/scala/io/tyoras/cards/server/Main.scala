@@ -6,7 +6,7 @@ import cats.effect.kernel.Resource
 import cats.effect.std.Console
 import fs2.io.file.Files
 import fs2.io.net.Network
-import io.tyoras.cards.domain.auth.{AuthService, JWTGenerator, JwtExpiration}
+import io.tyoras.cards.domain.auth.{AuthService, JWTGenerator, JwtExpiration, UserAuthService}
 import io.tyoras.cards.server.config.*
 import io.tyoras.cards.domain.game.GameService
 import io.tyoras.cards.domain.game.stats.GameStatService
@@ -31,7 +31,9 @@ import org.typelevel.otel4s.metrics.Meter.Implicits.noop
 import org.typelevel.otel4s.trace.Tracer.Implicits.noop
 import pureconfig.ConfigSource
 import cats.syntax.all.*
+import io.tyoras.cards.persistence.auth.PostgresUserAuthRepository
 import io.tyoras.cards.server.healtcheck.ServerHealthMonitor
+import io.tyoras.cards.util.crypto.Argon2Hasher
 
 object Main extends IOApp:
   given LoggerFactory[IO] = Slf4jFactory.create[IO]
@@ -53,12 +55,15 @@ object Main extends IOApp:
       gameStatRepo <- Resource.eval(PostgresGameStatRepository.of[F](dbSessionPool))
       gameService     = GameService.of(gameRepo)
       gameStatService = GameStatService.of[F](gameStatRepo)
+      userAuthRepo <- Resource.eval(PostgresUserAuthRepository.of(dbSessionPool))
+      hasher       <- Resource.eval(Argon2Hasher.make)
+      userAuthService = UserAuthService.of(userService, userAuthRepo, hasher)
       // FIXME usage of insecure naive auth
       authService   <- Resource.eval(AuthService.naive(userService, jwtGenerator, config.auth))
       healthMonitor <- ServerHealthMonitor.of[F](dbSessionPool)
       chatProtocol  <- Resource.eval(ChatProtocol.make(authService))
       gameProtocol  <- GameProtocol.make(authService, gameService, gameStatService)
-      userEndpoint  <- Resource.eval(UserEndpoint.of(userService, gameStatService))
+      userEndpoint  <- Resource.eval(UserEndpoint.of(userService, userAuthService, gameStatService))
       gameEndpoint  <- Resource.eval(GameEndpoint.of(gameService))
       warEndpoint   <- WarEndpoint.make(gameService, userService, gameProtocol, chatProtocol)
       authEndpoint  <- Resource.eval(AuthEndpoint.of(authService))
