@@ -64,7 +64,7 @@ object Dependencies {
 
     case object github {
       case object iltotore {
-        val ironVersion       = "3.3.2"
+        val ironVersion       = "3.4.0"
         val iron              = "io.github.iltotore" %% "iron"            % ironVersion
         val `iron-cats`       = "io.github.iltotore" %% "iron-cats"       % ironVersion
         val `iron-chimney`    = "io.github.iltotore" %% "iron-chimney"    % ironVersion
@@ -74,7 +74,7 @@ object Dependencies {
     }
 
     case object scalaland {
-      val chimneyVersion = "1.11.0"
+      val chimneyVersion = "2.1.0"
       val chimney        = "io.scalaland" %% "chimney"      % chimneyVersion
       val `chimney-cats` = "io.scalaland" %% "chimney-cats" % chimneyVersion
     }
@@ -86,7 +86,7 @@ object Dependencies {
     }
 
     case object flywaydb {
-      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "13.9.0"
+      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "13.10.0"
     }
 
     case object http4s {
@@ -100,7 +100,7 @@ object Dependencies {
     }
 
     case object postgresql {
-      val postgresql = "org.postgresql" % "postgresql" % "42.7.13"
+      val postgresql = "org.postgresql" % "postgresql" % "42.7.14"
     }
 
     case object scalacheck {
