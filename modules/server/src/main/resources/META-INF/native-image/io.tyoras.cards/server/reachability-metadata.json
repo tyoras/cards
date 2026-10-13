@@ -326,6 +326,14 @@
       ]
     },
     {
+      "type": "dev.profunktor.auth.jwt$JwtSecretKeyByteArr",
+      "fields": [
+        {
+          "name": "value$lzy1"
+        }
+      ]
+    },
+    {
       "type": "double[]"
     },
     {
@@ -584,6 +592,139 @@
       ]
     },
     {
+      "type": "io.github.iltotore.iron.cats$",
+      "fields": [
+        {
+          "name": "negDoubleAdditiveCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "negDoubleAdditiveCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "negDoubleCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "negDoubleCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "negFloatAdditiveCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "negFloatAdditiveCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "negFloatCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "negFloatCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "negIntAdditiveCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "negIntAdditiveCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "negIntCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "negIntCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "negLongAdditiveCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "negLongAdditiveCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "negLongCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "negLongCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "posDoubleAdditiveCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "posDoubleAdditiveCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "posDoubleCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "posDoubleCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "posFloatAdditiveCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "posFloatAdditiveCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "posFloatCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "posFloatCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "posIntAdditiveCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "posIntAdditiveCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "posIntCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "posIntCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "posLongAdditiveCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "posLongAdditiveCommutativeSemigroup$lzy1"
+        },
+        {
+          "name": "posLongCommutativeMonoid$lzy1"
+        },
+        {
+          "name": "posLongCommutativeSemigroup$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.scalaland.chimney.dsl.PartialTransformerDefinition",
+      "fields": [
+        {
+          "name": "given_ChimneySelector$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.scalaland.chimney.dsl.TransformerDefinition",
+      "fields": [
+        {
+          "name": "given_ChimneySelector$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.auth.model.UserAuth$Data$",
+      "fields": [
+        {
+          "name": "given_Show_Data$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.auth.model.UserClaim$",
+      "fields": [
+        {
+          "name": "derived$Codec$lzy1"
+        }
+      ]
+    },
+    {
       "type": "io.tyoras.cards.domain.healthcheck.HealthMonitorService$$anon$1",
       "fields": [
         {
@@ -598,10 +739,34 @@
       ]
     },
     {
-      "type": "io.tyoras.cards.domain.healthcheck.HealthStatus$CompositeHealth",
+      "type": "io.tyoras.cards.domain.user.model.User$Data$",
       "fields": [
         {
-          "name": "status$lzy1"
+          "name": "given_Show_Data$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.persistence.auth.UserAuthDAO$Data",
+      "fields": [
+        {
+          "name": "toDomain$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.persistence.auth.UserAuthDAO$Data$",
+      "fields": [
+        {
+          "name": "given_PartialTransformer_Data_Data$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.persistence.auth.UserAuthDAO$Existing",
+      "fields": [
+        {
+          "name": "toDomain$lzy2"
         }
       ]
     },
@@ -614,10 +779,26 @@
       ]
     },
     {
+      "type": "io.tyoras.cards.persistence.user.UserDAO$Data",
+      "fields": [
+        {
+          "name": "toDomain$lzy1"
+        }
+      ]
+    },
+    {
       "type": "io.tyoras.cards.persistence.user.UserDAO$Data$",
       "fields": [
         {
           "name": "given_PartialTransformer_Data_Data$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.persistence.user.UserDAO$Existing",
+      "fields": [
+        {
+          "name": "toDomain$lzy2"
         }
       ]
     },
@@ -709,14 +890,6 @@
       ]
     },
     {
-      "type": "io.tyoras.cards.server.endpoints.params$",
-      "fields": [
-        {
-          "name": "given_QueryParamDecoder_Name$lzy1"
-        }
-      ]
-    },
-    {
       "type": "io.tyoras.cards.server.endpoints.users.UserEndpoint$$anon$1",
       "fields": [
         {
@@ -727,6 +900,9 @@
         },
         {
           "name": "given_EntityDecoder_F_Creation$lzy1"
+        },
+        {
+          "name": "given_EntityDecoder_F_PasswordChange$lzy1"
         },
         {
           "name": "given_EntityEncoder_F_Stream$lzy1"
@@ -750,13 +926,46 @@
       ]
     },
     {
-      "type": "io.tyoras.cards.shared.endpoint.admin.health.Payloads$Response$HealthStatus$",
+      "type": "io.tyoras.cards.shared.endpoint.auth.Payloads$Request$Login$",
       "fields": [
         {
           "name": "derived$ConfiguredCodec$lzy1"
         },
         {
-          "name": "given_Transformer_DomainHealthStatus_HealthStatus$lzy1"
+          "name": "given_Validator_Login_LoginAttempt$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.shared.endpoint.auth.Payloads$Response$",
+      "fields": [
+        {
+          "name": "given_Decoder_JwtToken$lzy1"
+        },
+        {
+          "name": "given_Encoder_JwtToken$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.shared.endpoint.auth.Payloads$Response$SuccessfulLogin$",
+      "fields": [
+        {
+          "name": "derived$ConfiguredCodec$lzy2"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.shared.endpoint.users.Payloads$Request$Creation$",
+      "fields": [
+        {
+          "name": "derived$Codec$lzy1"
+        },
+        {
+          "name": "newUserValidator$lzy1"
+        },
+        {
+          "name": "userDataValidator$lzy1"
         }
       ]
     },
@@ -876,9 +1085,6 @@
       "type": "java.lang.Object"
     },
     {
-      "type": "java.lang.Object[]"
-    },
-    {
       "type": "java.lang.SecurityManager",
       "methods": [
         {
@@ -987,6 +1193,15 @@
           ]
         }
       ]
+    },
+    {
+      "type": "java.security.MessageDigestSpi"
+    },
+    {
+      "type": "java.security.interfaces.RSAPrivateKey"
+    },
+    {
+      "type": "java.security.interfaces.RSAPublicKey"
     },
     {
       "type": "java.util.Arrays",
@@ -8257,10 +8472,32 @@
       ]
     },
     {
+      "type": "pdi.jwt.JwtBase64$",
+      "fields": [
+        {
+          "name": "decoder$lzy1"
+        },
+        {
+          "name": "decoderNonSafe$lzy1"
+        },
+        {
+          "name": "encoder$lzy1"
+        }
+      ]
+    },
+    {
       "type": "scala.StringContext",
       "fields": [
         {
           "name": "s$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "scala.Tuple$",
+      "fields": [
+        {
+          "name": "canEqualEmptyTuple$lzy1"
         }
       ]
     },
@@ -8430,6 +8667,22 @@
       ]
     },
     {
+      "type": "skunk.Encoder$$anon$6",
+      "fields": [
+        {
+          "name": "empty$lzy6"
+        }
+      ]
+    },
+    {
+      "type": "skunk.Encoder$$anon$7",
+      "fields": [
+        {
+          "name": "empty$lzy7"
+        }
+      ]
+    },
+    {
       "type": "skunk.Fragment",
       "fields": [
         {
@@ -8556,6 +8809,17 @@
       ]
     },
     {
+      "type": "sun.security.provider.NativePRNG$NonBlocking",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.security.SecureRandomParameters"
+          ]
+        }
+      ]
+    },
+    {
       "type": "sun.security.provider.SHA",
       "methods": [
         {
@@ -8597,6 +8861,129 @@
         {
           "name": "<init>",
           "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.X509Factory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSAKeyFactory$Legacy",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSASignature$SHA256withRSA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.AuthorityInfoAccessExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.AuthorityKeyIdentifierExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.BasicConstraintsExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.CRLDistributionPointsExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.CertificatePoliciesExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.ExtendedKeyUsageExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.KeyUsageExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.SubjectKeyIdentifierExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
         }
       ]
     },
