@@ -7,30 +7,40 @@ import dev.profunktor.auth.jwt.*
 import io.circe.parser.decode
 import io.tyoras.cards.domain.auth.config.AuthConfig
 import io.tyoras.cards.domain.auth.model.{AuthError, LoginAttempt, LoginSuccess, UserClaim}
+import io.tyoras.cards.util.crypto.Argon2Hasher
 import pdi.jwt.JwtClaim
 import pdi.jwt.exceptions.JwtException
 
 // TODO implement logout
 trait AuthService[F[_]]:
-  // TODO implement proper login
   def login(attempt: LoginAttempt): F[LoginSuccess]
   def authenticator(jwt: JwtToken): JwtClaim => F[Option[User.Existing]]
   def authenticate(jwt: JwtToken): F[User.Existing]
 
 object AuthService:
-  // simple implementation that always return a valid token when the user is known
-  // does not actually check the password
-  def naive[F[_] : Sync](userService: UserService[F], jwtGenerator: JWTGenerator[F], authConfig: AuthConfig): F[AuthService[F]] = Sync[F].delay {
+  def make[F[_] : Sync](
+      userService: UserService[F],
+      jwtGenerator: JWTGenerator[F],
+      hasher: Argon2Hasher[F],
+      userAuthRepository: UserAuthRepository[F],
+      authConfig: AuthConfig
+  ): F[AuthService[F]] = Sync[F].delay {
     val jwtAuth = JwtAuth.hmac(authConfig.secretKey.toCharArray, authConfig.hmacAlgo)
     new AuthService[F]:
       override def login(attempt: LoginAttempt): F[LoginSuccess] =
         for
-          read  <- userService.readByName(attempt.userName)
-          user  <- Sync[F].fromOption(read, AuthError.UnknownUser(attempt.userName))
-          token <- jwtGenerator.create(user)
+          read           <- userService.readByName(attempt.userName)
+          user           <- Sync[F].fromOption(read, AuthError.UnknownUser(attempt.userName))
+          foundUserAuth  <- userAuthRepository.readByUserId(user.id)
+          userAuth       <- Sync[F].fromOption(foundUserAuth, AuthError.LoginFailure(user.id, "missing credentials"))
+          hashedPassword <- hasher.hash(attempt.password, userAuth.passwordSalt.some)
+          _              <- AuthError.LoginFailure(user.id, "wrong password").raiseError.unlessA(hashedPassword.hash.sameElements(userAuth.passwordHash))
+          token          <- jwtGenerator.create(user)
+        // TODO store valid token
         yield LoginSuccess(token, user)
 
       override def authenticator(jwt: JwtToken): JwtClaim => F[Option[User.Existing]] =
+        // TODO check if token is stored and known as valid
         (claim: JwtClaim) => decode[UserClaim](claim.content).fold(_ => none[User.Existing].pure, c => userService.readById(c.userId))
 
       override def authenticate(jwt: JwtToken): F[User.Existing] =
@@ -40,5 +50,4 @@ object AuthService:
           .adaptError { case e: JwtException =>
             AuthError.InvalidToken(e.getMessage)
           }
-
   }

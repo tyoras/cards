@@ -58,8 +58,7 @@ object Main extends IOApp:
       userAuthRepo <- Resource.eval(PostgresUserAuthRepository.of(dbSessionPool))
       hasher       <- Resource.eval(Argon2Hasher.make)
       userAuthService = UserAuthService.of(userService, userAuthRepo, hasher)
-      // FIXME usage of insecure naive auth
-      authService   <- Resource.eval(AuthService.naive(userService, jwtGenerator, config.auth))
+      authService   <- Resource.eval(AuthService.make(userService, jwtGenerator, hasher, userAuthRepo, config.auth))
       healthMonitor <- ServerHealthMonitor.of[F](dbSessionPool)
       chatProtocol  <- Resource.eval(ChatProtocol.make(authService))
       gameProtocol  <- GameProtocol.make(authService, gameService, gameStatService)

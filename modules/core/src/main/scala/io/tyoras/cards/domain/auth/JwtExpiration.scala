@@ -13,5 +13,5 @@ trait JwtExpiration[F[_]]:
 object JwtExpiration:
   def make[F[_] : Sync]: F[JwtExpiration[F]] =
     Sync[F].delay(Clock.systemUTC()).map { case given Clock =>
-      (claim: JwtClaim, exp: TokenExpiration) => Sync[F].delay(claim.issuedNow.expiresIn(exp.toMillis))
+      (claim: JwtClaim, exp: TokenExpiration) => Sync[F].delay(claim.issuedNow.expiresIn(exp.toSeconds))
     }
