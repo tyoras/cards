@@ -53,7 +53,7 @@ object War:
     private val logger                             = LoggerFactory.getLogger
     override val gameId: Game.ID                   = id
     override def currentState: F[GameState]        = fsm.getCurrentState
-    override def isFinished: F[Boolean]            = currentState.map(_.isInstanceOf[Finish])
+    override def isFinished: F[Boolean]            = currentState.map(s => s.isInstanceOf[Finish] || s.isInstanceOf[Exit])
     override val playerIds: F[NonEmptyList[FUUID]] =
       currentState.map(_.context.players.keys.toList).flatMap(ids => Sync[F].fromOption(NonEmptyList.fromList(ids), NoPlayersError))
 
