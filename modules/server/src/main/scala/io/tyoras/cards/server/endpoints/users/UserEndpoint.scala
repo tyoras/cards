@@ -1,6 +1,5 @@
 package io.tyoras.cards.server.endpoints.users
 
-import cats.data.NonEmptyList
 import cats.effect.{Async, Sync}
 import cats.syntax.all.*
 import io.tyoras.cards.domain.user.UserService
@@ -93,7 +92,7 @@ object UserEndpoint:
             _.fold(notFoundResponse)(_ =>
               for
                 userStats <- gameStatService.getPlayerStats(id)
-                response  <- userStats.traverse(_.stats.transformInto[NonEmptyList[Payloads.Response.UserGameStats]]).pipe(Ok(_))
+                response  <- userStats.fold(List.empty)(_.stats.toList.transformInto[List[Payloads.Response.UserGameStats]]).pipe(Ok(_))
               yield response
             )
           )
