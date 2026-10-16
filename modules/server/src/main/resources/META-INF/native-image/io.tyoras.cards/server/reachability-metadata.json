@@ -555,6 +555,9 @@
       ]
     },
     {
+      "type": "io.circe.Json$JNumber[]"
+    },
+    {
       "type": "io.circe.derivation.ConfiguredCodec$$anon$3",
       "fields": [
         {
@@ -580,6 +583,109 @@
         },
         {
           "name": "io$circe$derivation$ConfiguredDecoder$$memberNames$lzy3"
+        }
+      ]
+    },
+    {
+      "type": "io.circe.derivation.ConfiguredCodec$$anon$4",
+      "fields": [
+        {
+          "name": "constructorNames$lzy4"
+        },
+        {
+          "name": "elemDecoders$lzy4"
+        },
+        {
+          "name": "elemDefaults$lzy4"
+        },
+        {
+          "name": "elemEncoders$lzy4"
+        },
+        {
+          "name": "elemLabels$lzy4"
+        },
+        {
+          "name": "io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy4"
+        },
+        {
+          "name": "io$circe$derivation$ConfiguredDecoder$$memberNames$lzy4"
+        },
+        {
+          "name": "o$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.circe.derivation.ConfiguredDecoder$$anon$3",
+      "fields": [
+        {
+          "name": "constructorNames$lzy3"
+        },
+        {
+          "name": "elemDecoders$lzy3"
+        },
+        {
+          "name": "elemDefaults$lzy3"
+        },
+        {
+          "name": "elemLabels$lzy3"
+        },
+        {
+          "name": "fp$lzy1"
+        },
+        {
+          "name": "io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy3"
+        },
+        {
+          "name": "io$circe$derivation$ConfiguredDecoder$$memberNames$lzy3"
+        }
+      ]
+    },
+    {
+      "type": "io.circe.derivation.ConfiguredDecoder$$anon$4",
+      "fields": [
+        {
+          "name": "constructorNames$lzy4"
+        },
+        {
+          "name": "elemDecoders$lzy4"
+        },
+        {
+          "name": "elemDefaults$lzy4"
+        },
+        {
+          "name": "elemLabels$lzy4"
+        },
+        {
+          "name": "io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy4"
+        },
+        {
+          "name": "io$circe$derivation$ConfiguredDecoder$$memberNames$lzy4"
+        }
+      ]
+    },
+    {
+      "type": "io.circe.derivation.ConfiguredEncoder$$anon$3",
+      "fields": [
+        {
+          "name": "elemEncoders$lzy3"
+        },
+        {
+          "name": "elemLabels$lzy3"
+        }
+      ]
+    },
+    {
+      "type": "io.circe.derivation.ConfiguredEncoder$$anon$4",
+      "fields": [
+        {
+          "name": "elemEncoders$lzy4"
+        },
+        {
+          "name": "elemLabels$lzy4"
+        },
+        {
+          "name": "o$lzy1"
         }
       ]
     },
@@ -701,6 +807,14 @@
       ]
     },
     {
+      "type": "io.scalaland.chimney.dsl.PartialTransformerInto",
+      "fields": [
+        {
+          "name": "given_ChimneySelector$lzy1"
+        }
+      ]
+    },
+    {
       "type": "io.scalaland.chimney.dsl.TransformerDefinition",
       "fields": [
         {
@@ -709,18 +823,210 @@
       ]
     },
     {
-      "type": "io.tyoras.cards.domain.auth.model.UserAuth$Data$",
+      "type": "io.tyoras.cards.domain.card.Card$",
       "fields": [
         {
-          "name": "given_Show_Data$lzy1"
+          "name": "given_Order_Card$lzy1"
+        },
+        {
+          "name": "given_Show_Card$lzy1"
         }
       ]
     },
     {
-      "type": "io.tyoras.cards.domain.auth.model.UserClaim$",
+      "type": "io.tyoras.cards.domain.card.Suit",
       "fields": [
         {
-          "name": "derived$Codec$lzy1"
+          "name": "toString$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.card.codecs$",
+      "fields": [
+        {
+          "name": "given_Codec_Card$lzy1"
+        },
+        {
+          "name": "given_Codec_Rank$lzy1"
+        },
+        {
+          "name": "given_Codec_Suit$lzy1"
+        },
+        {
+          "name": "given_Decoder_Count$lzy1"
+        },
+        {
+          "name": "given_Decoder_ID$lzy1"
+        },
+        {
+          "name": "given_Decoder_Value$lzy1"
+        },
+        {
+          "name": "given_Encoder_Count$lzy1"
+        },
+        {
+          "name": "given_Encoder_ID$lzy1"
+        },
+        {
+          "name": "given_Encoder_Value$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.game.Game$ID$",
+      "fields": [
+        {
+          "name": "given_Show_ID$lzy1"
+        },
+        {
+          "name": "vcLike$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.game.GameTyp",
+      "fields": [
+        {
+          "name": "given_Codec_PlayerState$lzy1"
+        },
+        {
+          "name": "given_Codec_State$lzy1"
+        },
+        {
+          "name": "given_Decoder_Input$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.game.GameTyp$",
+      "fields": [
+        {
+          "name": "given_Decoder_GameType$lzy1"
+        },
+        {
+          "name": "given_Encoder_GameType$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.game.schnapsen.codecs$",
+      "fields": [
+        {
+          "name": "given_Codec_GameRound$lzy1"
+        },
+        {
+          "name": "given_Codec_Marriage$lzy1"
+        },
+        {
+          "name": "given_Codec_Player$lzy1"
+        },
+        {
+          "name": "given_Codec_PlayerId$lzy1"
+        },
+        {
+          "name": "given_Codec_RoundOutcome$lzy1"
+        },
+        {
+          "name": "given_Codec_Status$lzy1"
+        },
+        {
+          "name": "given_ConfiguredCodec_GameState$lzy1"
+        },
+        {
+          "name": "given_ConfiguredCodec_SchnapsenInput$lzy1"
+        },
+        {
+          "name": "given_KeyDecoder_PlayerId$lzy1"
+        },
+        {
+          "name": "given_KeyEncoder_PlayerId$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.game.war.codecs$",
+      "fields": [
+        {
+          "name": "given_Codec_BattleRound$lzy1"
+        },
+        {
+          "name": "given_Codec_GameContext$lzy1"
+        },
+        {
+          "name": "given_Codec_Player$lzy1"
+        },
+        {
+          "name": "given_Codec_Turn$lzy1"
+        },
+        {
+          "name": "given_ConfiguredCodec_GameState$lzy1"
+        },
+        {
+          "name": "given_ConfiguredCodec_PlayerGameState$lzy1"
+        },
+        {
+          "name": "given_ConfiguredCodec_WarInput$lzy1"
+        },
+        {
+          "name": "given_KeyDecoder_PlayerId$lzy1"
+        },
+        {
+          "name": "given_KeyEncoder_PlayerId$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.game.war.model.GameContext",
+      "fields": [
+        {
+          "name": "allEliminated$lzy1"
+        },
+        {
+          "name": "playersCardCount$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.game.war.model.GameState$BattleTurn",
+      "fields": [
+        {
+          "name": "missingPlays$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.game.war.model.GameState$PlayerWinTurn",
+      "fields": [
+        {
+          "name": "notAcked$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.game.war.model.Player",
+      "fields": [
+        {
+          "name": "eliminated$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.game.war.model.PlayerGameState$BattleTurn",
+      "fields": [
+        {
+          "name": "pickFirstCard$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.domain.game.war.model.PlayerGameState$WarTurn",
+      "fields": [
+        {
+          "name": "currentRound$lzy1"
+        },
+        {
+          "name": "pickFirstCard$lzy2"
         }
       ]
     },
@@ -739,10 +1045,16 @@
       ]
     },
     {
-      "type": "io.tyoras.cards.domain.user.model.User$Data$",
+      "type": "io.tyoras.cards.domain.user.model.User$ID$",
       "fields": [
         {
-          "name": "given_Show_Data$lzy1"
+          "name": "given_Order_ID$lzy1"
+        },
+        {
+          "name": "given_Show_ID$lzy1"
+        },
+        {
+          "name": "vcLike$lzy1"
         }
       ]
     },
@@ -759,6 +1071,9 @@
       "fields": [
         {
           "name": "given_PartialTransformer_Data_Data$lzy1"
+        },
+        {
+          "name": "given_Transformer_Data_Data$lzy1"
         }
       ]
     },
@@ -775,6 +1090,25 @@
       "fields": [
         {
           "name": "jdbcUrl$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.persistence.game.GameReadDBModel$",
+      "fields": [
+        {
+          "name": "given_Eq_GameReadDBModel$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.persistence.game.stats.GameStatDAO$Data$",
+      "fields": [
+        {
+          "name": "given_PartialTransformer_Data_Data$lzy1"
+        },
+        {
+          "name": "given_Transformer_Data_Data$lzy1"
         }
       ]
     },
@@ -890,6 +1224,14 @@
       ]
     },
     {
+      "type": "io.tyoras.cards.server.endpoints.params$",
+      "fields": [
+        {
+          "name": "given_QueryParamDecoder_Name$lzy1"
+        }
+      ]
+    },
+    {
       "type": "io.tyoras.cards.server.endpoints.users.UserEndpoint$$anon$1",
       "fields": [
         {
@@ -956,16 +1298,41 @@
       ]
     },
     {
-      "type": "io.tyoras.cards.shared.endpoint.users.Payloads$Request$Creation$",
+      "type": "io.tyoras.cards.shared.endpoint.games.Payloads$Response$",
       "fields": [
         {
-          "name": "derived$Codec$lzy1"
+          "name": "given_Decoder_GameID$lzy1"
         },
         {
-          "name": "newUserValidator$lzy1"
+          "name": "given_Decoder_ID$lzy1"
         },
         {
-          "name": "userDataValidator$lzy1"
+          "name": "given_Encoder_GameID$lzy1"
+        },
+        {
+          "name": "given_Encoder_ID$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.shared.endpoint.games.Payloads$Response$Game$",
+      "fields": [
+        {
+          "name": "derived$ConfiguredCodec$lzy1"
+        },
+        {
+          "name": "fromExisting$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.shared.endpoint.users.Payloads$Response$",
+      "fields": [
+        {
+          "name": "given_Decoder_UserID$lzy1"
+        },
+        {
+          "name": "given_Encoder_UserID$lzy1"
         }
       ]
     },
@@ -984,6 +1351,25 @@
       ]
     },
     {
+      "type": "io.tyoras.cards.shared.endpoint.users.Payloads$Response$UserGameStats$",
+      "fields": [
+        {
+          "name": "derived$ConfiguredCodec$lzy2"
+        },
+        {
+          "name": "given_Transformer_Existing_UserGameStats$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.shared.protocol.chat.ChatUser$",
+      "fields": [
+        {
+          "name": "derived$Codec$lzy1"
+        }
+      ]
+    },
+    {
       "type": "io.tyoras.cards.shared.protocol.chat.OutputMessage$",
       "fields": [
         {
@@ -991,6 +1377,25 @@
         },
         {
           "name": "given_Encoder_OutputMessage$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.shared.protocol.game.Commands$AuthCommand$",
+      "fields": [
+        {
+          "name": "derived$ConfiguredCodec$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.shared.protocol.game.Commands$AuthenticatedCommand$",
+      "fields": [
+        {
+          "name": "given_Codec_AuthenticatedCommand$lzy1"
+        },
+        {
+          "name": "given_Configuration$lzy1"
         }
       ]
     },
@@ -8416,6 +8821,22 @@
       ]
     },
     {
+      "type": "org.http4s.headers.Sec$minusWebSocket$minusAccept",
+      "fields": [
+        {
+          "name": "hashString$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "org.http4s.headers.Sec$minusWebSocket$minusKey",
+      "fields": [
+        {
+          "name": "hashString$lzy1"
+        }
+      ]
+    },
+    {
       "type": "org.http4s.internal.parsing.CommonRules$",
       "fields": [
         {
@@ -8430,6 +8851,25 @@
           "name": "RFC7231InstantRenderer$lzy1"
         }
       ]
+    },
+    {
+      "type": "org.http4s.websocket.WebSocketFrame$BinaryText",
+      "fields": [
+        {
+          "name": "str$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "org.http4s.websocket.WebSocketFrame$StringText",
+      "fields": [
+        {
+          "name": "data$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "org.http4s.websocket.WebSocketFrame[]"
     },
     {
       "type": "org.postgresql.Driver",
@@ -8486,6 +8926,38 @@
       ]
     },
     {
+      "type": "pl.iterators.kebs.http4s.package$",
+      "fields": [
+        {
+          "name": "EnumString$lzy1"
+        },
+        {
+          "name": "InstanceInt$lzy1"
+        },
+        {
+          "name": "InstanceLong$lzy1"
+        },
+        {
+          "name": "InstanceString$lzy1"
+        },
+        {
+          "name": "InstanceUUID$lzy1"
+        },
+        {
+          "name": "WrappedInt$lzy1"
+        },
+        {
+          "name": "WrappedLong$lzy1"
+        },
+        {
+          "name": "WrappedString$lzy1"
+        },
+        {
+          "name": "WrappedUUID$lzy1"
+        }
+      ]
+    },
+    {
       "type": "scala.StringContext",
       "fields": [
         {
@@ -8535,6 +9007,14 @@
       ]
     },
     {
+      "type": "scala.io.Codec$",
+      "fields": [
+        {
+          "name": "fallbackSystemCodec$lzy1"
+        }
+      ]
+    },
+    {
       "type": "scala.math.BigDecimal$",
       "fields": [
         {
@@ -8544,6 +9024,20 @@
     },
     {
       "type": "scala.util.Either[]"
+    },
+    {
+      "type": "scala.util.matching.Regex$Match",
+      "fields": [
+        {
+          "name": "ends$lzy1"
+        },
+        {
+          "name": "scala$util$matching$Regex$MatchData$$nameToIndex$lzy1"
+        },
+        {
+          "name": "starts$lzy1"
+        }
+      ]
     },
     {
       "type": "scala.util.matching.Regex$MatchIterator",
@@ -8635,6 +9129,14 @@
       ]
     },
     {
+      "type": "skunk.Codec$$anon$4",
+      "fields": [
+        {
+          "name": "empty$lzy4"
+        }
+      ]
+    },
+    {
       "type": "skunk.Codec$$anon$7",
       "fields": [
         {
@@ -8659,6 +9161,14 @@
       ]
     },
     {
+      "type": "skunk.Encoder$$anon$3",
+      "fields": [
+        {
+          "name": "empty$lzy3"
+        }
+      ]
+    },
+    {
       "type": "skunk.Encoder$$anon$4",
       "fields": [
         {
@@ -8671,14 +9181,6 @@
       "fields": [
         {
           "name": "empty$lzy6"
-        }
-      ]
-    },
-    {
-      "type": "skunk.Encoder$$anon$7",
-      "fields": [
-        {
-          "name": "empty$lzy7"
         }
       ]
     },

@@ -23,6 +23,7 @@ import io.tyoras.cards.domain.game.war.model.PlayerGameState
 
 import java.net.http.HttpClient
 import scala.concurrent.duration.DurationInt
+import io.tyoras.cards.domain.game.war.codecs.given
 
 trait WarCli[F[_]]:
   def run: F[ExitCode]

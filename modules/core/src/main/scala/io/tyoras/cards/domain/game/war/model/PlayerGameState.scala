@@ -3,9 +3,8 @@ package io.tyoras.cards.domain.game.war.model
 import cats.data.{NonEmptyList, NonEmptySet}
 import cats.syntax.all.*
 import io.circe.derivation.*
-import io.circe.{Codec, Decoder, Encoder}
+import io.circe.Codec
 import io.tyoras.cards.domain.card.{Card, Hand}
-import io.tyoras.cards.domain.card.codecs.given
 import io.tyoras.cards.domain.game.GameStateFilter
 import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.war.model.PlayerGameState.WarTurn.BattleRound
@@ -74,7 +73,6 @@ object PlayerGameState:
     override val code: String  = "exit"
     override val label: String = "Exit"
 
-  given ConfiguredCodec[PlayerGameState] = ConfiguredCodec.derive(discriminator = Some("code"), transformMemberNames = renaming.snakeCase)
   given GameStateFilter[GameState] with
     type PlayerState = PlayerGameState
     override def codec: Codec[PlayerGameState] = summon[ConfiguredCodec[PlayerGameState]]

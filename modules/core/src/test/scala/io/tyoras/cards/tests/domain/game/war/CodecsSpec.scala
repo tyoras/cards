@@ -15,6 +15,7 @@ import io.tyoras.cards.domain.user.model.User
 
 import java.time.ZonedDateTime
 import java.util.UUID
+import pl.iterators.kebs.circe.snakified.*
 
 class CodecsSpec extends AnyFlatSpec with Matchers:
 
