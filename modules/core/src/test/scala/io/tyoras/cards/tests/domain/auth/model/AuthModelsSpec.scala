@@ -1,7 +1,6 @@
 package io.tyoras.cards.tests.domain.auth.model
 
 import dev.profunktor.auth.jwt.JwtToken
-import io.chrisdavenport.fuuid.FUUID
 import io.circe.parser.decode
 import io.circe.syntax.*
 import io.github.iltotore.iron.*
@@ -10,6 +9,7 @@ import io.tyoras.cards.domain.auth.model.*
 import io.tyoras.cards.domain.user.model.User
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import pl.iterators.kebs.circe.snakified.*
 
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -17,7 +17,7 @@ import scala.concurrent.duration.*
 
 class AuthModelsSpec extends AnyFlatSpec with Matchers:
 
-  private val userId = FUUID.fromUUID(UUID.randomUUID())
+  private val userId = User.ID(UUID.randomUUID())
   private val now    = ZonedDateTime.now()
   private val user   = User.Existing(
     userId,

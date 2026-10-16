@@ -2,8 +2,8 @@ package io.tyoras.cards.tests.domain.game.war
 
 import cats.data.NonEmptyList
 import cats.effect.IO
+import cats.effect.std.UUIDGen
 import cats.effect.testing.scalatest.AsyncIOSpec
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.card.Suit.{Heart, Spade}
 import io.tyoras.cards.domain.card.Card
@@ -12,6 +12,7 @@ import io.tyoras.cards.domain.game.war.model.GameState.*
 import io.tyoras.cards.domain.game.war.model.*
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.Ready
 import io.tyoras.cards.domain.game.war.model.WarInput.{GameInput, MetaInput}
+import io.tyoras.cards.domain.user.model.User
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.typelevel.log4cats.LoggerFactory
@@ -22,8 +23,8 @@ import java.util.UUID
 class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   given LoggerFactory[IO] = Slf4jFactory.create[IO]
-  private val playerIds   = NonEmptyList.of(FUUID.fromUUID(UUID.randomUUID()), FUUID.fromUUID(UUID.randomUUID()))
-  // private val playerIds = NonEmptyList.of(FUUID.fromUUID(UUID.randomUUID()), FUUID.fromUUID(UUID.randomUUID()), FUUID.fromUUID(UUID.randomUUID()))
+  private val playerIds   = NonEmptyList.of(User.ID(UUID.randomUUID()), User.ID(UUID.randomUUID()))
+  // private val playerIds = NonEmptyList.of(User.ID(UUID.randomUUID()), User.ID(UUID.randomUUID()), User.ID(UUID.randomUUID()))
 
   "War.apply" should "initialize game with Init state" in {
     War[IO](playerIds).flatMap(_.currentState).asserting {
@@ -61,8 +62,8 @@ class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
   it should "reject ready input from non-existing player in Init state" in {
     for {
       war      <- War[IO](playerIds)
-      randomId <- FUUID.randomFUUID[IO]
-      result   <- war.submitInput(Ready(randomId)).attempt
+      randomId <- UUIDGen.randomUUID[IO]
+      result   <- war.submitInput(Ready(User.ID(randomId))).attempt
     } yield result.isLeft shouldBe true
   }
 

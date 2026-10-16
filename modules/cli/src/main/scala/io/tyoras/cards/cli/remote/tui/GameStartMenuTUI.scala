@@ -4,7 +4,6 @@ import cats.data.NonEmptyList
 import cats.effect.Async
 import cats.effect.kernel.Deferred
 import cats.effect.std.Dispatcher
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.cli
 import io.tyoras.cards.cli.remote.auth.AuthProvider
 import io.tyoras.cards.cli.remote.client.{GamesClient, UsersClient}
@@ -16,7 +15,7 @@ import io.tyoras.cards.domain.user.model.User
 import layoutz.*
 import cats.syntax.all.*
 import io.tyoras.cards.cli.tui.TUI.Message.Notification
-import io.tyoras.cards.domain.game.GameType
+import io.tyoras.cards.domain.game.{Game, GameType}
 
 import scala.util.Try
 
@@ -27,7 +26,7 @@ object GameStartMenuTUI:
 
   enum Mode:
     case Menu(selection: MenuSelection = Create, notif: Option[Notification] = None)
-    case Creation(playerId: FUUID, availablePlayers: Seq[User.Existing], position: Int = 0, selection: Set[Int] = Set.empty)
+    case Creation(playerId: User.ID, availablePlayers: Seq[User.Existing], position: Int = 0, selection: Set[Int] = Set.empty)
 
   enum MenuSelection(val label: String):
     case Create extends MenuSelection("Create a new game")
@@ -37,10 +36,10 @@ object GameStartMenuTUI:
     case MoveUp
     case MoveDown
     case ToggleSelection
-    case PlayersFound(players: Seq[User.Existing], playerId: FUUID)
+    case PlayersFound(players: Seq[User.Existing], playerId: User.ID)
     case Submit
     case DisplayNotif(notif: Notification)
-    case Output(gameId: FUUID)
+    case Output(gameId: Game.ID)
     case Back
 
   def make[F[_] : Async](
@@ -49,7 +48,7 @@ object GameStartMenuTUI:
       authProvider: AuthProvider[F],
       userClient: UsersClient[F],
       gameClient: GamesClient[F],
-      gameId: Deferred[F, FUUID]
+      gameId: Deferred[F, Game.ID]
   ): Dispatcher[F] => GameStartMenuTUI[F] = disp =>
     new GameStartMenuTUI[F]:
       override protected def pageBanner: String        = banner
@@ -118,7 +117,7 @@ object GameStartMenuTUI:
       private def createGame(creation: Creation): F[Msg] =
         validatePlayerSelection(creation).fold(e => Msg.DisplayNotif(Notification.Error(e)).pure, gameClient.createWarGame(_).map(g => Msg.Output(g.id)))
 
-      private def validatePlayerSelection(creation: Creation): Either[String, NonEmptyList[FUUID]] =
+      private def validatePlayerSelection(creation: Creation): Either[String, NonEmptyList[User.ID]] =
         for
           selected <- Try(creation.selection.map(creation.availablePlayers(_).id).toList).toEither.leftMap(e =>
             s"Unexpected selection problem: ${e.getMessage}"

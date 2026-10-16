@@ -4,7 +4,6 @@ import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import dev.profunktor.auth.jwt.JwtToken
 import fs2.Stream
-import io.chrisdavenport.fuuid.FUUID
 import io.github.iltotore.iron.autoRefine
 import io.circe.syntax.*
 import io.tyoras.cards.domain.auth.{AuthService, JWTGenerator, JwtExpiration, UserAuthRepository}
@@ -24,11 +23,13 @@ import java.time.ZonedDateTime
 import java.util.UUID
 import scala.concurrent.duration.*
 
+import pl.iterators.kebs.circe.snakified.given
+
 class AuthServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers with EitherValues:
 
   private val now  = ZonedDateTime.now()
   private val user = User.Existing(
-    FUUID.fromUUID(UUID.randomUUID()),
+    User.ID(UUID.randomUUID()),
     now,
     now,
     User.Data(User.Name("Alice"), User.About("A test user"))
@@ -65,16 +66,16 @@ class AuthServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers with 
       jwtGenerator: JWTGenerator[IO] = (_: User.Existing) => IO.pure(dummyToken)
   ): IO[AuthService[IO]] =
     val userService: UserService[IO] = new UserService[IO]:
-      override def create(data: User.Data, withId: Option[FUUID]): IO[User.Existing] =
+      override def create(data: User.Data, withId: Option[User.ID]): IO[User.Existing] =
         IO.raiseError(new UnsupportedOperationException("create"))
 
-      override def readById(id: FUUID): IO[Option[User.Existing]] =
+      override def readById(id: User.ID): IO[Option[User.Existing]] =
         IO.pure(users.find(_.id == id))
 
       override def readByName(name: User.Name): IO[Option[User.Existing]] =
         IO.pure(users.find(_.name == name))
 
-      override def readManyById(ids: List[FUUID]): IO[List[User.Existing]] =
+      override def readManyById(ids: List[User.ID]): IO[List[User.Existing]] =
         IO.pure(users.filter(u => ids.contains(u.id)))
 
       override def readManyByPartialName(name: User.Name): IO[List[User.Existing]] =
@@ -174,7 +175,7 @@ class AuthServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers with 
     }
 
     "fail authentication when a valid token refers to an unknown user" in {
-      val missingUser = user.copy(id = FUUID.fromUUID(UUID.randomUUID()))
+      val missingUser = user.copy(id = User.ID(UUID.randomUUID()))
       for
         service <- makeService(users = Nil, userCredentials = Nil, jwtGenerator = realJwtGenerator)
         token   <- realJwtGenerator.create(missingUser)

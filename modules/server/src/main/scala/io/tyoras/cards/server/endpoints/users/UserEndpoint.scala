@@ -3,8 +3,6 @@ package io.tyoras.cards.server.endpoints.users
 import cats.data.NonEmptyList
 import cats.effect.{Async, Sync}
 import cats.syntax.all.*
-import io.chrisdavenport.fuuid.FUUID
-import io.chrisdavenport.fuuid.http4s.FUUIDVar
 import io.tyoras.cards.domain.user.UserService
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.server.endpoints.Endpoint
@@ -25,6 +23,7 @@ import io.tyoras.cards.domain.auth.model.UserAuthError
 import io.tyoras.cards.domain.game.stats.GameStatService
 import io.tyoras.cards.shared.endpoint.ErrorPayloads.Response.ApiMessage
 import io.tyoras.cards.shared.endpoint.users.Payloads
+import pl.iterators.kebs.http4s.WrappedUUID
 
 import scala.util.chaining.scalaUtilChainingOps
 
@@ -38,18 +37,18 @@ object UserEndpoint:
 
       override val routes: HttpRoutes[F] = Router {
         "users" -> HttpRoutes.of {
-          case r @ POST -> Root                     => r.as[Creation].flatMap(create)
-          case GET -> Root :? PartialName(name)     => searchByName(name)
-          case GET -> Root                          => listAll
-          case GET -> Root / FUUIDVar(id) / "stats" => stats(id)
-          case GET -> Root / FUUIDVar(id)           => searchById(id)
+          case r @ POST -> Root                                 => r.as[Creation].flatMap(create)
+          case GET -> Root :? PartialName(name)                 => searchByName(name)
+          case GET -> Root                                      => listAll
+          case GET -> Root / WrappedUUID[User.ID](id) / "stats" => stats(id)
+          case GET -> Root / WrappedUUID[User.ID](id)           => searchById(id)
         }
       }
 
       override def authedRoutes: AuthedRoutes[User.Existing, F] = AuthedRoutes.of {
-        case r @ PUT -> Root / "users" / FUUIDVar(id) as u                => r.req.as[Creation].flatMap(createOrUpdate(id, u.id))
-        case r @ PATCH -> Root / "users" / FUUIDVar(id) / "password" as u => r.req.as[PasswordChange].flatMap(changePassword(id, u.id))
-        case DELETE -> Root / "users" / FUUIDVar(id) as u                 => deleteById(id, u.id)
+        case r @ PUT -> Root / "users" / WrappedUUID[User.ID](id) as u                => r.req.as[Creation].flatMap(createOrUpdate(id, u.id))
+        case r @ PATCH -> Root / "users" / WrappedUUID[User.ID](id) / "password" as u => r.req.as[PasswordChange].flatMap(changePassword(id, u.id))
+        case DELETE -> Root / "users" / WrappedUUID[User.ID](id) as u                 => deleteById(id, u.id)
       }
 
       object PartialName extends QueryParamDecoderMatcher[User.Name]("name")
@@ -60,7 +59,7 @@ object UserEndpoint:
         response              <- Created(created.transformInto[Payloads.Response.User])
       yield response
 
-      private def createOrUpdate(userId: FUUID, authenticatedUserId: User.ID)(payload: Creation): F[Response[F]] =
+      private def createOrUpdate(userId: User.ID, authenticatedUserId: User.ID)(payload: Creation): F[Response[F]] =
         if userId == authenticatedUserId then
           for
             validated <- payload.validateF(using v = userDataValidator)
@@ -80,14 +79,14 @@ object UserEndpoint:
       private val listAll: F[Response[F]] =
         Ok(userService.readAll.map(_.transformInto[Payloads.Response.User]))
 
-      private def searchById(id: FUUID): F[Response[F]] =
-        userService.readById(id).flatMap(_.fold(notFoundResponse)(_.transformInto[Payloads.Response.User].pipe(Ok(_))))
+      private def searchById(userId: User.ID): F[Response[F]] =
+        userService.readById(userId).flatMap(_.fold(notFoundResponse)(_.transformInto[Payloads.Response.User].pipe(Ok(_))))
 
-      private def deleteById(deletedUserId: FUUID, authenticatedUserId: User.ID): F[Response[F]] =
+      private def deleteById(deletedUserId: User.ID, authenticatedUserId: User.ID): F[Response[F]] =
         if deletedUserId == authenticatedUserId then userService.readById(deletedUserId).flatMap(_.fold(notFoundResponse)(userService.delete(_) *> NoContent()))
         else Forbidden()
 
-      private def stats(id: FUUID): F[Response[F]] =
+      private def stats(id: User.ID): F[Response[F]] =
         userService
           .readById(id)
           .flatMap(

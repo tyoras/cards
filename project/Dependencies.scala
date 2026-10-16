@@ -50,10 +50,6 @@ object Dependencies {
   case object io {
     case object chrisdavenport {
       val `cats-effect-time` = "io.chrisdavenport" %% "cats-effect-time" % "0.4.0"
-      val fuuidVersion       = "0.8.0"
-      val fuuid              = "io.chrisdavenport" %% "fuuid"            % fuuidVersion
-      val `fuuid-circe`      = "io.chrisdavenport" %% "fuuid-circe"      % fuuidVersion
-      val `fuuid-http4s`     = "io.chrisdavenport" %% "fuuid-http4s"     % fuuidVersion
     }
 
     case object circe {
@@ -133,6 +129,17 @@ object Dependencies {
     }
   }
 
+  case object pl {
+    case object iterators {
+      val kebsVersion      = "2.2.2"
+      val `kebs-circe`     = "pl.iterators" %% "kebs-circe"     % kebsVersion
+      val `kebs-enum`      = "pl.iterators" %% "kebs-enum"      % kebsVersion
+      val `kebs-http4s`    = "pl.iterators" %% "kebs-http4s"    % kebsVersion
+      val `kebs-instances` = "pl.iterators" %% "kebs-instances" % kebsVersion
+      val `kebs-opaque`    = "pl.iterators" %% "kebs-opaque"    % kebsVersion
+    }
+  }
+
   case object xyz {
     case object matthieucourt {
       val layoutz = "xyz.matthieucourt" %% "layoutz" % "0.8.0"
@@ -144,8 +151,6 @@ object Dependencies {
     com.github.`jwt-scala`.`jwt-circe`,
     dev.profunktor.`http4s-jwt-auth`,
     io.chrisdavenport.`cats-effect-time`,
-    io.chrisdavenport.fuuid,
-    io.chrisdavenport.`fuuid-circe`,
     io.circe.`circe-core`,
     io.github.iltotore.iron,
     io.github.iltotore.`iron-cats`,
@@ -154,7 +159,10 @@ object Dependencies {
     org.typelevel.`cats-core`,
     org.typelevel.`cats-effect`,
     org.typelevel.`cats-parse`,
-    org.typelevel.`log4cats-slf4j`
+    org.typelevel.`log4cats-slf4j`,
+    pl.iterators.`kebs-circe`,
+    pl.iterators.`kebs-enum`,
+    pl.iterators.`kebs-opaque`
   )
 
   lazy val coreTestDeps = Seq(
@@ -168,7 +176,6 @@ object Dependencies {
 
   lazy val persistenceDeps = Seq(
     io.chrisdavenport.`cats-effect-time`,
-    io.chrisdavenport.fuuid,
     io.circe.`circe-core`,
     io.github.iltotore.`iron-chimney`,
     org.flywaydb.`flyway-database-postgresql`,
@@ -220,9 +227,6 @@ object Dependencies {
     com.github.pureconfig.`pureconfig-core`,
     com.github.pureconfig.`pureconfig-cats-effect`,
     dev.profunktor.`http4s-jwt-auth`,
-    io.chrisdavenport.fuuid,
-    io.chrisdavenport.`fuuid-circe`,
-    io.chrisdavenport.`fuuid-http4s`,
     io.github.iltotore.`iron-pureconfig`,
     io.scalaland.chimney,
     io.circe.`circe-core`,
@@ -239,14 +243,14 @@ object Dependencies {
   ).map(_ % Test)
 
   lazy val sharedDeps = Seq(
-    io.chrisdavenport.fuuid,
-    io.chrisdavenport.`fuuid-circe`,
     io.circe.`circe-core`,
     io.github.iltotore.`iron-cats`,
     io.github.iltotore.`iron-chimney`,
     io.scalaland.chimney,
     io.scalaland.`chimney-cats`,
-    org.typelevel.`cats-core`
+    org.typelevel.`cats-core`,
+    pl.iterators.`kebs-circe`,
+    pl.iterators.`kebs-http4s`
   )
 
   lazy val sharedTestDeps = Seq(

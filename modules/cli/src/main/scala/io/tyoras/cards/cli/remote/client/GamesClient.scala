@@ -2,7 +2,6 @@ package io.tyoras.cards.cli.remote.client
 
 import cats.data.NonEmptyList
 import cats.effect.{Async, Resource}
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.cli.remote.config.CardsClientConfig
 import io.tyoras.cards.shared.endpoint.games.Payloads.Response.Game.given
 import org.http4s.circe.CirceEntityCodec.{circeEntityDecoder, circeEntityEncoder}
@@ -13,6 +12,8 @@ import cats.syntax.all.*
 import io.scalaland.chimney.Transformer
 import io.tyoras.cards.cli.remote.auth.AuthProvider
 import io.tyoras.cards.domain.game.war.model.PlayerId
+import io.tyoras.cards.domain.game.Game.ID as GameID
+import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.shared.endpoint
 import io.tyoras.cards.shared.endpoint.games.Payloads.Response
 import io.tyoras.cards.shared.endpoint.games.war.Payloads
@@ -22,11 +23,11 @@ import org.typelevel.log4cats.LoggerFactory
 
 trait GamesClient[F[_]]:
   def listAll: F[List[Game]]
-  def findById(gameId: FUUID): F[Option[Game]]
-  def findByUserId(userId: FUUID, finished: Boolean): F[List[Game]]
-  def removeById(gameId: FUUID): F[Boolean]
+  def findById(gameId: GameID): F[Option[Game]]
+  def findByUserId(userId: User.ID, finished: Boolean): F[List[Game]]
+  def removeById(gameId: GameID): F[Boolean]
   def createWarGame(players: NonEmptyList[PlayerId]): F[Game]
-  def connectWarGame(gameId: FUUID): Resource[F, WarClient[F]]
+  def connectWarGame(gameId: GameID): Resource[F, WarClient[F]]
 
 object GamesClient:
   given Transformer[Response.Game, Game] =
@@ -49,13 +50,13 @@ object GamesClient:
           result  <- httpClient.expect[List[Response.Game]](request)
         yield result.map(_.transformInto[Game])
 
-      override def findById(gameId: FUUID): F[Option[Game]] =
+      override def findById(gameId: GameID): F[Option[Game]] =
         for
           request <- Request[F](GET, gamesApiUri / gameId.toString).pure
           result  <- httpClient.expectOption[Response.Game](request)
         yield result.map(_.transformInto[Game])
 
-      override def findByUserId(userId: FUUID, finished: Boolean): F[List[Game]] = {
+      override def findByUserId(userId: User.ID, finished: Boolean): F[List[Game]] = {
         val baseUri = gamesApiUri.withQueryParam("user_id", userId.toString)
         val uri     = if finished then baseUri.withQueryParam("finished") else baseUri
         for
@@ -64,7 +65,7 @@ object GamesClient:
         yield result.map(_.transformInto[Game])
       }
 
-      override def removeById(gameId: FUUID): F[Boolean] =
+      override def removeById(gameId: GameID): F[Boolean] =
         for
           request <- Request[F](DELETE, gamesApiUri / gameId.toString).pure
           result  <- httpClient.successful(request)
@@ -76,5 +77,5 @@ object GamesClient:
           result  <- httpClient.expect[Response.Game](request)
         yield result.transformInto[Game]
 
-      override def connectWarGame(gameId: FUUID): Resource[F, WarClient[F]] =
+      override def connectWarGame(gameId: GameID): Resource[F, WarClient[F]] =
         webSocketClient.connectHighLevel(WSRequest(warWsUri)).evalMap(WarClient.make(gameId, _, authProvider))

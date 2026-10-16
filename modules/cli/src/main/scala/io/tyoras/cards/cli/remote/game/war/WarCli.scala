@@ -5,7 +5,6 @@ import cats.effect.kernel.{Deferred, Ref, Sync}
 import cats.effect.std.Console
 import cats.effect.{Async, Concurrent, ExitCode}
 import cats.syntax.all.*
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.cli.remote
 import io.tyoras.cards.cli.remote.config.parseConfig
 import io.tyoras.cards.cli.remote.auth.AuthProvider
@@ -14,6 +13,7 @@ import io.tyoras.cards.cli.remote.tui.GameStartMenuTUI
 import io.tyoras.cards.cli.tui.TUI
 import io.tyoras.cards.cli.tui.TUI.Message
 import io.tyoras.cards.cli.tui.TUI.Message.Notification
+import io.tyoras.cards.domain.game.Game
 import io.tyoras.cards.domain.game.GameTyp.War
 import io.tyoras.cards.shared.protocol.game.OutputMessage as GameOutputMessage
 import io.tyoras.cards.shared.protocol.chat.OutputMessage as ChatOutputMessage
@@ -60,7 +60,7 @@ object WarCli:
   ) extends WarCli[F]:
     override val run: F[ExitCode] =
       for
-        gameIdRef   <- Deferred[F, FUUID]
+        gameIdRef   <- Deferred[F, Game.ID]
         _           <- TUI.runTUI(GameStartMenuTUI.make(War, banner, authProvider, usersClient, gamesClient, gameIdRef))
         gameId      <- gameIdRef.get
         foundById   <- gamesClient.findById(gameId)

@@ -1,9 +1,6 @@
 package io.tyoras.cards.domain.auth.model
 
 import dev.profunktor.auth.jwt.JwtToken
-import io.chrisdavenport.fuuid.FUUID
-import io.chrisdavenport.fuuid.circe.*
-import io.circe.{Codec, Encoder}
 import io.github.iltotore.iron.RefinedSubtype
 import io.github.iltotore.iron.constraint.all.*
 import io.tyoras.cards.domain.user.model.User
@@ -19,6 +16,6 @@ object Password
 type TokenExpiration = TokenExpiration.T
 object TokenExpiration extends RefinedSubtype[FiniteDuration, Pure]
 
-final case class UserClaim(userId: FUUID) derives Codec
+final case class UserClaim(userId: User.ID)
 final case class LoginAttempt(userName: User.Name, password: Password)
 final case class LoginSuccess(token: JwtToken, user: User.Existing)

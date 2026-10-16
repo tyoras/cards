@@ -1,7 +1,6 @@
 package io.tyoras.cards.tests.domain.game
 
 import cats.data.NonEmptyList
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.game.*
 import io.tyoras.cards.domain.user.model.User
 import org.scalatest.flatspec.AnyFlatSpec
@@ -14,9 +13,9 @@ import io.github.iltotore.iron.*
 class GameModelSpec extends AnyFlatSpec with Matchers:
 
   val now: ZonedDateTime             = ZonedDateTime.now()
-  val userId1: User.ID               = FUUID.fromUUID(UUID.randomUUID())
-  val userId2: User.ID               = FUUID.fromUUID(UUID.randomUUID())
-  val gameId: FUUID                  = FUUID.fromUUID(UUID.randomUUID())
+  val userId1: User.ID               = User.ID(UUID.randomUUID())
+  val userId2: User.ID               = User.ID(UUID.randomUUID())
+  val gameId: Game.ID                = Game.ID(UUID.randomUUID())
   val players: NonEmptyList[User.ID] = NonEmptyList.of(userId1, userId2)
 
   "Game.Count refined type" should "allow zero" in {

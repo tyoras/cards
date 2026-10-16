@@ -2,10 +2,10 @@ package io.tyoras.cards.cli.remote.client
 
 import cats.data.NonEmptyList
 import cats.effect.{Async, Resource}
-import io.chrisdavenport.fuuid.FUUID
 import io.scalaland.chimney.partial.Error
 import io.tyoras.cards.cli.remote.auth.AuthProvider
-import io.tyoras.cards.domain.game.GameType
+import io.tyoras.cards.domain.game.{GameType, Game as DomainGame}
+import io.tyoras.cards.domain.user.model.User
 import org.http4s.{AuthScheme, Credentials, Headers, MediaType}
 import org.http4s.client.Client
 import org.http4s.client.middleware.{Logger, Retry, RetryPolicy}
@@ -21,7 +21,7 @@ enum ClientError(detail: String) extends Exception(s"Client error: $detail") wit
   case TransformationError(errors: NonEmptyList[Error])
       extends ClientError(s"Error while transforming the response to domain model: ${errors.map(_.asErrorPathMessage).toList.mkString(", ")}")
 
-final case class Game(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, gameType: GameType, players: NonEmptyList[FUUID])
+final case class Game(id: DomainGame.ID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, gameType: GameType, players: NonEmptyList[User.ID])
 
 def authedClient[F[_] : Async](underlying: Client[F], authProvider: AuthProvider[F]): Client[F] =
   val retryPolicy  = RetryPolicy[F](backoff = exponentialBackoff(3.second, maxRetry = 5))

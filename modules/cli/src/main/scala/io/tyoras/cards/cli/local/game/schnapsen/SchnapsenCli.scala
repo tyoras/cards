@@ -5,7 +5,6 @@ import cats.effect.std.Console
 import cats.effect.{Async, Clock, ExitCode}
 import cats.syntax.all.*
 import io.chrisdavenport.cats.effect.time.implicits.*
-import io.chrisdavenport.fuuid.FUUID
 import SchnapsenCliError.*
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
@@ -15,7 +14,9 @@ import io.tyoras.cards.domain.game.schnapsen.model.*
 import io.tyoras.cards.domain.game.schnapsen.model.SchnapsenInput.GameInput.*
 import io.tyoras.cards.domain.game.schnapsen.model.SchnapsenInput.MetaInput.*
 import io.tyoras.cards.domain.game.schnapsen.model.RoundOutcome.*
+import io.tyoras.cards.domain.user.model.User
 
+import java.util.UUID
 import scala.util.Try
 
 trait SchnapsenCli[F[_]]:
@@ -47,7 +48,7 @@ object SchnapsenCli:
         console.println("")
 
     private val initGameContext: F[GameContext] =
-      def initPlayer(name: String): F[PlayerInfo] = FUUID.randomFUUID[F].map {
+      def initPlayer(name: String): F[PlayerInfo] = F.blocking(User.ID(UUID.randomUUID)).map {
         PlayerInfo(_, name)
       }
 

@@ -4,15 +4,15 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import io.tyoras.cards.domain.game.stats.model.PlayerGameStat
 import io.tyoras.cards.domain.game.*
-import io.chrisdavenport.fuuid.FUUID
 import io.github.iltotore.iron.*
+import io.tyoras.cards.domain.user.model.User
 
 import java.time.ZonedDateTime
 import java.util.UUID
 
 class PlayerGameStateSpec extends AnyFlatSpec with Matchers {
 
-  private val playerId = FUUID.fromUUID(UUID.randomUUID())
+  private val playerId = User.ID(UUID.randomUUID())
   private val gameType = GameTyp.Schnapsen
   private val now      = ZonedDateTime.now()
 
@@ -83,21 +83,21 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers {
 
   "PlayerGameStat.Existing" should "delegate playerId to data" in {
     val data     = PlayerGameStat.Data(playerId, gameType, 5, 2, 3)
-    val id       = FUUID.fromUUID(UUID.randomUUID())
+    val id       = PlayerGameStat.ID(UUID.randomUUID())
     val existing = PlayerGameStat.Existing(id, now, now, data)
     existing.playerId shouldBe playerId
   }
 
   it should "delegate game to data" in {
     val data     = PlayerGameStat.Data(playerId, gameType, 5, 2, 3)
-    val id       = FUUID.fromUUID(UUID.randomUUID())
+    val id       = PlayerGameStat.ID(UUID.randomUUID())
     val existing = PlayerGameStat.Existing(id, now, now, data)
     existing.game shouldBe gameType
   }
 
   it should "delegate won, draw, lost to data" in {
     val data     = PlayerGameStat.Data(playerId, gameType, 5, 2, 3)
-    val id       = FUUID.fromUUID(UUID.randomUUID())
+    val id       = PlayerGameStat.ID(UUID.randomUUID())
     val existing = PlayerGameStat.Existing(id, now, now, data)
     existing.won shouldBe 5
     existing.draw shouldBe 2
@@ -106,7 +106,7 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers {
 
   it should "increment won and update timestamp" in {
     val data     = PlayerGameStat.Data(playerId, gameType, 5, 2, 3)
-    val id       = FUUID.fromUUID(UUID.randomUUID())
+    val id       = PlayerGameStat.ID(UUID.randomUUID())
     val existing = PlayerGameStat.Existing(id, now, now, data)
     val updated  = existing.incrementWon
     updated.won shouldBe 6
@@ -115,7 +115,7 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers {
 
   it should "increment draw and update timestamp" in {
     val data     = PlayerGameStat.Data(playerId, gameType, 5, 2, 3)
-    val id       = FUUID.fromUUID(UUID.randomUUID())
+    val id       = PlayerGameStat.ID(UUID.randomUUID())
     val existing = PlayerGameStat.Existing(id, now, now, data)
     val updated  = existing.incrementDraw
     updated.draw shouldBe 3
@@ -124,7 +124,7 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers {
 
   it should "increment lost and update timestamp" in {
     val data     = PlayerGameStat.Data(playerId, gameType, 5, 2, 3)
-    val id       = FUUID.fromUUID(UUID.randomUUID())
+    val id       = PlayerGameStat.ID(UUID.randomUUID())
     val existing = PlayerGameStat.Existing(id, now, now, data)
     val updated  = existing.incrementLost
     updated.lost shouldBe 4
@@ -133,7 +133,7 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers {
 
   it should "preserve id and createdAt on increment" in {
     val data     = PlayerGameStat.Data(playerId, gameType, 5, 2, 3)
-    val id       = FUUID.fromUUID(UUID.randomUUID())
+    val id       = PlayerGameStat.ID(UUID.randomUUID())
     val existing = PlayerGameStat.Existing(id, now, now, data)
     val updated  = existing.incrementWon
     updated.id shouldBe id

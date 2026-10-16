@@ -1,6 +1,5 @@
 package io.tyoras.cards.tests.domain.auth.model
 
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.auth.model.{AuthError, UserAuthError}
 import io.tyoras.cards.domain.user.model.User
 import org.scalatest.flatspec.AnyFlatSpec
@@ -11,7 +10,7 @@ import java.util.UUID
 class AuthErrorsSpec extends AnyFlatSpec with Matchers:
 
   private val userName = User.Name("Alice")
-  private val userId   = FUUID.fromUUID(UUID.randomUUID())
+  private val userId   = User.ID(UUID.randomUUID())
 
   "AuthError" should "provide the expected message for each error" in {
     AuthError.InvalidToken("expired").getMessage shouldBe "Invalid token: expired"

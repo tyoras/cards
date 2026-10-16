@@ -1,18 +1,20 @@
 package io.tyoras.cards.tests.domain.game.war.model
 
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.card.Card
 import io.tyoras.cards.domain.card.Rank.Ace
 import io.tyoras.cards.domain.card.Suit.Spade
 import io.tyoras.cards.domain.game.war.model.*
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.{PlayCard, Ready}
 import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.{End, Restart}
+import io.tyoras.cards.domain.user.model.User
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.util.UUID
+
 class WarInputSpec extends AnyFlatSpec with Matchers {
 
-  val playerId: PlayerId = FUUID.randomFUUID[cats.effect.SyncIO].unsafeRunSync()
+  val playerId: PlayerId = User.ID(UUID.randomUUID)
   val card: Card         = Card(Spade, Ace())
 
   "GameInput.Ready" should "have correct label with player id" in {

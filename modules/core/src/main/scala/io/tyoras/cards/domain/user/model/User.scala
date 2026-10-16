@@ -1,12 +1,13 @@
 package io.tyoras.cards.domain.user.model
 
-import cats.Show
+import cats.{Order, Show}
 import cats.implicits.toShow
-import io.chrisdavenport.fuuid.FUUID
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.all.*
+import pl.iterators.kebs.opaque.Opaque
 
 import java.time.ZonedDateTime
+import java.util.UUID
 
 sealed abstract class User extends Product with Serializable:
   protected type ThisType <: User
@@ -17,7 +18,10 @@ sealed abstract class User extends Product with Serializable:
   def withUpdatedAbout(newAbout: User.About): ThisType
 
 object User:
-  type ID   = FUUID
+  opaque type ID = UUID
+  object ID extends Opaque[ID, UUID]:
+    given Show[ID]  = Show.fromToString
+    given Order[ID] = Order.fromOrdering
   type Name = Name.T
   object Name
       extends RefinedSubtype[String, DescribedAs[Not[

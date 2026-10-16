@@ -2,18 +2,17 @@ package io.tyoras.cards.domain.user
 
 import cats.Monad
 import cats.syntax.all.*
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.user.model.User
 import fs2.Stream
 
 trait UserService[F[_]]:
-  def create(user: User.Data, withId: Option[FUUID] = None): F[User.Existing]
+  def create(user: User.Data, withId: Option[User.ID] = None): F[User.Existing]
 
-  def readById(id: FUUID): F[Option[User.Existing]]
+  def readById(id: User.ID): F[Option[User.Existing]]
 
   def readByName(name: User.Name): F[Option[User.Existing]]
 
-  def readManyById(ids: List[FUUID]): F[List[User.Existing]]
+  def readManyById(ids: List[User.ID]): F[List[User.Existing]]
 
   def readManyByPartialName(name: User.Name): F[List[User.Existing]]
 
@@ -29,19 +28,19 @@ trait UserService[F[_]]:
 
 object UserService:
   def of[F[_] : Monad](userRepo: UserRepository[F]): UserService[F] = new:
-    override def create(user: User.Data, withId: Option[FUUID]): F[User.Existing] =
+    override def create(user: User.Data, withId: Option[User.ID]): F[User.Existing] =
       userRepo.insert(user, withId)
 
     private def writeMany[U <: User](users: List[U]): F[List[User.Existing]] =
       userRepo.writeMany(users)
 
-    override def readById(id: FUUID): F[Option[User.Existing]] =
+    override def readById(id: User.ID): F[Option[User.Existing]] =
       readManyById(List(id)).map(_.headOption)
 
     override def readByName(name: User.Name): F[Option[User.Existing]] =
       userRepo.readManyByName(List(name)).map(_.headOption)
 
-    override def readManyById(ids: List[FUUID]): F[List[User.Existing]] =
+    override def readManyById(ids: List[User.ID]): F[List[User.Existing]] =
       userRepo.readManyById(ids)
 
     override def readManyByPartialName(name: User.Name): F[List[User.Existing]] =

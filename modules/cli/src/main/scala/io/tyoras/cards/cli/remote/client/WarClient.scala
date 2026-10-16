@@ -6,8 +6,8 @@ import fs2.concurrent.SignallingRef
 import io.tyoras.cards.cli.remote.auth.AuthProvider
 import org.http4s.client.websocket.{WSConnectionHighLevel, WSDataFrame, WSFrame}
 import fs2.{Pipe, Stream}
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.game.GameTyp.War
+import io.tyoras.cards.domain.game.Game as DomainGame
 import io.tyoras.cards.shared.protocol.game.Commands.*
 import io.circe.syntax.*
 import io.tyoras.cards.shared.protocol.game.{Commands, OutputMessage as ServerMessage}
@@ -21,7 +21,7 @@ import io.tyoras.cards.shared.protocol.game.Commands.AuthenticatedCommand.*
 import org.typelevel.log4cats.LoggerFactory
 
 trait WarClient[F[_]]:
-  def gameId: FUUID
+  def gameId: DomainGame.ID
   def streamServerMessages: Stream[F, ServerMessage]
   def ready: F[Unit]
   def playCard(card: Card): F[Unit]
@@ -29,7 +29,11 @@ trait WarClient[F[_]]:
   def quit: F[Unit]
 
 object WarClient:
-  def make[F[_] : Async : LoggerFactory](connectedGameId: FUUID, wsConnection: WSConnectionHighLevel[F], authProvider: AuthProvider[F]): F[WarClient[F]] =
+  def make[F[_] : Async : LoggerFactory](
+      connectedGameId: DomainGame.ID,
+      wsConnection: WSConnectionHighLevel[F],
+      authProvider: AuthProvider[F]
+  ): F[WarClient[F]] =
     for
       logger <- LoggerFactory[F].create.map(_.addContext(Map("game_id" -> connectedGameId.toString, "game_type" -> "war")))
       creds  <- authProvider.connectedUserCredentials
@@ -38,7 +42,7 @@ object WarClient:
       _                <- wsConnection.send(WSFrame.Text(authCommand.asJson.noSpaces))
       stopStreamSignal <- SignallingRef.of(false)
     yield new WarClient[F]:
-      override def gameId: FUUID = connectedGameId
+      override def gameId: DomainGame.ID = connectedGameId
 
       override def streamServerMessages: Stream[F, ServerMessage] =
         wsConnection.receiveStream.through(decodeServerMessage).interruptWhen(stopStreamSignal)

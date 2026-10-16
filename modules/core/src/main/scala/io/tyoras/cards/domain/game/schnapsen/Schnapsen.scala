@@ -1,10 +1,10 @@
 package io.tyoras.cards.domain.game.schnapsen
 
 import cats.data.{NonEmptyList, StateT}
+import cats.effect.std.{SecureRandom, UUIDGen}
 import cats.effect.{Async, Clock, Sync}
 import cats.syntax.all.*
 import io.chrisdavenport.cats.effect.time.implicits.ClockOps
-import io.chrisdavenport.fuuid.FUUID
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.{Logger, StructuredLogger}
 import io.tyoras.cards.domain.game.schnapsen.model.Marriage.Status
@@ -16,6 +16,7 @@ import io.tyoras.cards.domain.game.{ActiveGame, Game, GameTyp}
 import io.tyoras.cards.domain.game.schnapsen.model.SchnapsenInput.GameInput.*
 import io.tyoras.cards.domain.game.schnapsen.model.SchnapsenInput.MetaInput.*
 import io.tyoras.cards.domain.game.schnapsen.model.RoundOutcome.*
+import io.tyoras.cards.domain.user.model.User
 
 trait Schnapsen[F[_]] extends ActiveGame[F, GameState, SchnapsenInput]:
   override val gameType: GameTyp[GameState, SchnapsenInput] = GameTyp.Schnapsen
@@ -24,11 +25,12 @@ object Schnapsen:
 
   def apply[F[_] : Async](context: GameContext): F[Schnapsen[F]] =
     for
-      logger       <- Slf4jLogger.create[F]
-      id           <- FUUID.randomFUUID
-      _            <- logger.debug(s"Starting new Schnapsen game ($id)")
-      initialRound <- initGameRound(context)(logger)
-      _            <- logger.debug(s"Initial round : $initialRound")
+      logger                <- Slf4jLogger.create[F]
+      given SecureRandom[F] <- SecureRandom.javaSecuritySecureRandom
+      id                    <- UUIDGen[F].randomUUID.map(Game.ID(_))
+      _                     <- logger.debug(s"Starting new Schnapsen game ($id)")
+      initialRound          <- initGameRound(context)(logger)
+      _                     <- logger.debug(s"Initial round : $initialRound")
       initialState = Init(initialRound)
       fsm <- SynchronizedConcurrentFSM.create[F, GameState](initialState)
     yield new SchnapsenImplem[F](id, fsm)(logger)
@@ -36,8 +38,8 @@ object Schnapsen:
 private class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l: StructuredLogger[F])(using F: Sync[F]) extends Schnapsen[F]:
   given logger: StructuredLogger[F] = l
 
-  override val gameId: Game.ID                   = id
-  override val playerIds: F[NonEmptyList[FUUID]] = currentState.map(state => NonEmptyList.of(state.round.context.player1.id, state.round.context.player2.id))
+  override val gameId: Game.ID                     = id
+  override val playerIds: F[NonEmptyList[User.ID]] = currentState.map(state => NonEmptyList.of(state.round.context.player1.id, state.round.context.player2.id))
 
   override def submitInput(input: SchnapsenInput): F[GameState] = fsm.transition { s =>
     Logger[F].debug(s"Submitting input $input on current state : $s") >>

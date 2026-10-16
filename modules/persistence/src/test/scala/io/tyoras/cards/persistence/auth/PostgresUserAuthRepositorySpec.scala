@@ -2,7 +2,6 @@ package io.tyoras.cards.persistence.auth
 
 import cats.effect.IO
 import cats.syntax.all.*
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.auth.UserAuthRepository
 import io.tyoras.cards.domain.auth.model.UserAuth
 import io.tyoras.cards.domain.user.UserRepository
@@ -18,8 +17,8 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 object PostgresUserAuthRepositorySpec:
-  private val playerId       = FUUID.fromUUID(UUID.randomUUID())
-  private val otherPlayerId  = FUUID.fromUUID(UUID.randomUUID())
+  private val playerId       = User.ID(UUID.randomUUID())
+  private val otherPlayerId  = User.ID(UUID.randomUUID())
   private val playerData     = User.Data(User.Name("Julio"), User.About("Cool cat"))
   private val existingPlayer = User.Existing(playerId, ZonedDateTime.now(), ZonedDateTime.now(), playerData)
   private val authData       = UserAuth.Data(

@@ -1,13 +1,14 @@
 package io.tyoras.cards.tests.domain.game.schnapsen
 
 import cats.effect.IO
+import cats.effect.std.UUIDGen
 import cats.implicits.catsSyntaxOptionId
-import io.chrisdavenport.fuuid.FUUIDGen
 import io.tyoras.cards.domain.card.*
 import io.tyoras.cards.domain.game.schnapsen.*
 import io.tyoras.cards.domain.game.schnapsen.model.*
 import org.scalacheck.{Arbitrary, Gen}
 import cats.effect.unsafe.implicits.global
+import io.tyoras.cards.domain.user.model.User
 
 import java.time.{ZoneId, ZonedDateTime}
 
@@ -35,7 +36,7 @@ yield Marriage(marriedKing, marriedQueen, status)
 
 def marriagesGen(trumpSuit: Option[Suit] = None): Gen[List[Marriage]] = Gen.containerOf[Set, Marriage](marriageGen(trumpSuit)).map(_.toList)
 
-val playerIdGen: Gen[PlayerId] = Gen.delay(FUUIDGen[IO].random.unsafeRunSync())
+val playerIdGen: Gen[PlayerId] = Gen.delay(UUIDGen[IO].randomUUID.map(User.ID(_)).unsafeRunSync())
 
 def playerGen(id: Option[PlayerId] = None, name: Option[String] = None, trumpSuit: Option[Suit] = None): Gen[Player] = for
   pid       <- id.fold(playerIdGen)(pid => Gen.const(pid))

@@ -3,7 +3,6 @@ package io.tyoras.cards.cli.game.war
 import cats.data.{NonEmptyList, NonEmptySet}
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.cli.local.game.war.WarCliError.{InvalidInput, InvalidState}
 import io.tyoras.cards.cli.local.game.war.InputParser
 import io.tyoras.cards.domain.card.Rank.*
@@ -14,19 +13,21 @@ import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.Ready
 import io.tyoras.cards.domain.game.war.model.GameState.{Exit, Finish, Init, PlayerWinTurn, WarTurn}
 import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.Restart
 import io.tyoras.cards.domain.game.war.model.WarInput.{GameInput, MetaInput}
+import io.tyoras.cards.domain.user.model.User
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
 import java.time.ZonedDateTime
+import java.util.UUID
 
 class InputParserSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   implicit val loggerFactory: LoggerFactory[IO] = Slf4jFactory.create[IO]
 
-  val playerId1: PlayerId = FUUID.randomFUUID[IO].unsafeRunSync()
-  val playerId2: PlayerId = FUUID.randomFUUID[IO].unsafeRunSync()
+  val playerId1: PlayerId = User.ID(UUID.randomUUID)
+  val playerId2: PlayerId = User.ID(UUID.randomUUID)
 
   val card1: Card = Card(Spade, Ace())
 

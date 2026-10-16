@@ -10,6 +10,7 @@ import io.tyoras.cards.domain.auth.model.{AuthError, LoginAttempt, LoginSuccess,
 import io.tyoras.cards.util.crypto.Argon2Hasher
 import pdi.jwt.JwtClaim
 import pdi.jwt.exceptions.JwtException
+import pl.iterators.kebs.circe.snakified.given
 
 // TODO implement logout
 trait AuthService[F[_]]:

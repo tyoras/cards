@@ -1,24 +1,26 @@
 package io.tyoras.cards.tests.domain.game.schnapsen
 
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.card.Suit.*
 import io.tyoras.cards.domain.card.Card
 import io.tyoras.cards.domain.game.schnapsen.model.*
-import io.tyoras.cards.domain.game.schnapsen.{king, queen, kingRank, queenRank}
+import io.tyoras.cards.domain.game.schnapsen.{king, kingRank, queen, queenRank}
 import io.tyoras.cards.domain.game.schnapsen.model.Marriage.Status.{Common, Royal}
 import io.tyoras.cards.domain.game.schnapsen.model.Role.*
+import io.tyoras.cards.domain.user.model.User
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+
+import java.util.UUID
 
 class ModelSpec extends AnyFlatSpec with Matchers with EitherValues with ScalaCheckDrivenPropertyChecks:
 
   "Player.toString" should "work" in {
     val diamondTen = Card(Diamond, Ten())
     val spadeJack  = Card(Spade, Jack())
-    val player     = Player(FUUID.fuuid("f8377258-437b-409c-bd4b-f7637c885539"), "Yoan", List(diamondTen, spadeJack))
+    val player     = Player(User.ID(UUID.fromString("f8377258-437b-409c-bd4b-f7637c885539")), "Yoan", List(diamondTen, spadeJack))
     player.toString shouldBe s"name = Yoan (f8377258-437b-409c-bd4b-f7637c885539) \t| score = 0 \t| hand = ${diamondTen.toString} ${spadeJack.toString}"
   }
 

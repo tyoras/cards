@@ -1,7 +1,7 @@
 package io.tyoras.cards.persistence.auth
 
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.auth.model.UserAuth
+import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.persistence.auth.UserAuthDAOSpec.*
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
@@ -11,7 +11,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 object UserAuthDAOSpec:
-  private val userId         = FUUID.fromUUID(UUID.randomUUID())
+  private val userId         = User.ID(UUID.randomUUID())
   private val now            = ZonedDateTime.now()
   private val hash           = new Array[Byte](32)
   private val salt           = new Array[Byte](32)

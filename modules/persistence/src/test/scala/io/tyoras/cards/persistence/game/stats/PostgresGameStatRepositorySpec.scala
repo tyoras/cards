@@ -3,7 +3,6 @@ package io.tyoras.cards.persistence.game.stats
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.syntax.all.*
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.card.Card.Count
 import io.tyoras.cards.domain.game.stats.GameStatRepository
 import io.tyoras.cards.domain.game.stats.model.PlayerGameStat
@@ -21,12 +20,12 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 object PostgresGameStatRepositorySpec:
-  private val playerId       = FUUID.fromUUID(UUID.randomUUID())
+  private val playerId       = User.ID(UUID.randomUUID())
   private val playerData     = User.Data(User.Name("Julio"), User.About("Cool cat"))
   private val existingPlayer = User.Existing(playerId, ZonedDateTime.now(), ZonedDateTime.now(), playerData)
   private val gameType       = GameTyp.War
   private val now            = ZonedDateTime.now()
-  private val statId         = FUUID.fromUUID(UUID.randomUUID())
+  private val statId         = PlayerGameStat.ID(UUID.randomUUID())
   private val statData       = PlayerGameStat.Data(existingPlayer.id, gameType, Count(10), Count(5), Count(2))
 
 class PostgresGameStatRepositorySpec extends PgIntegrationTest with BeforeAndAfterEach:

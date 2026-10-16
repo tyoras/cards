@@ -3,9 +3,9 @@ package io.tyoras.cards.persistence.auth
 import cats.effect.{Clock, Resource, Sync}
 import cats.syntax.all.*
 import io.chrisdavenport.cats.effect.time.implicits.*
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.auth.UserAuthRepository
 import io.tyoras.cards.domain.auth.model.UserAuth
+import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.persistence.PersistenceError
 import skunk.*
 import org.typelevel.log4cats.LoggerFactory
@@ -45,10 +45,10 @@ object PostgresUserAuthRepository:
           yield result
         }
 
-      override def readByUserId(userId: FUUID): F[Option[UserAuth.Existing]] =
+      override def readByUserId(userId: User.ID): F[Option[UserAuth.Existing]] =
         sessionPool.use {
           _.prepareR(Statements.Select.byUserId)
-            .use(_.option(userId))
+            .use(_.option(userId.unwrap))
             .flatMap(_.traverse(_.toDomainF))
             .onError(logger.error(_)(s"Failed to read auth for user $userId"))
             .adaptErr(_ => PersistenceError("unexpected_error", "Failed to read user auth by user id"))
@@ -57,7 +57,7 @@ object PostgresUserAuthRepository:
       override def delete(userAuth: UserAuth.Existing): F[Unit] =
         sessionPool.use(
           _.prepareR(Statements.Delete.byUserId)
-            .use(_.execute(userAuth.userId))
+            .use(_.execute(userAuth.userId.unwrap))
             .onError(logger.error(_)(s"Failed to delete auth for user ${userAuth.userId}"))
             .adaptErr(_ => PersistenceError("unexpected_error", "Failed to delete user auth by user id"))
             .void

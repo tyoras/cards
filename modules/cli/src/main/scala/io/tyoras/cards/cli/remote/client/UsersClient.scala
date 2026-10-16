@@ -1,7 +1,6 @@
 package io.tyoras.cards.cli.remote.client
 
 import cats.effect.Async
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.cli.remote.config.CardsClientConfig
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.shared.endpoint.users.Payloads
@@ -17,11 +16,11 @@ import io.tyoras.cards.cli.remote.client.ClientError.*
 
 trait UsersClient[F[_]]:
   def listAll: F[List[User.Existing]]
-  def findById(userId: FUUID): F[Option[User.Existing]]
+  def findById(userId: User.ID): F[Option[User.Existing]]
   def findByPartialName(name: String): F[List[User.Existing]]
   // TODO implement missing users client operations
   def createNewUser(user: User.Data): F[User.Existing]  = ???
-  def removeUserById(userId: FUUID): F[Unit]            = ???
+  def removeUserById(userId: User.ID): F[Unit]          = ???
   def upsertUser(user: User.Existing): F[User.Existing] = ???
 
 object UsersClient:
@@ -35,7 +34,7 @@ object UsersClient:
           asDomain <- result.traverse(_.transformIntoPartial[User.Existing].asValidatedNel.leftMap(TransformationError(_)).liftTo[F])
         yield asDomain
 
-      override def findById(userId: FUUID): F[Option[User.Existing]] =
+      override def findById(userId: User.ID): F[Option[User.Existing]] =
         for
           request  <- Request[F](GET, usersApiUri / userId.toString).pure
           result   <- httpClient.expectOption[Payloads.Response.User](request).adaptErr(CallError(_))

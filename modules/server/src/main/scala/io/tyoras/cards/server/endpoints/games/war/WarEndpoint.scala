@@ -8,8 +8,7 @@ import cats.effect.std.Queue
 import cats.syntax.all.*
 import fs2.concurrent.Topic
 import fs2.{Pipe, Stream}
-import io.chrisdavenport.fuuid.FUUID
-import io.chrisdavenport.fuuid.circe.given
+import io.tyoras.cards.domain.game.war.model.PlayerId
 import io.tyoras.cards.domain.game.{Game, GameService, GameTyp}
 import io.tyoras.cards.server.endpoints.Endpoint
 import io.tyoras.cards.shared.endpoint.games.Payloads.Response.Game.given
@@ -85,13 +84,13 @@ object WarEndpoint:
         response  <- Created(Payloads.Response.Game.fromExistingGame(created))
       yield response
 
-      private def playersValidation(playerIds: NonEmptyList[FUUID]): F[List[User.Existing]] =
+      private def playersValidation(playerIds: NonEmptyList[PlayerId]): F[List[User.Existing]] =
         for
           players <- playerIds.traverse(userService.readById)
           _       <- InvalidRequest("Impossible to create a new War game because some players are unknown").raiseError.whenA(players.exists(_.isEmpty))
         yield players.toList.flatten
 
-      private def createGameChat(gameId: FUUID, players: List[User.Existing]): F[Unit] =
+      private def createGameChat(gameId: Game.ID, players: List[User.Existing]): F[Unit] =
         Sync[F].fromEither(Room(s"War game $gameId").toEither.leftMap(_ => new IllegalStateException("Invalid room id"))).flatMap { chatRoom =>
           players.traverse_(player => chatProtocol.enterRoom(ChatUser(player.name, player.id.some), chatRoom))
         }
@@ -99,7 +98,7 @@ object WarEndpoint:
       private def listPlayerGames(player: User.Existing): F[Response[F]] =
         for
           games       <- gameProtocol.activeGames
-          playerGames <- games.filtered(GameTyp.War).filterA(_.playerIds.map(_.exists(_ == player.id))).map(_.map(_.gameId))
+          playerGames <- games.filtered(GameTyp.War).filterA(_.playerIds.map(_.exists(_ == player.id))).map(_.map(_.gameId.unwrap))
           response    <- Ok(playerGames)
         yield response
 

@@ -2,7 +2,6 @@ package io.tyoras.cards.domain.game
 
 import cats.Show
 import cats.data.NonEmptyList
-import io.chrisdavenport.fuuid.FUUID
 
 import java.time.ZonedDateTime
 import scala.util.control.NoStackTrace
@@ -17,6 +16,9 @@ import io.tyoras.cards.domain.user.model.User
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.numeric.Interval.Closed
 import io.github.iltotore.iron.constraint.numeric.Positive0
+import pl.iterators.kebs.opaque.Opaque
+
+import java.util.UUID
 
 /** Filter information that should remain unknown to the players from the game state
   * @tparam State
@@ -60,7 +62,7 @@ object GameTyp:
 trait ActiveGame[F[_], State, Input <: GameInput]:
   def gameId: Game.ID
   def gameType: GameTyp[State, Input]
-  def playerIds: F[NonEmptyList[FUUID]]
+  def playerIds: F[NonEmptyList[User.ID]]
   def currentState: F[State]
   def submitInput(input: Input): F[State]
   def isFinished: F[Boolean]
@@ -75,7 +77,9 @@ sealed abstract class Game[State] extends Product with Serializable:
   def withFinishedAt(finishedAt: ZonedDateTime): ThisType
 
 object Game:
-  type ID         = FUUID
+  opaque type ID = UUID
+  object ID extends Opaque[ID, UUID]:
+    given Show[ID] = Show.fromToString
   type Count      = Int :| Positive0
   type Percentage = Double :| Closed[0.0, 100.0]
 

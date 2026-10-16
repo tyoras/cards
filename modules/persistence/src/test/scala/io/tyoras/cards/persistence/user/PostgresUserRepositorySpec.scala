@@ -4,7 +4,7 @@ import io.tyoras.cards.persistence.test.matchers.DateMatcher.*
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.persistence.{PersistenceError, PgIntegrationTest}
 import cats.effect.IO
-import io.chrisdavenport.fuuid.FUUID
+import cats.effect.std.UUIDGen
 import io.tyoras.cards.domain.user.UserRepository
 import io.tyoras.cards.persistence.user.PostgresUserRepositorySpec.*
 
@@ -16,7 +16,7 @@ import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
 object PostgresUserRepositorySpec:
-  private val userId    = FUUID.fromUUID(UUID.randomUUID())
+  private val userId    = User.ID(UUID.randomUUID())
   private val userData  = User.Data(User.Name("Julio"), User.About("Cool cat"))
   private val user2Data = User.Data(User.Name("Tyrion"), User.About("Great cat"))
 
@@ -112,7 +112,7 @@ class PostgresUserRepositorySpec extends PgIntegrationTest with BeforeAndAfterEa
             testedRepo    <- initPgRepo
             _             <- testedRepo.insert(userData, withId = userId.some)
             user2         <- testedRepo.insert(user2Data, withId = None)
-            notExistingId <- FUUID.randomFUUID[IO]
+            notExistingId <- UUIDGen[IO].randomUUID.map(User.ID(_))
             read          <- testedRepo.readManyById(List(userId, notExistingId, user2.id))
           yield
             read should have size 2

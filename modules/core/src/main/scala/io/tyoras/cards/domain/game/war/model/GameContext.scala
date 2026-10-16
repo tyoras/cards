@@ -1,14 +1,14 @@
 package io.tyoras.cards.domain.game.war.model
 
-import io.chrisdavenport.fuuid.FUUID
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.numeric.GreaterEqual
 import io.tyoras.cards.domain.card.{Card, Hand}
-import scala.util.chaining.*
+import io.tyoras.cards.domain.user.model.User
 
+import scala.util.chaining.*
 import java.time.ZonedDateTime
 
-type PlayerId = FUUID
+type PlayerId = User.ID
 type Turn     = Turn.T
 object Turn extends RefinedSubtype[Int, DescribedAs[GreaterEqual[1], "Turn number must be greater than or equal to 1"]]:
   val firstTurn: Turn = Turn(1)

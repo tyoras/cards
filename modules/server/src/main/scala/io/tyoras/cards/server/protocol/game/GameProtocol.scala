@@ -5,7 +5,6 @@ import cats.effect.kernel.Ref
 import cats.effect.std.AtomicCell
 import cats.syntax.all.*
 import dev.profunktor.auth.jwt.JwtToken
-import io.chrisdavenport.fuuid.FUUID
 import io.circe.*
 import io.circe.syntax.*
 import io.tyoras.cards.domain.auth.AuthService
@@ -20,13 +19,13 @@ import io.tyoras.cards.domain.game.war.codecs.given
 
 trait GameProtocol[F[_]]:
   def activeGames: F[Games[F]]
-  def connectPlayer(gameId: FUUID, gameType: GameType, player: User.Existing): F[OutputMessage]
-  def authPlayer(gameId: FUUID, gameType: GameType, jwt: JwtToken): F[OutputMessage]
-  def registerActiveGame(gameId: FUUID, game: ActiveGame[F, ?, ?]): F[Unit]
-  def currentState[State](gameId: FUUID, gameType: GameTyp[State, ?], playerId: FUUID): F[OutputMessage]
-  def submitInput[State, Input <: GameInput](gameId: FUUID, gameType: GameTyp[State, Input], playerId: FUUID, input: Input): F[List[OutputMessage]]
-  def saveGame(gameId: FUUID, gameType: GameType): F[Game.Existing[gameType.State]]
-  def endGame(gameId: FUUID, gameType: GameType): F[List[OutputMessage]]
+  def connectPlayer(gameId: Game.ID, gameType: GameType, player: User.Existing): F[OutputMessage]
+  def authPlayer(gameId: Game.ID, gameType: GameType, jwt: JwtToken): F[OutputMessage]
+  def registerActiveGame(gameId: Game.ID, game: ActiveGame[F, ?, ?]): F[Unit]
+  def currentState[State](gameId: Game.ID, gameType: GameTyp[State, ?], playerId: User.ID): F[OutputMessage]
+  def submitInput[State, Input <: GameInput](gameId: Game.ID, gameType: GameTyp[State, Input], playerId: User.ID, input: Input): F[List[OutputMessage]]
+  def saveGame(gameId: Game.ID, gameType: GameType): F[Game.Existing[gameType.State]]
+  def endGame(gameId: Game.ID, gameType: GameType): F[List[OutputMessage]]
   def disconnect(playerRef: Ref[F, Option[ConnectedPlayer]]): F[OutputMessage]
 
 object GameProtocol:
@@ -42,7 +41,7 @@ object GameProtocol:
 
         override def activeGames: F[Games[F]] = gamesRef.get
 
-        override def connectPlayer(gameId: FUUID, gameType: GameType, player: User.Existing): F[OutputMessage] =
+        override def connectPlayer(gameId: Game.ID, gameType: GameType, player: User.Existing): F[OutputMessage] =
           (for
             game    <- gamesRef.evalModify(findActiveGame(gameId, gameType, _))
             players <- game.playerIds
@@ -51,7 +50,7 @@ object GameProtocol:
             case e: (ProtocolError.PlayerDoesNotBelongToGame | ProtocolError.ActiveGameNotFound) => OutputMessage.AuthError(e.code, e.getMessage)
           }
 
-        private def findActiveGame(gameId: FUUID, gameType: GameType, games: Games[F]): F[(Games[F], ActiveGame[F, gameType.State, gameType.Input])] = {
+        private def findActiveGame(gameId: Game.ID, gameType: GameType, games: Games[F]): F[(Games[F], ActiveGame[F, gameType.State, gameType.Input])] = {
           import gameType.given
           for
             game <-
@@ -67,19 +66,19 @@ object GameProtocol:
           yield found
         }
 
-        private def findActiveGameData[S : Decoder](gameId: FUUID): F[Option[Game.Existing[S]]] =
+        private def findActiveGameData[S : Decoder](gameId: Game.ID): F[Option[Game.Existing[S]]] =
           gameService.readById[S](gameId).ensure(ProtocolError.GameAlreadyFinished(gameId))(_.forall(_.data.finishedAt.isEmpty))
 
-        override def authPlayer(gameId: FUUID, gameType: GameType, jwt: JwtToken): F[OutputMessage] =
+        override def authPlayer(gameId: Game.ID, gameType: GameType, jwt: JwtToken): F[OutputMessage] =
           authService.authenticate(jwt).flatMap(connectPlayer(gameId, gameType, _)).handleError {
             case e: AuthError => OutputMessage.AuthError("token_auth", e.message)
             case _            => OutputMessage.AuthError("unexpected", "unexpected auth error")
           }
 
-        override def registerActiveGame(gameId: FUUID, game: ActiveGame[F, ?, ?]): F[Unit] =
+        override def registerActiveGame(gameId: Game.ID, game: ActiveGame[F, ?, ?]): F[Unit] =
           gamesRef.update(_.upsert(game))
 
-        override def currentState[State](gameId: FUUID, gameType: GameTyp[State, ?], playerId: FUUID): F[OutputMessage] =
+        override def currentState[State](gameId: Game.ID, gameType: GameTyp[State, ?], playerId: User.ID): F[OutputMessage] =
           import gameType.given
           (for
             game      <- gamesRef.evalModify(games => findActiveGame(gameId, gameType, games))
@@ -92,9 +91,9 @@ object GameProtocol:
           }
 
         override def submitInput[State, Input <: GameInput](
-            gameId: FUUID,
+            gameId: Game.ID,
             gameType: GameTyp[State, Input],
-            playerId: FUUID,
+            playerId: User.ID,
             input: Input
         ): F[List[OutputMessage]] =
           import gameType.given
@@ -114,10 +113,10 @@ object GameProtocol:
             case e => List(OutputMessage.GameError(gameId, playerId, "input_submission_failure", e.getMessage))
           }
 
-        private def checkInputPlayer(expectedPlayerId: FUUID, inputPlayerId: FUUID, gameId: FUUID, gameType: GameType): F[Unit] =
+        private def checkInputPlayer(expectedPlayerId: User.ID, inputPlayerId: User.ID, gameId: Game.ID, gameType: GameType): F[Unit] =
           ProtocolError.IllegalGameInput(expectedPlayerId, inputPlayerId, gameId, gameType).raiseError.unlessA(expectedPlayerId == inputPlayerId)
 
-        override def saveGame(gameId: FUUID, gameType: GameType): F[Game.Existing[gameType.State]] =
+        override def saveGame(gameId: Game.ID, gameType: GameType): F[Game.Existing[gameType.State]] =
           import gameType.given
           gamesRef.evalModify(games =>
             for
@@ -129,7 +128,7 @@ object GameProtocol:
             yield games -> updated
           ) <* logger.info(s"Saved game state for $gameType game $gameId")
 
-        override def endGame(gameId: FUUID, gameType: GameType): F[List[OutputMessage]] =
+        override def endGame(gameId: Game.ID, gameType: GameType): F[List[OutputMessage]] =
           import gameType.given
           gamesRef.evalModify(games =>
             for

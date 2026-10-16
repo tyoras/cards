@@ -4,7 +4,6 @@ import cats.effect.IO
 import cats.effect.Ref
 import cats.effect.testing.scalatest.AsyncIOSpec
 import fs2.Stream
-import io.chrisdavenport.fuuid.FUUID
 import io.github.iltotore.iron.*
 import io.tyoras.cards.domain.auth.UserAuthRepository
 import io.tyoras.cards.domain.auth.UserAuthService
@@ -28,7 +27,7 @@ class UserAuthServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers w
   private given LoggerFactory[IO] = Slf4jFactory.create[IO]
 
   private val now             = ZonedDateTime.now()
-  private val userId          = FUUID.fromUUID(UUID.randomUUID())
+  private val userId          = User.ID(UUID.randomUUID())
   private val userData        = User.Data(User.Name("Alice"), User.About("A test user"))
   private val user            = User.Existing(userId, now, now, userData)
   private val password        = Password("correct-password")
@@ -67,16 +66,16 @@ class UserAuthServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers w
       hashCalls <- Ref.of[IO, List[(String, Option[Array[Byte]])]](Nil)
     yield
       val users = new UserService[IO]:
-        override def create(data: User.Data, withId: Option[FUUID]): IO[User.Existing] = createUser(data)
-        override def readById(id: FUUID): IO[Option[User.Existing]]                    = unsupported("readById")
-        override def readByName(name: User.Name): IO[Option[User.Existing]]            = unsupported("readByName")
-        override def readManyById(ids: List[FUUID]): IO[List[User.Existing]]           = unsupported("readManyById")
-        override def readManyByPartialName(name: User.Name): IO[List[User.Existing]]   = unsupported("readManyByPartialName")
-        override def readAll: Stream[IO, User.Existing]                                = Stream.empty
-        override def update(existing: User.Existing): IO[User.Existing]                = unsupported("update")
-        override def delete(existing: User.Existing): IO[Unit]                         = unsupported("delete")
-        override def deleteMany(existing: List[User.Existing]): IO[Unit]               = unsupported("deleteMany")
-        override def deleteAll: IO[Unit]                                               = unsupported("deleteAll")
+        override def create(data: User.Data, withId: Option[User.ID]): IO[User.Existing] = createUser(data)
+        override def readById(id: User.ID): IO[Option[User.Existing]]                    = unsupported("readById")
+        override def readByName(name: User.Name): IO[Option[User.Existing]]              = unsupported("readByName")
+        override def readManyById(ids: List[User.ID]): IO[List[User.Existing]]           = unsupported("readManyById")
+        override def readManyByPartialName(name: User.Name): IO[List[User.Existing]]     = unsupported("readManyByPartialName")
+        override def readAll: Stream[IO, User.Existing]                                  = Stream.empty
+        override def update(existing: User.Existing): IO[User.Existing]                  = unsupported("update")
+        override def delete(existing: User.Existing): IO[Unit]                           = unsupported("delete")
+        override def deleteMany(existing: List[User.Existing]): IO[Unit]                 = unsupported("deleteMany")
+        override def deleteAll: IO[Unit]                                                 = unsupported("deleteAll")
 
       val repository = new UserAuthRepository[IO]:
         override def insert(auth: UserAuth.Data): IO[UserAuth.Existing] =

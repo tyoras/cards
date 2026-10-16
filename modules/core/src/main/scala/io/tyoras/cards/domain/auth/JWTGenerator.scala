@@ -8,6 +8,7 @@ import io.circe.syntax.*
 import io.tyoras.cards.domain.auth.config.AuthConfig
 import io.tyoras.cards.domain.auth.model.UserClaim
 import io.tyoras.cards.domain.user.model.User
+import pl.iterators.kebs.circe.snakified.given
 
 trait JWTGenerator[F[_]]:
   def create(user: User.Existing): F[JwtToken]

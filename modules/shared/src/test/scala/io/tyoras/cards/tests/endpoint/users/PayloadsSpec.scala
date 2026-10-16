@@ -1,6 +1,5 @@
 package io.tyoras.cards.tests.endpoint.users
 
-import io.chrisdavenport.fuuid.FUUID
 import io.circe.parser.parse
 import io.circe.syntax.*
 import io.scalaland.chimney.Transformer
@@ -23,7 +22,7 @@ import java.util.UUID
 class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
 
   private val now           = ZonedDateTime.now()
-  private val testUserId    = FUUID.fromUUID(UUID.randomUUID())
+  private val testUserId    = User.ID(UUID.randomUUID())
   private val validPassword = Password("passPass")
 
   "User data validator" should "validate successfully when name and about are provided" in {
@@ -323,7 +322,7 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
   }
 
   it should "preserve user id during transformation" in {
-    val userId       = FUUID.fromUUID(UUID.randomUUID())
+    val userId       = User.ID(UUID.randomUUID())
     val userData     = User.Data(User.Name("Test"), User.About("Test bio"))
     val existingUser = User.Existing(userId, now, now, userData)
 

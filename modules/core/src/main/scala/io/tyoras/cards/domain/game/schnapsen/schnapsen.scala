@@ -4,11 +4,11 @@ import cats.data.StateT
 import cats.effect.Sync
 import cats.syntax.all.*
 import cats.{Applicative, ApplicativeThrow}
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.card.*
 import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.game.schnapsen.model.Marriage.Status
 import io.tyoras.cards.domain.game.schnapsen.model.*
+import io.tyoras.cards.domain.user.model.User
 import org.typelevel.log4cats.StructuredLogger
 
 val kingRank: Rank            = King(Card.Value(4))
@@ -21,7 +21,7 @@ lazy val baseDeck: Deck = Deck.create(schnapsenSuits, schnapsenRanks)
 def king(suit: Suit): Card  = Card(suit, kingRank)
 def queen(suit: Suit): Card = Card(suit, queenRank)
 
-type PlayerId = FUUID
+type PlayerId = User.ID
 
 private[schnapsen] type InternalGameState[F[_], A] = StateT[F, GameRound, A]
 

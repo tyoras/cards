@@ -3,18 +3,19 @@ package io.tyoras.cards.domain.game.war
 import cats.data.{NonEmptyList, NonEmptySet}
 import cats.effect.Async
 import cats.effect.kernel.{Clock, Sync}
+import cats.effect.std.{SecureRandom, UUIDGen}
 import io.tyoras.cards.domain.card.*
 import io.tyoras.cards.domain.game.war.War.BattleResult.*
 import io.tyoras.cards.domain.game.war.model.*
 import cats.syntax.all.*
 import io.tyoras.cards.util.fsm.concurrent.SynchronizedConcurrentFSM
 import io.chrisdavenport.cats.effect.time.implicits.*
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.game.GameError.NoPlayersError
 import io.tyoras.cards.domain.game.{ActiveGame, Game, GameTyp}
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.*
 import io.tyoras.cards.domain.game.war.model.GameState.*
 import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.*
+import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.util.collection.syntax.*
 import io.tyoras.cards.util.fsm.FinalStateMachine
 import io.tyoras.cards.util.logging.syntax.*
@@ -35,11 +36,12 @@ object War:
 
   def apply[F[_] : Async : LoggerFactory](playerIds: NonEmptyList[PlayerId]): F[War[F]] =
     for
-      logger  <- LoggerFactory.create[F]
-      context <- initGameContext(playerIds)
-      id      <- FUUID.randomFUUID
-      _       <- logger.debug(s"Starting new War game ($id) with initial game context : $context")
-      fsm     <- SynchronizedConcurrentFSM.create[F, GameState](Init(context))
+      logger                <- LoggerFactory.create[F]
+      given SecureRandom[F] <- SecureRandom.javaSecuritySecureRandom
+      context               <- initGameContext(playerIds)
+      id                    <- UUIDGen[F].randomUUID.map(Game.ID(_))
+      _                     <- logger.debug(s"Starting new War game ($id) with initial game context : $context")
+      fsm                   <- SynchronizedConcurrentFSM.create[F, GameState](Init(context))
     yield new WarFSM[F](id, fsm)
 
   def fromState[F[_] : Async : LoggerFactory](id: Game.ID, state: GameState): F[War[F]] =
@@ -50,11 +52,11 @@ object War:
     yield new WarFSM[F](id, fsm)
 
   private class WarFSM[F[_] : Async : LoggerFactory](id: Game.ID, fsm: FinalStateMachine[F, GameState]) extends War[F]:
-    private val logger                             = LoggerFactory.getLogger
-    override val gameId: Game.ID                   = id
-    override def currentState: F[GameState]        = fsm.getCurrentState
-    override def isFinished: F[Boolean]            = currentState.map(s => s.isInstanceOf[Finish] || s.isInstanceOf[Exit])
-    override val playerIds: F[NonEmptyList[FUUID]] =
+    private val logger                               = LoggerFactory.getLogger
+    override val gameId: Game.ID                     = id
+    override def currentState: F[GameState]          = fsm.getCurrentState
+    override def isFinished: F[Boolean]              = currentState.map(s => s.isInstanceOf[Finish] || s.isInstanceOf[Exit])
+    override val playerIds: F[NonEmptyList[User.ID]] =
       currentState.map(_.context.players.keys.toList).flatMap(ids => Sync[F].fromOption(NonEmptyList.fromList(ids), NoPlayersError))
 
     override def submitInput(input: WarInput): F[GameState] = fsm.transition { s =>

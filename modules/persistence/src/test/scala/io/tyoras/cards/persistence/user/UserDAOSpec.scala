@@ -4,7 +4,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import io.tyoras.cards.persistence.user.UserDAO
 import io.tyoras.cards.domain.user.model.User
-import io.chrisdavenport.fuuid.FUUID
 
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -13,7 +12,7 @@ import org.scalatest.EitherValues
 import UserDAOSpec.*
 
 object UserDAOSpec:
-  private val id             = FUUID.fromUUID(UUID.randomUUID())
+  private val id             = User.ID(UUID.randomUUID())
   private val now            = ZonedDateTime.now()
   private val domainData     = User.Data(User.Name("Julio"), User.About("Cool cat"))
   private val daoData        = UserDAO.Data.fromDomain(domainData)

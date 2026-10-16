@@ -3,7 +3,6 @@ package io.tyoras.cards.persistence.user
 import cats.effect.{Clock, Resource, Sync}
 import cats.syntax.all.*
 import io.chrisdavenport.cats.effect.time.implicits.*
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.user.UserRepository
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.persistence.PersistenceError
@@ -22,12 +21,12 @@ object PostgresUserRepository:
         case user: User.Existing => updateOne(user)
       }
 
-      override def insert(data: User.Data, withId: Option[FUUID] = None): F[User.Existing] =
+      override def insert(data: User.Data, withId: Option[User.ID] = None): F[User.Existing] =
         sessionPool.use { session =>
           val daoData = UserDAO.Data.fromDomain(data)
           withId
             .fold(session.prepareR(Statements.Insert.one).use(_.unique(daoData))) { id =>
-              session.prepareR(Statements.Insert.oneWithId).use(_.unique(id -> daoData))
+              session.prepareR(Statements.Insert.oneWithId).use(_.unique(id.unwrap -> daoData))
             }
             .flatMap(_.toDomainF)
             .onError(e => logger.error(e)(s"Failed to insert user ${withId.getOrElse("no id provided")}"))
@@ -52,9 +51,9 @@ object PostgresUserRepository:
           yield result
         }
 
-      override def readManyById(ids: List[FUUID]): F[List[User.Existing]] =
+      override def readManyById(ids: List[User.ID]): F[List[User.Existing]] =
         sessionPool
-          .use(_.prepareR(Statements.Select.many(ids.size)).use(_.stream(ids, chunkSize).evalMap(_.toDomainF[F]).compile.toList))
+          .use(_.prepareR(Statements.Select.many(ids.size)).use(_.stream(ids.map(_.unwrap), chunkSize).evalMap(_.toDomainF[F]).compile.toList))
           .onError(logger.error(_)("Failed to read many user by their ids"))
           .adaptErr(_ => PersistenceError("unexpected_error", "Failed to read users by id"))
 
@@ -80,7 +79,7 @@ object PostgresUserRepository:
 
       override def deleteMany(users: List[User.Existing]): F[Unit] =
         sessionPool
-          .use(_.prepareR(Statements.Delete.many(users.size)).use(_.execute(users.map(_.id)).void))
+          .use(_.prepareR(Statements.Delete.many(users.size)).use(_.execute(users.map(_.id.unwrap)).void))
           .onError(logger.error(_)(s"Failed to delete many users ${users.map(_.id)}"))
           .adaptErr(_ => PersistenceError("unexpected_error", "Failed to delete users"))
           .whenA(users.nonEmpty)

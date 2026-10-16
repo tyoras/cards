@@ -1,12 +1,11 @@
 package io.tyoras.cards.shared.endpoint.users
 
 import cats.syntax.all.*
-import io.chrisdavenport.fuuid.FUUID
-import io.chrisdavenport.fuuid.circe.*
 import io.circe.derivation.ConfiguredCodec
 import io.circe.{Codec, Decoder, Encoder}
 import io.scalaland.chimney.{PartialTransformer, Transformer}
 import io.tyoras.cards.domain.user.model.User as DomainUser
+import io.tyoras.cards.domain.user.model.User.ID as UserID
 import io.tyoras.cards.util.validation.*
 import io.tyoras.cards.util.validation.iron.given
 import io.tyoras.cards.util.validation.syntax.*
@@ -18,6 +17,7 @@ import io.github.iltotore.iron.cats.*
 import io.tyoras.cards.domain.auth.model.{Password, PasswordChangeRequest}
 import io.tyoras.cards.domain.game.{GameTyp, GameType}
 import io.tyoras.cards.domain.game.stats.model.PlayerGameStat
+import pl.iterators.kebs.circe.snakified.{flatDecoder, flatEncoder}
 
 import java.time.ZonedDateTime
 
@@ -47,7 +47,10 @@ object Payloads:
         ).mapN(PasswordChangeRequest.apply)
 
   object Response:
-    final case class User(id: FUUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, name: String, about: String) derives ConfiguredCodec
+
+    given Decoder[UserID] = flatDecoder
+    given Encoder[UserID] = flatEncoder
+    final case class User(id: UserID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, name: String, about: String) derives ConfiguredCodec
     object User:
       given Transformer[DomainUser.Existing, Response.User] =
         Transformer.define[DomainUser.Existing, Response.User].enableMethodAccessors.buildTransformer

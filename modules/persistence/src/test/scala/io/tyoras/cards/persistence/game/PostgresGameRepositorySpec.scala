@@ -3,7 +3,6 @@ package io.tyoras.cards.persistence.game
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.syntax.all.*
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.card.Hand
 import io.tyoras.cards.domain.game.war.model.{GameContext, GameState, Player, Turn}
 import io.tyoras.cards.domain.game.{Game, GameRepository, GameTyp}
@@ -20,10 +19,10 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 object PostgresGameRepositorySpec:
-  private val playerId       = FUUID.fromUUID(UUID.randomUUID())
+  private val playerId       = User.ID(UUID.randomUUID())
   private val playerData     = User.Data(User.Name("Julio"), User.About("Cool cat"))
   private val existingPlayer = User.Existing(playerId, ZonedDateTime.now(), ZonedDateTime.now(), playerData)
-  private val gameId         = FUUID.fromUUID(UUID.randomUUID())
+  private val gameId         = Game.ID(UUID.randomUUID())
   private val gameType       = GameTyp.War
   private val now            = ZonedDateTime.now()
   private val gameData       = Game.Data(

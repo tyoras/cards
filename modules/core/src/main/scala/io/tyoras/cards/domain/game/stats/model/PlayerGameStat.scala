@@ -1,14 +1,15 @@
 package io.tyoras.cards.domain.game.stats.model
 
-import io.chrisdavenport.fuuid.FUUID
 import cats.Show
 import cats.implicits.toShow
 import io.github.iltotore.iron.*
 import io.tyoras.cards.domain.game.GameType
 import io.tyoras.cards.domain.game.Game
 import io.tyoras.cards.domain.user.model.User
+import pl.iterators.kebs.opaque.Opaque
 
 import java.time.ZonedDateTime
+import java.util.UUID
 
 sealed trait PlayerGameStat extends Product with Serializable:
   protected type ThisType <: PlayerGameStat
@@ -26,7 +27,8 @@ sealed trait PlayerGameStat extends Product with Serializable:
   def loseRate: Game.Percentage = if played > 0 then ((lost.toDouble / played.toDouble) * 100).assume else 0.0
 
 object PlayerGameStat:
-  type ID = FUUID
+  opaque type ID = UUID
+  object ID extends Opaque[ID, UUID]
 
   case class Data(playerId: User.ID, game: GameType, won: Game.Count, draw: Game.Count, lost: Game.Count) extends PlayerGameStat:
     override protected type ThisType = Data

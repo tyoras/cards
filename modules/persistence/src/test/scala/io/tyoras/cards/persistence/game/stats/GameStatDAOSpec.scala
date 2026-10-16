@@ -5,17 +5,17 @@ import org.scalatest.matchers.should.Matchers
 import io.tyoras.cards.persistence.game.stats.GameStatDAO
 import io.tyoras.cards.domain.game.stats.model.PlayerGameStat
 import io.tyoras.cards.domain.game.GameTyp
-import io.chrisdavenport.fuuid.FUUID
 
 import java.time.ZonedDateTime
 import java.util.UUID
 import io.github.iltotore.iron.*
+import io.tyoras.cards.domain.user.model.User
 import org.scalatest.EitherValues
 
 class GameStatDAOSpec extends AnyFlatSpec with Matchers with EitherValues:
 
-  private val playerId = FUUID.fromUUID(UUID.randomUUID())
-  private val id       = FUUID.fromUUID(UUID.randomUUID())
+  private val playerId = User.ID(UUID.randomUUID())
+  private val id       = PlayerGameStat.ID(UUID.randomUUID())
   private val gameType = GameTyp.Schnapsen
   private val now      = ZonedDateTime.now()
 

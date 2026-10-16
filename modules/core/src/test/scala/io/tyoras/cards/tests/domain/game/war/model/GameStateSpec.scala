@@ -1,22 +1,22 @@
 package io.tyoras.cards.tests.domain.game.war.model
 
 import cats.data.{NonEmptyList, NonEmptySet}
-import cats.effect.SyncIO
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.card.Suit.{Club, Diamond, Heart, Spade}
 import io.tyoras.cards.domain.card.{Card, Hand}
 import io.tyoras.cards.domain.game.war.model.*
+import io.tyoras.cards.domain.user.model.User
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.time.ZonedDateTime
+import java.util.UUID
 
 class GameStateSpec extends AnyFlatSpec with Matchers {
 
-  val pId1: PlayerId = FUUID.randomFUUID[SyncIO].unsafeRunSync()
-  val pId2: PlayerId = FUUID.randomFUUID[SyncIO].unsafeRunSync()
-  val pId3: PlayerId = FUUID.randomFUUID[SyncIO].unsafeRunSync()
+  val pId1: PlayerId = User.ID(UUID.randomUUID)
+  val pId2: PlayerId = User.ID(UUID.randomUUID)
+  val pId3: PlayerId = User.ID(UUID.randomUUID)
 
   val p1c1: Card = Card(Club, Ten())
   val p1c2: Card = Card(Heart, King())

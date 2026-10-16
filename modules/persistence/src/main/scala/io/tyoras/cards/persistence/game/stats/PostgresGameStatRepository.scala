@@ -28,7 +28,7 @@ object PostgresGameStatRepository:
           val daoData = GameStatDAO.Data.fromDomain(data)
           withId
             .fold(session.prepareR(Statements.Insert.one).use(_.unique(daoData))) { id =>
-              session.prepareR(Statements.Insert.oneWithId).use(_.unique(id -> daoData))
+              session.prepareR(Statements.Insert.oneWithId).use(_.unique(id.unwrap -> daoData))
             }
             .flatMap(_.toDomainF)
             .onError(logger.error(_)(s"Failed to insert game stat ${withId.getOrElse("no id provided")}"))
@@ -54,19 +54,21 @@ object PostgresGameStatRepository:
 
       override def readManyById(ids: NonEmptyList[PlayerGameStat.ID]): F[List[PlayerGameStat.Existing]] =
         sessionPool
-          .use(_.prepareR(Statements.Select.many(ids.size)).use(_.stream(ids.toList, chunkSize).evalMap(_.toDomainF[F]).compile.toList))
+          .use(_.prepareR(Statements.Select.many(ids.size)).use(_.stream(ids.map(_.unwrap).toList, chunkSize).evalMap(_.toDomainF[F]).compile.toList))
           .onError(logger.error(_)(s"Failed to read many game stats by their ids"))
           .adaptErr(_ => PersistenceError("unexpected_error", "Failed to read game stats by id"))
 
       override def readManyByPlayer(playerId: User.ID): F[List[PlayerGameStat.Existing]] = {
         val playerIds = List(playerId)
-        sessionPool.use(_.prepareR(Statements.Select.manyByPlayerId(playerIds.size)).use(_.stream(playerIds, chunkSize).evalMap(_.toDomainF[F]).compile.toList))
+        sessionPool.use(
+          _.prepareR(Statements.Select.manyByPlayerId(playerIds.size)).use(_.stream(playerIds.map(_.unwrap), chunkSize).evalMap(_.toDomainF[F]).compile.toList)
+        )
       }.onError(logger.error(_)(s"Failed to read many game stats by player $playerId"))
         .adaptErr(_ => PersistenceError("unexpected_error", s"Failed to read game stats by player $playerId"))
 
       override def readOne(playerId: User.ID, game: GameType): F[Option[PlayerGameStat.Existing]] =
         sessionPool
-          .use(_.prepareR(Statements.Select.one).use(_.option(playerId -> game).flatMap(_.traverse(_.toDomainF[F]))))
+          .use(_.prepareR(Statements.Select.one).use(_.option(playerId.unwrap -> game).flatMap(_.traverse(_.toDomainF[F]))))
           .onError(logger.error(_)(s"Failed to read game stat for player $playerId and game $game"))
           .adaptErr(_ => PersistenceError("unexpected_error", s"Failed to read game stat for player $playerId and game $game"))
 
@@ -81,7 +83,7 @@ object PostgresGameStatRepository:
 
       override def deleteMany(users: NonEmptyList[PlayerGameStat.Existing]): F[Unit] =
         sessionPool
-          .use(_.prepareR(Statements.Delete.many(users.size)).use(_.execute(users.toList.map(_.id)).void))
+          .use(_.prepareR(Statements.Delete.many(users.size)).use(_.execute(users.toList.map(_.id.unwrap)).void))
           .onError(logger.error(_)(s"Failed to delete many game stats ${users.map(_.id).toList}"))
           .adaptErr(_ => PersistenceError("unexpected_error", "Failed to delete game stats"))
 

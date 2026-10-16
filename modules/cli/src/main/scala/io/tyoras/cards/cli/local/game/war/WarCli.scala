@@ -11,7 +11,9 @@ import io.tyoras.cards.domain.game.war.*
 import io.tyoras.cards.domain.game.war.model.GameState
 import io.tyoras.cards.domain.game.war.model.GameState.*
 import org.typelevel.log4cats.*
-import io.chrisdavenport.fuuid.FUUID
+import io.tyoras.cards.domain.user.model.User
+
+import java.util.UUID
 
 trait WarCli[F[_]]:
   def run: F[ExitCode]
@@ -57,7 +59,7 @@ object WarCli:
           _           <- console.println(s"How many players for this game? (default : ${config.defaultPlayerCount})")
           playerCount <- readPlayerCount <* console.println(lineSeparator)
           names       <- (1 to playerCount.value).toList.traverse(i => askPlayerName(s"Player $i"))
-          infos       <- names.traverse(name => FUUID.randomFUUID.map(_ -> name))
+          infos       <- names.traverse(name => Async[F].blocking(User.ID(UUID.randomUUID)).map(_ -> name))
         yield infos.toMap
 
       private def askPlayerName(defaultName: String): F[String] =

@@ -1,21 +1,19 @@
 package io.tyoras.cards.shared.protocol.game
 
-import io.chrisdavenport.fuuid.FUUID
 import io.circe.{Codec, Json}
 import io.circe.derivation.{Configuration, ConfiguredCodec}
-import io.tyoras.cards.domain.game.GameType
-import io.chrisdavenport.fuuid.circe.given
+import io.tyoras.cards.domain.game.{Game, GameType}
 import io.tyoras.cards.domain.game.GameTyp.given
-import io.tyoras.cards.util.codecs.json.given
+import pl.iterators.kebs.circe.KebsCirceSnakified
 
-object Commands:
-  final case class AuthCommand(gameId: FUUID, gameType: GameType, jwt: String) derives ConfiguredCodec
+object Commands extends KebsCirceSnakified:
+  final case class AuthCommand(gameId: Game.ID, gameType: GameType, jwt: String) derives ConfiguredCodec
 
   enum AuthenticatedCommand:
-    def gameId: FUUID
-    case QuitCommand(gameId: FUUID)
-    case StateCommand(gameId: FUUID)
-    case GameCommand(gameId: FUUID, input: Json)
+    def gameId: Game.ID
+    case QuitCommand(gameId: Game.ID)
+    case StateCommand(gameId: Game.ID)
+    case GameCommand(gameId: Game.ID, input: Json)
 
   object AuthenticatedCommand:
     given Configuration = io.tyoras.cards.util.codecs.json.given_Configuration.withDiscriminator("command_type")

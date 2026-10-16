@@ -1,29 +1,24 @@
 package io.tyoras.cards.domain.game.schnapsen
 
-import io.circe.derivation.{ConfiguredCodec, renaming}
-import io.circe.{Decoder, Encoder}
+import io.circe.derivation.{ConfiguredCodec, ConfiguredEncoder, renaming}
+import io.circe.{Codec, Decoder, Encoder, KeyDecoder, KeyEncoder}
 import io.tyoras.cards.domain.game.schnapsen.model.*
-import io.chrisdavenport.fuuid.circe.given
 import io.tyoras.cards.domain.card.codecs.given
+import io.tyoras.cards.domain.user.model.User
+import pl.iterators.kebs.circe.KebsCirceSnakified
 
-object codecs:
-  given Encoder[PlayerInfo]      = Encoder.derived
-  given Encoder[Player]          = Encoder.derived
-  given Encoder[GameContext]     = Encoder.derived
-  given Encoder[Marriage.Status] = Encoder.derived
-  given Encoder[Marriage]        = Encoder.derived
-  given Encoder[RoundOutcome]    = Encoder.derived
-  given Encoder[TalonClosing]    = Encoder.derived
-  given Encoder[GameRound]       = Encoder.derived
+object codecs extends KebsCirceSnakified:
 
-  given Decoder[PlayerInfo]      = Decoder.derived
-  given Decoder[Player]          = Decoder.derived
-  given Decoder[GameContext]     = Decoder.derived
-  given Decoder[Marriage.Status] = Decoder.derived
-  given Decoder[Marriage]        = Decoder.derived
-  given Decoder[RoundOutcome]    = Decoder.derived
-  given Decoder[TalonClosing]    = Decoder.derived
-  given Decoder[GameRound]       = Decoder.derived
+  given Codec[PlayerId] = Codec.implied[User.ID]
+
+  given KeyEncoder[PlayerId] = KeyEncoder.encodeKeyUUID.contramap(_.unwrap)
+  given KeyDecoder[PlayerId] = KeyDecoder.decodeKeyUUID.map(User.ID(_))
+
+  given Codec[Marriage.Status] = ConfiguredCodec.derived
+  given Codec[Marriage]        = ConfiguredCodec.derived
+  given Codec[Player]          = ConfiguredCodec.derived
+  given Codec[GameRound]       = ConfiguredCodec.derived
+  given Codec[RoundOutcome]    = ConfiguredCodec.derived
 
   given ConfiguredCodec[GameState]      = ConfiguredCodec.derive(discriminator = Some("code"), transformMemberNames = renaming.snakeCase)
   given ConfiguredCodec[SchnapsenInput] = ConfiguredCodec.derive(discriminator = Some("input_type"), transformMemberNames = renaming.snakeCase)

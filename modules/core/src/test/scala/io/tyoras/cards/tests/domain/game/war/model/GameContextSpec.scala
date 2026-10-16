@@ -1,21 +1,21 @@
 package io.tyoras.cards.tests.domain.game.war.model
 
-import cats.effect.SyncIO
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.domain.card.Rank.{Ace, Jack, Ten}
 import io.tyoras.cards.domain.card.Suit.{Club, Heart, Spade}
 import io.tyoras.cards.domain.card.{Card, Hand}
 import io.tyoras.cards.domain.game.war.model.*
+import io.tyoras.cards.domain.user.model.User
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.time.ZonedDateTime
+import java.util.UUID
 
 class GameContextSpec extends AnyFlatSpec with Matchers {
 
-  val playerId1: PlayerId = FUUID.randomFUUID[SyncIO].unsafeRunSync()
-  val playerId2: PlayerId = FUUID.randomFUUID[SyncIO].unsafeRunSync()
-  val playerId3: PlayerId = FUUID.randomFUUID[SyncIO].unsafeRunSync()
+  val playerId1: PlayerId = User.ID(UUID.randomUUID)
+  val playerId2: PlayerId = User.ID(UUID.randomUUID)
+  val playerId3: PlayerId = User.ID(UUID.randomUUID)
 
   val player1FirstCard: Card = Card(Spade, Ten())
 

@@ -3,7 +3,6 @@ package io.tyoras.cards.tests.domain.auth
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import dev.profunktor.auth.jwt.{JwtAuth, jwtDecode}
-import io.chrisdavenport.fuuid.FUUID
 import io.circe.parser.decode
 import io.github.iltotore.iron.autoRefine
 import io.tyoras.cards.domain.auth.{JWTGenerator, JwtExpiration}
@@ -16,13 +15,14 @@ import org.scalatest.wordspec.AsyncWordSpec
 import java.time.{Clock, ZonedDateTime}
 import java.util.UUID
 import scala.concurrent.duration.*
+import pl.iterators.kebs.circe.snakified.given
 
 class JWTGeneratorSpec extends AsyncWordSpec with AsyncIOSpec with Matchers:
 
   private val now: ZonedDateTime = ZonedDateTime.now()
 
   private val user: User.Existing = User.Existing(
-    FUUID.fromUUID(UUID.randomUUID()),
+    User.ID(UUID.randomUUID()),
     now,
     now,
     User.Data(User.Name("Alice"), User.About("A test user"))
@@ -50,7 +50,7 @@ class JWTGeneratorSpec extends AsyncWordSpec with AsyncIOSpec with Matchers:
 
     "encode the user id in the JWT payload" in {
       val jwtAuth   = JwtAuth.hmac(config.secretKey.toCharArray, config.hmacAlgo)
-      val otherUser = user.copy(id = FUUID.fromUUID(UUID.randomUUID()))
+      val otherUser = user.copy(id = User.ID(UUID.randomUUID()))
 
       for
         token          <- JWTGenerator.make[IO](jwtExpiration, config).create(user)

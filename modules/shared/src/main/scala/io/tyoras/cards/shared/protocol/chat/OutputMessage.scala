@@ -1,14 +1,14 @@
 package io.tyoras.cards.shared.protocol.chat
 
-import io.chrisdavenport.fuuid.FUUID
 import io.tyoras.cards.util.validation.string.*
 import io.tyoras.cards.util.validation.ValidationResult
 import io.tyoras.cards.util.validation.syntax.*
-import io.chrisdavenport.fuuid.circe.*
 import io.circe.derivation.{ConfiguredDecoder, ConfiguredEncoder}
 import io.circe.{Codec, Decoder, Encoder}
+import io.tyoras.cards.domain.user.model.User
+import pl.iterators.kebs.circe.snakified.*
 
-final case class ChatUser(name: String, id: Option[FUUID] = None) derives Codec
+final case class ChatUser(name: String, id: Option[User.ID] = None) derives Codec
 object ChatUser:
   def apply(name: String): ValidationResult[ChatUser] =
     name.optionalWithDefault("Chat user name", notBlank, min(2), max(10)).map(new ChatUser(_))
