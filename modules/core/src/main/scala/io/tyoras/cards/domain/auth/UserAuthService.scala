@@ -9,6 +9,7 @@ import cats.syntax.all.*
 import io.tyoras.cards.util.crypto.Argon2Hasher
 import io.github.iltotore.iron.cats.*
 import io.tyoras.cards.domain.user.model.User.ID
+import io.tyoras.cards.util.error.TechnicalError
 
 trait UserAuthService[F[_]]:
   def createNewUser(userData: User.Data, password: Password): F[User.Existing]
@@ -21,7 +22,10 @@ object UserAuthService:
 
       override def createNewUser(userData: User.Data, password: Password): F[User.Existing] =
         for
-          user <- userService.create(userData).onError(logger.error(_)("Failed to create new user data")).adaptErr(_ => UserAuthError.UserCreationFailure)
+          user <- userService.create(userData).onError(logger.error(_)("Failed to create new user data")).adaptErr {
+            case e: TechnicalError if e.code == "already_exist" => e
+            case _                                              => UserAuthError.UserCreationFailure
+          }
           hashedPassword <- hasher.hash(password)
           hash           <- Sync[F].fromValidated(UserAuth.PasswordHashBytes.validated(hashedPassword.hash).leftMap(UserAuthError.InvalidHash(_)))
           salt           <- Sync[F].fromValidated(UserAuth.PasswordSaltBytes.validated(hashedPassword.salt).leftMap(UserAuthError.InvalidSalt(_)))
