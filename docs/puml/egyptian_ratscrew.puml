@@ -1,0 +1,111 @@
+@startuml
+'https://plantuml.com/state-diagram
+
+'scale 500 width
+[*] --> fork_menu
+fork_menu --> Init
+Init --> initReady : <font color=blue><b>Ready
+initReady --> Init : [not all ready]
+initReady --> Game : [all ready]
+fork_menu --> Menu
+Menu -> Init : <font color=blue><b>Restart
+Menu --> join_menu : <font color=blue><b>End
+join_menu --> Exit
+Exit --> [*]
+
+state fork_menu <<fork>>
+state join_menu <<join>>
+state Init {
+  Init : context
+  Init: ready
+}
+
+state initReady <<choice>>
+
+state Game ##[dotted] {
+  [*] --> PlayerTurn
+  PlayerTurn --> slapSuccess : <font color=blue><b>Slap
+  PlayerTurn --> playerTurnPlayCard : <font color=blue><b>PlayCard
+  playerTurnPlayCard --> PlayerTurn : [numbered card played]
+  playerTurnPlayCard --> ChallengeTurn : [face or ace played]
+  ChallengeTurn --> challengeSuccess : <font color=blue><b>PlayCard
+  ChallengeTurn --> slapSuccess : <font color=blue><b>Slap
+  challengeSuccess --> ChallengeTurn : [face or ace played (next challenger)]
+  challengeSuccess --> challengeFailed : [numbered card played]
+  challengeFailed --> challengerCardRemaining : [retries > 1]
+  challengeFailed --> PlayerWinTurn : [retries == 0]
+  challengerCardRemaining --> ChallengeTurn : [challenger still has cards \n(decrement tries)]
+  challengerCardRemaining -> ChallengeTurn : [challenger does not have cards \n(next challenger)]
+  slapSuccess --> PlayerWinTurn: [Valid]
+  slapSuccess --> SlapPenalty: [Invalid]
+ SlapPenalty --> slapPenaltyReady : <font color=blue><b>Ready
+   slapPenaltyReady --> SlapPenalty : [not all acked]
+   slapPenaltyReady --> slapPenaltyAllReady : [all acked]
+   slapPenaltyAllReady --> ChallengeTurn : [players with cards > 1]
+   slapPenaltyAllReady --> PlayerTurn : [players with cards > 1]
+   slapPenaltyAllReady --> Finish : [players with cards == 1]
+  PlayerWinTurn --> playerWinReady : <font color=blue><b>Ready
+  playerWinReady --> PlayerWinTurn : [not all acked]
+  playerWinReady --> playerWinAllReady : [all acked]
+  playerWinAllReady --> PlayerTurn : [players with cards > 1]
+  playerWinAllReady --> Finish : [players with cards == 1]
+  Finish --> join_menu
+  Game --> Game : <font color=blue><b>Invalid input
+
+  state PlayerTurn {
+    PlayerTurn : context
+    PlayerTurn : currentPlayer
+    PlayerTurn : heap
+  }
+
+  state playerTurnPlayCard <<choice>>
+  state challengeSuccess <<choice>>
+  state challengeFailed <<choice>>
+  state challengerCardRemaining <<choice>>
+
+  state ChallengeTurn {
+      ChallengeTurn : context
+      ChallengeTurn : heap
+      ChallengeTurn : owner
+      ChallengeTurn : challenger
+      ChallengeTurn : totalTries
+      ChallengeTurn : remainingTries
+    }
+
+  state slapSuccess <<choice>>
+
+  state SlapPenalty {
+    SlapPenalty : context
+    SlapPenalty : player
+    SlapPenalty : acked
+    SlapPenalty : eliminated
+    SlapPenalty : lostCards
+    SlapPenalty : originalState
+  }
+
+  state slapPenaltyReady <<choice>>
+  state slapPenaltyAllReady <<choice>>
+
+  state PlayerWinTurn {
+    PlayerWinTurn : context
+    PlayerWinTurn : winnerId
+    PlayerWinTurn : wonCards
+    PlayerWinTurn : acked
+    PlayerWinTurn : eliminated
+  }
+
+  state playerWinReady <<choice>>
+  state playerWinAllReady <<choice>>
+
+  state Finish {
+    Finish : context
+  }
+}
+
+state Menu ##[dotted]
+
+state Exit {
+  Exit : context
+}
+
+@enduml
