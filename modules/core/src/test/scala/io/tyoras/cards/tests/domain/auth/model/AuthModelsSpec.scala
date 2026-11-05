@@ -7,17 +7,17 @@ import io.github.iltotore.iron.*
 import io.github.iltotore.iron.cats.*
 import io.tyoras.cards.domain.auth.model.*
 import io.tyoras.cards.domain.user.model.User
+import io.tyoras.cards.tests.{pick, userIdGen}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import pl.iterators.kebs.circe.snakified.*
 
 import java.time.ZonedDateTime
-import java.util.UUID
 import scala.concurrent.duration.*
 
 class AuthModelsSpec extends AnyFlatSpec with Matchers:
 
-  private val userId = User.ID(UUID.randomUUID())
+  private val userId = userIdGen.pick
   private val now    = ZonedDateTime.now()
   private val user   = User.Existing(
     userId,

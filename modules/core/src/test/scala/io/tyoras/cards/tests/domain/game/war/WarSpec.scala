@@ -13,18 +13,17 @@ import io.tyoras.cards.domain.game.war.model.*
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.Ready
 import io.tyoras.cards.domain.game.war.model.WarInput.{GameInput, MetaInput}
 import io.tyoras.cards.domain.user.model.User
+import io.tyoras.cards.tests.{pick, userIdGen}
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
-import java.util.UUID
-
 class WarSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
 
   given LoggerFactory[IO] = Slf4jFactory.create[IO]
-  private val playerIds   = NonEmptyList.of(User.ID(UUID.randomUUID()), User.ID(UUID.randomUUID()))
-  // private val playerIds = NonEmptyList.of(User.ID(UUID.randomUUID()), User.ID(UUID.randomUUID()), User.ID(UUID.randomUUID()))
+  private val playerIds   = NonEmptyList.of(userIdGen.pick, userIdGen.pick)
+  // private val playerIds = NonEmptyList.of(userIdGen.pick, userIdGen.pick, userIdGen.pick)
 
   "War.apply" should "initialize game with Init state" in {
     War[IO](playerIds).flatMap(_.currentState).asserting {

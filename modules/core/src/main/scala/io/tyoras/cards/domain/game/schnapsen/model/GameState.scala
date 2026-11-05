@@ -16,6 +16,7 @@ sealed trait PlayerTurn extends GameState:
   def currentPlayer: Player
 
 sealed trait ForehandTurn extends PlayerTurn:
+  def ongoingMarriage: Option[Marriage]
   lazy val possibleMarriages: List[Marriage] = findPossibleMarriages(currentPlayer.hand, round.trumpSuit)
 
 sealed trait DealerTurn extends PlayerTurn:

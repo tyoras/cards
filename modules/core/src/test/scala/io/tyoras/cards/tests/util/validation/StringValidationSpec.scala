@@ -73,3 +73,23 @@ class StringValidationSpec extends AnyFlatSpec with Matchers:
     val fieldValue = "abc"
     min(3)("field_name", fieldValue) should be(fieldValue.validNec)
   }
+
+  "EmptyFieldError" should "expose its code, field and message" in {
+    val error = EmptyFieldError("name")
+    (error.code, error.field, error.message) should be(("empty", "name", Some("name should not be empty.")))
+  }
+
+  "BlankFieldError" should "expose its code, field and message" in {
+    val error = BlankFieldError("name")
+    (error.code, error.field, error.message) should be(("blank", "name", Some("name should not be blank.")))
+  }
+
+  "TooShortError" should "expose its code, field and message" in {
+    val error = TooShortError("name", 3)
+    (error.code, error.field, error.message) should be(("too_short", "name", Some("name is too short, the minimum authorized length is 3.")))
+  }
+
+  "TooLongError" should "expose its code, field and message" in {
+    val error = TooLongError("name", 3)
+    (error.code, error.field, error.message) should be(("too_long", "name", Some("name is too long, the maximum authorized length is 3.")))
+  }

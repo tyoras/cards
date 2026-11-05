@@ -12,6 +12,7 @@ import io.tyoras.cards.domain.user.UserService
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.util.crypto.Argon2Hasher
 import io.tyoras.cards.util.crypto.Argon2Hasher.Hashed
+import io.tyoras.cards.tests.{pick, userIdGen}
 import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
@@ -20,14 +21,13 @@ import org.typelevel.log4cats.slf4j.Slf4jFactory
 
 import java.nio.charset.StandardCharsets.UTF_8
 import java.time.ZonedDateTime
-import java.util.UUID
 
 class UserAuthServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers with EitherValues:
 
   private given LoggerFactory[IO] = Slf4jFactory.create[IO]
 
   private val now             = ZonedDateTime.now()
-  private val userId          = User.ID(UUID.randomUUID())
+  private val userId          = userIdGen.pick
   private val userData        = User.Data(User.Name("Alice"), User.About("A test user"))
   private val user            = User.Existing(userId, now, now, userData)
   private val password        = Password("correct-password")
@@ -116,6 +116,20 @@ class UserAuthServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers w
         saved   <- harness.inserted.get
       yield
         result.left.value shouldBe UserAuthError.UserCreationFailure
+        hashes shouldBe empty
+        saved shouldBe empty
+    }
+
+    "keep the error when the user already exists, and skip hashing and persistence" in {
+      val alreadyExists = new io.tyoras.cards.util.error.TechnicalError("already_exist", "name already taken") {}
+      val f             = fixture(createUser = _ => IO.raiseError(alreadyExists))
+      for
+        harness <- f
+        result  <- harness.service.createNewUser(userData, password).attempt
+        hashes  <- harness.hashCalls.get
+        saved   <- harness.inserted.get
+      yield
+        result.left.value shouldBe alreadyExists
         hashes shouldBe empty
         saved shouldBe empty
     }

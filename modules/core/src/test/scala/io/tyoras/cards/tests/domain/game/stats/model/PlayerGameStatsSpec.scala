@@ -6,14 +6,14 @@ import org.scalatest.matchers.should.Matchers
 import io.tyoras.cards.domain.game.stats.model.{PlayerGameStat, PlayerGameStats}
 import io.tyoras.cards.domain.game.GameTyp
 import io.github.iltotore.iron.*
-import io.tyoras.cards.domain.user.model.User
+import io.tyoras.cards.tests.{pick, userIdGen}
 
 import java.time.ZonedDateTime
 import java.util.UUID
 
 class PlayerGameStatsSpec extends AnyFlatSpec with Matchers {
 
-  private val playerId     = User.ID(UUID.randomUUID())
+  private val playerId     = userIdGen.pick
   private val stat1Id      = PlayerGameStat.ID(UUID.randomUUID())
   private val stat2Id      = PlayerGameStat.ID(UUID.randomUUID())
   private val creationDate = ZonedDateTime.now()

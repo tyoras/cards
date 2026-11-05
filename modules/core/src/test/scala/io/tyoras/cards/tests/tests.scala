@@ -4,7 +4,8 @@ import cats.Eq
 import io.circe.testing.ArbitraryInstances
 import io.tyoras.cards.domain.card.*
 import io.tyoras.cards.domain.game.GameTyp.{Schnapsen, War}
-import io.tyoras.cards.domain.game.GameType
+import io.tyoras.cards.domain.game.{Game, GameType}
+import io.tyoras.cards.domain.user.model.User
 import org.scalacheck.{Arbitrary, Gen}
 
 val suitGen: Gen[Suit]       = Gen.oneOf(allSuits)
@@ -25,6 +26,11 @@ val cardGen: Gen[Card] = for
   suit <- suitGen
   rank <- defaultRankGen
 yield Card(suit, rank)
+
+val userIdGen: Gen[User.ID] = Gen.uuid.map(User.ID(_))
+val gameIdGen: Gen[Game.ID] = Gen.uuid.map(Game.ID(_))
+
+extension [A](gen: Gen[A]) def pick: A = gen.sample.get
 
 trait CodecTestUtils extends ArbitraryInstances:
   given Arbitrary[Suit]      = Arbitrary(suitGen)

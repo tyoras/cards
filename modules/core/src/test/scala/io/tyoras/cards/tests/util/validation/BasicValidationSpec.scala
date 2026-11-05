@@ -18,3 +18,8 @@ class BasicValidationSpec extends AnyFlatSpec with Matchers:
     val fieldValue = 42
     isMandatory("field_name", fieldValue.some) should be(fieldValue.validNec)
   }
+
+  "MissingFieldError" should "expose its code, field and message" in {
+    val error = MissingFieldError("name")
+    (error.code, error.field, error.message) should be(("not_found", "name", Some("name not found.")))
+  }

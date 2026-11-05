@@ -35,7 +35,7 @@ object Schnapsen:
       fsm <- SynchronizedConcurrentFSM.create[F, GameState](initialState)
     yield new SchnapsenImplem[F](id, fsm)(logger)
 
-private class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l: StructuredLogger[F])(using F: Sync[F]) extends Schnapsen[F]:
+class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l: StructuredLogger[F])(using F: Sync[F]) extends Schnapsen[F]:
   given logger: StructuredLogger[F] = l
 
   override val gameId: Game.ID                     = id
@@ -113,6 +113,8 @@ private class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameS
     val forehand = state.currentPlayer
     for
       _ <- checkPlayer(forehand, input.playerId)
+      canMeld = state.ongoingMarriage.isEmpty && state.possibleMarriages.exists(_.king.suit == input.suit)
+      _ <- F.unlessA(canMeld)(F.raiseError[Unit](InvalidAction()))
       marriage        = Marriage(input.suit, Status.of(state.round.trumpSuit, input.suit))
       wonPoints       = if forehand.wonCards.isEmpty then 0 else marriage.status.score
       updatedForehand = forehand.copy(score = forehand.score + wonPoints, marriages = forehand.marriages :+ marriage)
@@ -246,4 +248,4 @@ private class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameS
 
   override def currentState: F[GameState] = fsm.getCurrentState
 
-  override def isFinished: F[Boolean] = currentState.map(_.isInstanceOf[Finish])
+  override def isFinished: F[Boolean] = currentState.map(s => s.isInstanceOf[Finish] || s.isInstanceOf[Exit])

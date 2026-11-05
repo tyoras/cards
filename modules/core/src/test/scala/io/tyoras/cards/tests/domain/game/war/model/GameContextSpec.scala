@@ -4,18 +4,17 @@ import io.tyoras.cards.domain.card.Rank.{Ace, Jack, Ten}
 import io.tyoras.cards.domain.card.Suit.{Club, Heart, Spade}
 import io.tyoras.cards.domain.card.{Card, Hand}
 import io.tyoras.cards.domain.game.war.model.*
-import io.tyoras.cards.domain.user.model.User
+import io.tyoras.cards.tests.{pick, userIdGen}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.time.ZonedDateTime
-import java.util.UUID
 
 class GameContextSpec extends AnyFlatSpec with Matchers {
 
-  val playerId1: PlayerId = User.ID(UUID.randomUUID)
-  val playerId2: PlayerId = User.ID(UUID.randomUUID)
-  val playerId3: PlayerId = User.ID(UUID.randomUUID)
+  val playerId1: PlayerId = userIdGen.pick
+  val playerId2: PlayerId = userIdGen.pick
+  val playerId3: PlayerId = userIdGen.pick
 
   val player1FirstCard: Card = Card(Spade, Ten())
 
@@ -110,6 +109,29 @@ class GameContextSpec extends AnyFlatSpec with Matchers {
       List(Elimination(playerId3, Turn(2)))
     )
     context.allEliminated shouldBe false
+  }
+
+  "Player" should "have an empty hand by default" in {
+    Player(playerId1).hand shouldBe empty
+  }
+
+  "GameContext.toString" should "display the turn and the players" in {
+    val text = GameContext(Map(playerId1 -> player1), startedAt, Turn(5)).toString
+    text should include("turn 5")
+    text should include(playerId1.toString)
+  }
+
+  "GameContext.playerHand" should "return the hand of the player" in {
+    GameContext(Map(playerId1 -> player1), startedAt, Turn.firstTurn).playerHand(playerId1) shouldBe player1.hand
+  }
+
+  it should "return an empty hand for an unknown player" in {
+    GameContext(Map(playerId1 -> player1), startedAt, Turn.firstTurn).playerHand(playerId2) shouldBe empty
+  }
+
+  "GameContext.playersCardCount" should "count the cards of each player" in {
+    val context = GameContext(Map(playerId1 -> player1, playerId3 -> playerWithEmptyHand), startedAt, Turn.firstTurn)
+    context.playersCardCount shouldBe Map(playerId1 -> 2, playerId3 -> 0)
   }
 
 }

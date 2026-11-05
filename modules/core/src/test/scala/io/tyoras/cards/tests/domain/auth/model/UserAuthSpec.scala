@@ -2,16 +2,15 @@ package io.tyoras.cards.tests.domain.auth.model
 
 import cats.implicits.*
 import io.tyoras.cards.domain.auth.model.UserAuth
-import io.tyoras.cards.domain.user.model.User
+import io.tyoras.cards.tests.{pick, userIdGen}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.time.ZonedDateTime
-import java.util.UUID
 
 class UserAuthSpec extends AnyFlatSpec with Matchers:
 
-  private val userId = User.ID(UUID.randomUUID())
+  private val userId = userIdGen.pick
   private val now    = ZonedDateTime.now()
   private val hash   = UserAuth.PasswordHashBytes.assume(Array[Byte](1, 2, 3))
   private val salt   = UserAuth.PasswordSaltBytes.assume(Array[Byte](4, 5, 6))

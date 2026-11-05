@@ -149,8 +149,8 @@ object GameProtocol:
               (state match
                 case finish: war.model.GameState.Finish =>
                   gameStatService.updatePlayersStats(gameType, winners = List(finish.winnerId), draws = Nil, losers = finish.losers).void
-                case war.model.GameState.Exit => logger.info("War game exited before finishing")
-                case _                        => logger.warn(s"War game $gameType ended in a non-finish state: $state")
+                case _: war.model.GameState.Exit => logger.info("War game exited before finishing")
+                case _                           => logger.warn(s"War game $gameType ended in a non-finish state: $state")
               ) *> logger.info(s"Finished war game in state: $state")
             case _ => logger.warn(s"End game specific logic not implemented for game type: $gameType")
 

@@ -13,6 +13,7 @@ import io.tyoras.cards.domain.user.UserService
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.util.crypto.Argon2Hasher
 import io.tyoras.cards.util.crypto.Argon2Hasher.Hashed
+import io.tyoras.cards.tests.{pick, userIdGen}
 import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
@@ -20,7 +21,6 @@ import pdi.jwt.JwtClaim
 
 import java.nio.charset.StandardCharsets.UTF_8
 import java.time.ZonedDateTime
-import java.util.UUID
 import scala.concurrent.duration.*
 
 import pl.iterators.kebs.circe.snakified.given
@@ -29,7 +29,7 @@ class AuthServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers with 
 
   private val now  = ZonedDateTime.now()
   private val user = User.Existing(
-    User.ID(UUID.randomUUID()),
+    userIdGen.pick,
     now,
     now,
     User.Data(User.Name("Alice"), User.About("A test user"))
@@ -175,7 +175,7 @@ class AuthServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers with 
     }
 
     "fail authentication when a valid token refers to an unknown user" in {
-      val missingUser = user.copy(id = User.ID(UUID.randomUUID()))
+      val missingUser = user.copy(id = userIdGen.pick)
       for
         service <- makeService(users = Nil, userCredentials = Nil, jwtGenerator = realJwtGenerator)
         token   <- realJwtGenerator.create(missingUser)
