@@ -8,6 +8,8 @@ RUN mkdir /musl && \
   tar -C /musl -xzf musl-toolchain-1.2.5-oracle-00001-linux-amd64.tar.gz
 
 ENV PATH="/musl/musl-toolchain/bin:$PATH"
+# Use the GraalVM shipped in the image instead of letting sbt-native-image download another one
+ENV NATIVE_IMAGE_INSTALLED=true
 
 # Copy the build files
 COPY . /build

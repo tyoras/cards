@@ -78,6 +78,9 @@ build_native:
   only:
     - master
     - tags
+  variables:
+    # Use the GraalVM shipped in the image instead of letting sbt-native-image download another one
+    NATIVE_IMAGE_INSTALLED: "true"
   cache:
     - *sbt_cache_pull
     - key: "$MUSL_TOOLCHAIN"
@@ -91,6 +94,7 @@ build_native:
         curl -fSL "https://gds.oracle.com/download/bfs/archive/$MUSL_TOOLCHAIN.tar.gz" | tar -C musl -xz
       fi
     - export PATH="$CI_PROJECT_DIR/musl/musl-toolchain/bin:$PATH"
+    - echo "GRAALVM_HOME=$GRAALVM_HOME JAVA_HOME=$JAVA_HOME" && native-image --version
   script:
     - sbt cli/nativeImage server/nativeImage
   artifacts:
