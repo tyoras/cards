@@ -5,7 +5,7 @@ object Dependencies {
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.6.5"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.6.6"
       }
     }
   }
@@ -19,14 +19,14 @@ object Dependencies {
 
     case object github {
       case object `jwt-scala` {
-        val jwtScalaVersion = "11.0.4"
+        val jwtScalaVersion = "12.0.0"
         val `jwt-core`      = "com.github.jwt-scala" %% "jwt-core"  % jwtScalaVersion
         val `jwt-circe`     = "com.github.jwt-scala" %% "jwt-circe" % jwtScalaVersion
 
       }
 
       case object pureconfig {
-        val pureconfigVersion        = "0.17.10"
+        val pureconfigVersion        = "0.17.11"
         val `pureconfig-core`        = "com.github.pureconfig" %% "pureconfig-core"        % pureconfigVersion
         val `pureconfig-cats-effect` = "com.github.pureconfig" %% "pureconfig-cats-effect" % pureconfigVersion
         val `pureconfig-http4s`      = "com.github.pureconfig" %% "pureconfig-http4s"      % pureconfigVersion
@@ -60,7 +60,7 @@ object Dependencies {
 
     case object github {
       case object iltotore {
-        val ironVersion       = "3.4.0"
+        val ironVersion       = "3.4.1"
         val iron              = "io.github.iltotore" %% "iron"            % ironVersion
         val `iron-cats`       = "io.github.iltotore" %% "iron-cats"       % ironVersion
         val `iron-chimney`    = "io.github.iltotore" %% "iron-chimney"    % ironVersion
@@ -82,7 +82,7 @@ object Dependencies {
     }
 
     case object flywaydb {
-      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "13.10.0"
+      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "13.12.1"
     }
 
     case object http4s {
