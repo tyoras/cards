@@ -16,6 +16,14 @@ WORKDIR /build
 # Build the native image
 RUN sbt $MODULE/nativeImage
 
+# Used by the CI: packages a native image already built by the `build_native` job (skips the builder stage)
+FROM alpine AS prebuilt
+
+ARG MODULE
+COPY modules/$MODULE/target/native-image/$MODULE /cards
+ENTRYPOINT [ "/cards" ]
+
+# Default target: builds the native image from sources
 FROM alpine
 
 ARG MODULE

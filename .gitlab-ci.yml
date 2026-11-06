@@ -1,11 +1,5 @@
 image: "sbtscala/scala-sbt:graalvm-community-25.0.2_1.13.0_3.9.0"
 
-services:
-  # DinD service is required for Testcontainers
-  - name: docker:dind
-    # explicitly disable tls to avoid docker startup interruption
-    command: ["--tls=false"]
-
 stages:
   - test
   - deploy
@@ -20,21 +14,37 @@ variables:
   DOCKER_TLS_CERTDIR: ""
   # Improve performance with overlayfs.
   DOCKER_DRIVER: overlay2
+  MUSL_TOOLCHAIN: "musl-toolchain-1.2.5-oracle-00001-linux-amd64"
 
-cache:
-  key: "$CI_BUILD_REF_NAME" # contains either the branch or the tag, so it's caching per branch
-  untracked: true
+# Dependency caches only (no compiled classes): shared by all branches, reset when the dependencies change
+.sbt_cache: &sbt_cache
+  key:
+    prefix: sbt
+    files:
+      - project/Dependencies.scala
+      - project/plugins.sbt
   paths:
-    - "sbt-cache/.ivy.cache"
-    - "sbt-cache/.boot"
     - "sbt-cache/.sbtboot"
-    - "sbt-cache/target"
+    - "sbt-cache/.boot"
+    - "sbt-cache/.ivy"
     - "sbt-cache/.coursier"
+
+# Jobs that only need to read the sbt cache
+.sbt_cache_pull: &sbt_cache_pull
+  <<: *sbt_cache
+  policy: pull
 
 unit_test:
   stage: test
+  services:
+    # DinD service is required for Testcontainers
+    - name: docker:dind
+      # explicitly disable tls to avoid docker startup interruption
+      command: ["--tls=false"]
+  cache:
+    - *sbt_cache
   script:
-    - sbt clean coverage test coverageReport coverageAggregate
+    - sbt coverage test coverageReport coverageAggregate
   artifacts:
     paths:
       - target/scala-3.9.0/scoverage-report/
@@ -47,18 +57,51 @@ unit_test:
 
 check_format:
   stage: test
+  cache:
+    - *sbt_cache_pull
   script:
     - sbt fmtCheck
   allow_failure: true
 
 check_dependency_update:
   stage: test
+  cache:
+    - *sbt_cache_pull
   script:
     - sbt "set dependencyUpdatesFailBuild := true" dependencyUpdates
   allow_failure: true
 
+# Builds both native images in a single sbt run, so the shared modules are compiled only once.
+# Runs in parallel with the tests: coverage-instrumented classes must not end up in the released binaries anyway.
+build_native:
+  stage: test
+  only:
+    - master
+    - tags
+  cache:
+    - *sbt_cache_pull
+    - key: "$MUSL_TOOLCHAIN"
+      paths:
+        - "musl"
+  before_script:
+    # Using recommended musl toolchain in order to allow building a statically linked native image
+    - |
+      if [ ! -d musl/musl-toolchain ]; then
+        mkdir -p musl
+        curl -fSL "https://gds.oracle.com/download/bfs/archive/$MUSL_TOOLCHAIN.tar.gz" | tar -C musl -xz
+      fi
+    - export PATH="$CI_PROJECT_DIR/musl/musl-toolchain/bin:$PATH"
+  script:
+    - sbt cli/nativeImage server/nativeImage
+  artifacts:
+    paths:
+      - modules/cli/target/native-image/cli
+      - modules/server/target/native-image/server
+    expire_in: 1 day
+
 pages:
   stage: deploy
+  cache: []
   dependencies:
     - unit_test
   script:
@@ -72,49 +115,35 @@ pages:
   only:
     - master
 
-Build CLI:
+# Only packages the binary produced by `build_native`, no compilation happens here
+Build image:
   image: docker:latest
   services:
     - docker:dind
   stage: docker_build
+  cache: []
+  needs:
+    - build_native
+  parallel:
+    matrix:
+      - MODULE: [cli, server]
   only:
     - master
     - tags
+  variables:
+    DOCKER_BUILDKIT: "1"
   script:
     - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/cli:latest || true
     - >
       docker build
       --pull
+      --target prebuilt
       --build-arg VCS_REF=$CI_COMMIT_SHA
       --build-arg VCS_URL=$CI_PROJECT_URL
-      --build-arg MODULE=cli
-      --cache-from $CI_REGISTRY_IMAGE/cli:latest
-      --tag $CI_REGISTRY_IMAGE/cli:$CI_COMMIT_SHA
+      --build-arg MODULE=$MODULE
+      --tag $CI_REGISTRY_IMAGE/$MODULE:$CI_COMMIT_SHA
       .
-    - docker push $CI_REGISTRY_IMAGE/cli:$CI_COMMIT_SHA
-
-Build Server:
-  image: docker:latest
-  services:
-    - docker:dind
-  stage: docker_build
-  only:
-    - master
-    - tags
-  script:
-    - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/server:latest || true
-    - >
-      docker build
-      --pull
-      --build-arg VCS_REF=$CI_COMMIT_SHA
-      --build-arg VCS_URL=$CI_PROJECT_URL
-      --build-arg MODULE=server
-      --cache-from $CI_REGISTRY_IMAGE/server:latest
-      --tag $CI_REGISTRY_IMAGE/server:$CI_COMMIT_SHA
-      .
-    - docker push $CI_REGISTRY_IMAGE/server:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/$MODULE:$CI_COMMIT_SHA
 
 Push latest:
   image: docker:latest
@@ -123,6 +152,8 @@ Push latest:
   variables:
     GIT_STRATEGY: none
   stage: docker_push
+  cache: []
+  dependencies: []
   only:
     - master
   script:
@@ -146,6 +177,8 @@ Push tag:
   variables:
     GIT_STRATEGY: none
   stage: docker_push
+  cache: []
+  dependencies: []
   only:
     - tags
   script:
