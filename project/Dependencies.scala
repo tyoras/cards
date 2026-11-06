@@ -254,7 +254,10 @@ object Dependencies {
   )
 
   lazy val sharedTestDeps = Seq(
+    io.circe.`circe-golden`,
     org.scalacheck.scalacheck,
-    org.scalatest.scalatest
+    org.scalatest.scalatest,
+    org.scalatestplus.`scalacheck-1-20`,
+    org.typelevel.`discipline-scalatest`
   ).map(_ % Test)
 }

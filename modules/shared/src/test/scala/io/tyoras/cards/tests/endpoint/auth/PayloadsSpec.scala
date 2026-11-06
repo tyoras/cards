@@ -1,5 +1,11 @@
 package io.tyoras.cards.tests.endpoint.auth
 
+import io.circe.testing.golden.GoldenCodecTests
+import io.tyoras.cards.tests.SharedCodecTestUtils
+import org.scalatest.prop.Configuration
+import io.tyoras.cards.shared.endpoint.auth.Payloads.Response
+import org.typelevel.discipline.scalatest.FlatSpecDiscipline
+
 import io.circe.parser.parse
 import io.circe.syntax.*
 import io.tyoras.cards.domain.auth.model.{LoginAttempt, Password}
@@ -13,7 +19,7 @@ import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
+class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues with SharedCodecTestUtils with FlatSpecDiscipline with Configuration:
 
   "Login validator" should "validate successfully when both username and password are provided" in {
     val login  = Request.Login(username = Some("john"), password = Some("secret123"))
@@ -145,6 +151,9 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
 
     decoded.toOption.get should be(originalLogin)
   }
+
+  checkAll("GoldenCodec[Login]", GoldenCodecTests[Request.Login].goldenCodec)
+  checkAll("GoldenCodec[SuccessfulLogin]", GoldenCodecTests[Response.SuccessfulLogin].goldenCodec)
 
 object PayloadsSpec:
   val expectedUserNameError = "User name must be a non-blank string with a maximum length of 100 characters."

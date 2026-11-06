@@ -26,8 +26,8 @@ object Payloads:
     final case class Game(id: GameID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, gameType: GameType, players: NonEmptyList[User.ID])
         derives ConfiguredCodec
     object Game:
-      given fromExisting: Transformer[Existing[?], Response.Game] = ???
-//        Transformer.define[Existing[?], Response.Game].enableMethodAccessors.buildTransformer
+      // chimney cannot derive it automatically because the From type has a generic wildcard
+      given fromExisting: Transformer[Existing[?], Response.Game] = fromExistingGame(_)
 
       // FIXME keeping this one because chimney does not find the implicit when the From type has a generic wildcard
       def fromExistingGame(game: Existing[?]): Response.Game =

@@ -1,5 +1,10 @@
 package io.tyoras.cards.tests.endpoint.users
 
+import io.circe.testing.golden.GoldenCodecTests
+import io.tyoras.cards.tests.SharedCodecTestUtils
+import org.scalatest.prop.Configuration
+import org.typelevel.discipline.scalatest.FlatSpecDiscipline
+
 import io.circe.parser.parse
 import io.circe.syntax.*
 import io.scalaland.chimney.Transformer
@@ -19,7 +24,7 @@ import io.tyoras.cards.domain.auth.model.Password
 
 import java.util.UUID
 
-class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
+class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues with SharedCodecTestUtils with FlatSpecDiscipline with Configuration:
 
   private val now           = ZonedDateTime.now()
   private val testUserId    = User.ID(UUID.randomUUID())
@@ -364,6 +369,12 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues:
     responseUser.name should be("François Müller")
     responseUser.about should be("Über cool bio with émojis")
   }
+
+  // golden JSON codec tests
+  checkAll("GoldenCodec[Creation]", GoldenCodecTests[Request.Creation].goldenCodec)
+  checkAll("GoldenCodec[PasswordChange]", GoldenCodecTests[Request.PasswordChange].goldenCodec)
+  checkAll("GoldenCodec[User]", GoldenCodecTests[Response.User].goldenCodec)
+  checkAll("GoldenCodec[UserGameStats]", GoldenCodecTests[Response.UserGameStats].goldenCodec)
 
 object PayloadsSpec:
   val expectedUserNameError     = "User name must be a non-blank string with a maximum length of 100 characters."

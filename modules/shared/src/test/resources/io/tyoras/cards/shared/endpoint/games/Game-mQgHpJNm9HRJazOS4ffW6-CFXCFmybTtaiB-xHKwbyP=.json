@@ -1,0 +1,10 @@
+{
+  "id" : "fc9bc0a1-f1f8-489a-86ff-35805bcef56f",
+  "created_at" : "2096-10-29T04:12:22Z",
+  "updated_at" : "2073-07-24T17:42:02Z",
+  "game_type" : "schnapsen",
+  "players" : [
+    "b16c0fab-cec1-418b-b6d2-c45f472f760f",
+    "3c8de1c1-f23d-4064-b576-4c97406c18f5"
+  ]
+}

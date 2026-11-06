@@ -1,5 +1,10 @@
 package io.tyoras.cards.tests.endpoint.admin.health
 
+import io.circe.testing.golden.GoldenCodecTests
+import io.tyoras.cards.tests.SharedCodecTestUtils
+import org.scalatest.prop.Configuration
+import org.typelevel.discipline.scalatest.WordSpecDiscipline
+
 import io.tyoras.cards.shared.endpoint.admin.health.Payloads
 import io.tyoras.cards.shared.endpoint.admin.health.Payloads.Response.HealthStatus.given
 import org.scalatest.EitherValues
@@ -10,7 +15,7 @@ import io.tyoras.cards.domain.healthcheck.HealthStatus
 import io.tyoras.cards.domain.healthcheck.Status.{DOWN, UP}
 import io.circe.syntax.*
 
-class PayloadsSpec extends AnyWordSpec with Matchers with EitherValues:
+class PayloadsSpec extends AnyWordSpec with Matchers with EitherValues with SharedCodecTestUtils with WordSpecDiscipline with Configuration:
   "HealthStatus transformer" should {
     "transform DomainHealthStatus to Response.HealthStatus correctly" in {
       val domainHealthStatus = HealthStatus.of(
@@ -46,3 +51,5 @@ class PayloadsSpec extends AnyWordSpec with Matchers with EitherValues:
       decoded shouldBe responseHealthStatus
     }
   }
+
+  checkAll("GoldenCodec[HealthStatus]", GoldenCodecTests[Payloads.Response.HealthStatus].goldenCodec)

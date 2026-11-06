@@ -1,0 +1,53 @@
+[
+  {
+    "message_type" : "KeepAlive"
+  },
+  {
+    "message_type" : "DiscardMessage"
+  },
+  {
+    "code" : "pKiF",
+    "msg" : "osucLHWuYLRfGS",
+    "message_type" : "AuthError"
+  },
+  {
+    "message_type" : "UnsupportedCommand"
+  },
+  {
+    "game_id" : "7ec25445-caa8-4970-867e-199d136b311c",
+    "game_type" : "schnapsen",
+    "player_id" : "b67859b3-bbdc-4b8d-960d-6cd8fce14257",
+    "player_name" : "4d4FBD",
+    "message_type" : "PlayerConnectionSuccess"
+  },
+  {
+    "game_id" : "38934c99-99c8-4544-8b55-b5897509354e",
+    "player_id" : "f5ae1d29-db7f-4059-8dd4-f08246e3c1c4",
+    "player_name" : "L6sSLoAv",
+    "message_type" : "PlayerDisconnected"
+  },
+  {
+    "game_id" : "9ec80b56-cf3d-4872-abc6-be600ca05d28",
+    "recipient" : "a4bc9c01-256b-4ec8-8cf2-b7cd178ce14f",
+    "state" : "tQRuphtkoqrsFb",
+    "message_type" : "GameState"
+  },
+  {
+    "game_id" : "ece55f46-217a-4ee6-bcae-a05d7026d450",
+    "recipient" : "d58c399f-7476-4f4c-90ee-fd37613269ea",
+    "code" : "bBBPDAxvB5",
+    "msg" : "e4V",
+    "message_type" : "GameError"
+  },
+  {
+    "game_id" : "fa531557-456c-4af7-8516-e4af7caef963",
+    "recipient" : "1be95876-9b38-4dca-93d6-8d678fb91c62",
+    "code" : "TeHLG5ZLUILtA",
+    "msg" : "Patw7RfgA7rutcEgyGLx",
+    "message_type" : "ProtocolError"
+  },
+  {
+    "game_id" : "ac9110b6-2621-4b06-864a-15fe484430a4",
+    "message_type" : "GameEnded"
+  }
+]

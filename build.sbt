@@ -62,8 +62,10 @@ lazy val server = (project in file("modules/server"))
 lazy val shared = (project in file("modules/shared"))
   .settings(
     commonSettings,
-    libraryDependencies ++= sharedDeps ++ sharedTestDeps
-  ).dependsOn(core)
+    libraryDependencies ++= sharedDeps ++ sharedTestDeps,
+    // needed by the circe golden codec tests
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
+  ).dependsOn(core % "compile->compile;test->test")
 
 lazy val cliPackagingSettings = Seq(
   Compile / mainClass := Some("io.tyoras.cards.cli.remote.Launcher")

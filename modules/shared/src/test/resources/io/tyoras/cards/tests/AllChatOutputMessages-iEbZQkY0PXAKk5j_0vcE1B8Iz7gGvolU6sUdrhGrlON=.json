@@ -1,0 +1,49 @@
+[
+  {
+    "message_type" : "Register"
+  },
+  {
+    "msg" : "YK1WgSF",
+    "message_type" : "ParsingError"
+  },
+  {
+    "msg" : "iuL0uF",
+    "message_type" : "AuthError"
+  },
+  {
+    "user" : {
+      "name" : "15SmG3r",
+      "id" : "73f4aabf-c05e-4ff4-bb1b-6360e799254d"
+    },
+    "message_type" : "SuccessfulRegistration"
+  },
+  {
+    "message_type" : "UnsupportedCommand"
+  },
+  {
+    "message_type" : "KeepAlive"
+  },
+  {
+    "message_type" : "DiscardMessage"
+  },
+  {
+    "user" : {
+      "name" : "LXjjg1qnGCaeK",
+      "id" : "84f5a10f-90db-46e7-a437-aa5a1e6cd9e2"
+    },
+    "msg" : "96nIA",
+    "message_type" : "SendToUser"
+  },
+  {
+    "from" : {
+      "name" : "awcveftRX",
+      "id" : "90986e7b-8564-4aa1-aadc-445be952872d"
+    },
+    "to" : {
+      "name" : "JJMRQDafEMDQ",
+      "id" : "54894d36-313d-4437-9c9a-d32d9cb7b4da"
+    },
+    "msg" : "lgO2LISf0jUx",
+    "message_type" : "ChatMsg"
+  }
+]
