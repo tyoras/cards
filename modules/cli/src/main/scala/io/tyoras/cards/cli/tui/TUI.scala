@@ -65,8 +65,9 @@ object TUI:
       tui: Dispatcher[F] => TUI[F, ?, ?],
       tickIntervalMs: Long = 100,
       renderIntervalMs: Long = 50,
-      alignment: Alignment = Alignment.Center
+      alignment: Alignment = Alignment.Center,
+      terminal: Option[Terminal] = None
   ): F[Unit] =
     Dispatcher.sequential.use { dispatcher =>
-      Async[F].delay(tui(dispatcher).run(tickIntervalMs, renderIntervalMs, alignment = alignment))
+      Async[F].delay(tui(dispatcher).run(tickIntervalMs, renderIntervalMs, alignment = alignment, terminal = terminal))
     }

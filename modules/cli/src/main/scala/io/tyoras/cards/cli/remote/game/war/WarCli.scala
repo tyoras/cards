@@ -19,6 +19,7 @@ import io.tyoras.cards.shared.protocol.game.OutputMessage as GameOutputMessage
 import io.tyoras.cards.shared.protocol.chat.OutputMessage as ChatOutputMessage
 import org.http4s.jdkhttpclient.{JdkHttpClient, JdkWSClient}
 import org.typelevel.log4cats.*
+import layoutz.Terminal
 import io.tyoras.cards.domain.game.war.model.PlayerGameState
 
 import java.net.http.HttpClient
@@ -53,16 +54,17 @@ object WarCli:
       gamesClient      = GamesClient.make(config.client, authedHttpClient, webSocket, authProvider)
     yield new WarCliImpl[F](authProvider, usersClient, gamesClient, chatClient)
 
-  private class WarCliImpl[F[_] : Async : Concurrent : LoggerFactory](
+  private[war] class WarCliImpl[F[_] : Async : Concurrent : LoggerFactory](
       authProvider: AuthProvider[F],
       usersClient: UsersClient[F],
       gamesClient: GamesClient[F],
-      chatClient: ChatClient[F]
+      chatClient: ChatClient[F],
+      terminal: Option[Terminal] = None
   ) extends WarCli[F]:
     override val run: F[ExitCode] =
       for
         gameIdRef   <- Deferred[F, Game.ID]
-        _           <- TUI.runTUI(GameStartMenuTUI.make(War, banner, authProvider, usersClient, gamesClient, gameIdRef))
+        _           <- TUI.runTUI(GameStartMenuTUI.make(War, banner, authProvider, usersClient, gamesClient, gameIdRef), terminal = terminal)
         gameId      <- gameIdRef.get
         foundById   <- gamesClient.findById(gameId)
         gameInfo    <- Async[F].fromOption(foundById, new IllegalStateException(s"Game $gameId not found"))
@@ -79,7 +81,7 @@ object WarCli:
             chatFiber    <- handleChatOutput(chatClient, messagesRef, logger)
             creds        <- authProvider.connectedUserCredentials
             _            <- warClient.getState // load the current state once
-            _            <- TUI.runTUI(WarTUI.make(banner, creds.userId, playerNames, gameStateRef, messagesRef, warClient, chatClient))
+            _            <- TUI.runTUI(WarTUI.make(banner, creds.userId, playerNames, gameStateRef, messagesRef, warClient, chatClient), terminal = terminal)
             _            <- (warClient.quit >> logger.info("Disconnected gracefully")).race(Async[F].sleep(2.second) >> logger.warn("disconnection timeout"))
             _            <- (chatClient.disconnect >> logger.info("Disconnected gracefully from chat"))
               .race(Async[F].sleep(2.second) >> logger.warn("Chat disconnection timeout"))

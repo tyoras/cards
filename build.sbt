@@ -45,7 +45,16 @@ lazy val cli = (project in file("modules/cli"))
     run / connectInput := true,
     run / fork := true,
     cliPackagingSettings,
-    libraryDependencies ++= cliDeps ++ cliTestDeps
+    libraryDependencies ++= cliDeps ++ cliTestDeps,
+    coverageExcludedPackages := "io\\.tyoras\\.cards\\.cli\\.local\\..*",
+    // the remote cli configuration is read from env variables
+    Test / fork     := true,
+    Test / envVars  := Map(
+      "CARDS_CLI_API_URI"   -> "http://localhost:1",
+      "CARDS_CLI_WS_URI"    -> "ws://localhost:1",
+      "CARDS_CLI_USER_NAME" -> "TestUser",
+      "CARDS_CLI_PASSWORD"  -> "test-password"
+    )
   )
   .enablePlugins(NativeImagePlugin)
   .dependsOn(core, shared)

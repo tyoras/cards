@@ -121,7 +121,9 @@ object Dependencies {
 
     case object typelevel {
       val `cats-core`                     = "org.typelevel" %% "cats-core"                     % "2.13.0"
-      val `cats-effect`                   = "org.typelevel" %% "cats-effect"                   % "3.7.1"
+      val catsEffectVersion               = "3.7.1"
+      val `cats-effect`                   = "org.typelevel" %% "cats-effect"                   % catsEffectVersion
+      val `cats-effect-testkit`           = "org.typelevel" %% "cats-effect-testkit"           % catsEffectVersion
       val `cats-effect-testing-scalatest` = "org.typelevel" %% "cats-effect-testing-scalatest" % "1.8.0"
       val `cats-parse`                    = "org.typelevel" %% "cats-parse"                    % "1.1.0"
       val `discipline-scalatest`          = "org.typelevel" %% "discipline-scalatest"          % "2.3.0"
@@ -217,6 +219,7 @@ object Dependencies {
   lazy val cliTestDeps = Seq(
     org.scalacheck.scalacheck,
     org.scalatest.scalatest,
+    org.typelevel.`cats-effect-testkit`,
     org.typelevel.`cats-effect-testing-scalatest`
   ).map(_ % Test)
 
