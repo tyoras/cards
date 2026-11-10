@@ -46,8 +46,8 @@ object GameProtocol:
             game    <- gamesRef.evalModify(findActiveGame(gameId, gameType, _))
             players <- game.playerIds
             _       <- ProtocolError.PlayerDoesNotBelongToGame(player.id, gameId, gameType).raiseError.unlessA(players.exists(_ == player.id))
-          yield PlayerConnectionSuccess(gameId, gameType, player.id, player.data.name)).handleError {
-            case e: (ProtocolError.PlayerDoesNotBelongToGame | ProtocolError.ActiveGameNotFound) => OutputMessage.AuthError(e.code, e.getMessage)
+          yield PlayerConnectionSuccess(gameId, gameType, player.id, player.data.name)).recover { case e: ProtocolError =>
+            OutputMessage.AuthError(e.code, e.getMessage)
           }
 
         private def findActiveGame(gameId: Game.ID, gameType: GameType, games: Games[F]): F[(Games[F], ActiveGame[F, gameType.State, gameType.Input])] = {
