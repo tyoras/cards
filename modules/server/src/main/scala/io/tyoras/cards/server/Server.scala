@@ -49,7 +49,7 @@ object Server:
       val jwtAuth        = JwtAuth.hmac(authConfig.secretKey.toCharArray, authConfig.hmacAlgo)
       val authMiddleware = JwtAuthMiddleware[F, User.Existing](jwtAuth, authService.authenticator)
       val corsMiddleware = httpConfig.corsAllowedOrigins.toSeq match
-        case Nil            => CORS.policy // emtpy means all origins are allowed
+        case Nil            => CORS.policy // empty means all origins are allowed
         case allowedOrigins => CORS.policy.withAllowOriginHost(allowedOrigins.contains)
       val all          = first +: remaining
       val authRoutes   = authEndpoint.routes.pipe(corsMiddleware.apply)

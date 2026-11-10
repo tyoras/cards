@@ -67,7 +67,7 @@ object Main extends IOApp:
       warEndpoint   <- WarEndpoint.make(gameService, userService, gameProtocol, chatProtocol)
       authEndpoint  <- Resource.eval(AuthEndpoint.of(authService))
       chatEndpoint  <- ChatEndpoint.make(chatProtocol)
-      httpWsApp = Server.HttpWsApp.of(config.http, config.auth, authService)(authEndpoint, userEndpoint, gameEndpoint, warEndpoint, authEndpoint, chatEndpoint)
+      httpWsApp = Server.HttpWsApp.of(config.http, config.auth, authService)(authEndpoint, userEndpoint, gameEndpoint, warEndpoint, chatEndpoint)
       healthEndpoint <- Resource.eval(HealthEndpoint.of(healthMonitor))
       adminHttpApp = AdminServer.AdminHttpApp.of(healthEndpoint)
       _ <- (Server.of(config.http, httpWsApp, healthMonitor).serve, AdminServer.of(config.http, adminHttpApp).serve).parTupled

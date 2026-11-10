@@ -17,6 +17,30 @@ ThisBuild / coverageFailOnMinimum    := false
 
 Global / lintUnusedKeysOnLoad := false
 
+lazy val baklavaSettings = inConfig(Test)(
+  BaklavaSbtPlugin.settings(Test) ++ Seq(
+    fork := false,
+    baklavaGenerateConfigs := Map(
+      "openapi-info" ->
+        s"""
+           |{
+           |  "openapi" : "3.0.1",
+           |  "info" : {
+           |    "title" : "Cards API"
+           |  },
+           |  "servers" : [
+           |    {
+           |      "url" : "${sys.env.getOrElse("BASE_URL", "http://localhost:8080")}",
+           |      "description" : "Resolved from BASE_URL at generation time; override per deployment"
+           |    }
+           |  ]
+           |}
+           |""".stripMargin,
+      "views" -> """[{ "name": "client", "filter": "path-excludes:^/admin/" }]"""
+    )
+  )
+)
+
 lazy val cards = (project in file(".")).aggregate(core, persistence, cli, server, shared)
 
 lazy val core = (project in file("modules/core"))
@@ -63,9 +87,10 @@ lazy val server = (project in file("modules/server"))
   .settings(
     commonSettings,
     serverPackagingSettings,
-    libraryDependencies ++= serverDeps ++ serverTestDeps
+    libraryDependencies ++= serverDeps ++ serverTestDeps,
+    baklavaSettings
   )
-  .enablePlugins(NativeImagePlugin)
+  .enablePlugins(NativeImagePlugin, BaklavaSbtPlugin)
   .dependsOn(core, persistence, shared)
 
 lazy val shared = (project in file("modules/shared"))
