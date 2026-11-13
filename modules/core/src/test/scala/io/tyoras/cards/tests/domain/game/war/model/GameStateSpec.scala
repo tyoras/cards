@@ -3,7 +3,7 @@ package io.tyoras.cards.tests.domain.game.war.model
 import cats.data.{NonEmptyList, NonEmptySet}
 import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.card.Suit.{Club, Diamond, Heart, Spade}
-import io.tyoras.cards.domain.card.{Card, Hand}
+import io.tyoras.cards.domain.card.{Card, Hand, Turn}
 import io.tyoras.cards.domain.game.war.model.*
 import io.tyoras.cards.tests.{pick, userIdGen}
 import org.scalatest.flatspec.AnyFlatSpec

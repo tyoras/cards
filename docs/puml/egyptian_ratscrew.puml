@@ -1,7 +1,7 @@
 @startuml
 'https://plantuml.com/state-diagram
 
-'scale 500 width
+'scale 1000 width
 [*] --> fork_menu
 fork_menu --> Init
 Init --> initReady : <font color=blue><b>Ready
@@ -55,7 +55,7 @@ state Game ##[dotted] {
   state PlayerTurn {
     PlayerTurn : context
     PlayerTurn : currentPlayer
-    PlayerTurn : heap
+    PlayerTurn : pile
   }
 
   state playerTurnPlayCard <<choice>>
@@ -65,7 +65,7 @@ state Game ##[dotted] {
 
   state ChallengeTurn {
       ChallengeTurn : context
-      ChallengeTurn : heap
+      ChallengeTurn : pile
       ChallengeTurn : owner
       ChallengeTurn : challenger
       ChallengeTurn : totalTries

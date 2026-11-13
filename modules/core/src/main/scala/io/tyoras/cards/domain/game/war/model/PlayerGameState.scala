@@ -4,11 +4,11 @@ import cats.data.{NonEmptyList, NonEmptySet}
 import cats.syntax.all.*
 import io.circe.derivation.*
 import io.circe.Codec
-import io.tyoras.cards.domain.card.{Card, Hand}
+import io.tyoras.cards.domain.card.{Card, Hand, Turn}
 import io.tyoras.cards.domain.game.GameStateFilter
 import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.war.model.PlayerGameState.WarTurn.BattleRound
-import io.tyoras.cards.domain.game.war.model.{Elimination, GameState, PlayerId, Turn}
+import io.tyoras.cards.domain.game.war.model.{Elimination, GameState, PlayerId}
 
 sealed trait PlayerGameState:
   val code: String

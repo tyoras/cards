@@ -6,7 +6,8 @@ import cats.effect.{Async, ExitCode, Sync}
 import cats.syntax.all.*
 import WarCliError.*
 import io.tyoras.cards.cli.lineSeparator
-import io.tyoras.cards.domain.game.schnapsen.PlayerId
+import io.tyoras.cards.cli.local.Launcher.PlayerCount
+import io.tyoras.cards.domain.game.war.model.PlayerId
 import io.tyoras.cards.domain.game.war.*
 import io.tyoras.cards.domain.game.war.model.GameState
 import io.tyoras.cards.domain.game.war.model.GameState.*

@@ -104,7 +104,7 @@ object War:
               case winnerId :: Nil => Finish(updated.context, winnerId).pure
               case _               => InvalidState("Finish state without a unique winner").raiseError
           else BattleTurn(state.context).pure
-        playerReadyLog = logger.debug(input.playerId.ctx(playerIdKey))("Player ready for next turn")
+        _ <- logger.debug(input.playerId.ctx(playerIdKey))("Player ready for next turn")
       yield nextState
 
     private def checkPlayer(expectedPlayers: Set[PlayerId], playerId: PlayerId): F[Unit] =

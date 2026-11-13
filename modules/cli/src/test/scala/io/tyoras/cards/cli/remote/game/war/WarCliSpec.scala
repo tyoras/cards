@@ -9,10 +9,11 @@ import io.circe.syntax.*
 import io.tyoras.cards.cli.fixtures.{*, given}
 import io.tyoras.cards.cli.remote.client.{ChatClient, Game}
 import io.tyoras.cards.cli.remote.fakes.*
+import io.tyoras.cards.domain.card.Turn
 import io.tyoras.cards.domain.game.Game.ID as GameID
 import io.tyoras.cards.domain.game.GameTyp.War
 import io.tyoras.cards.domain.game.war.codecs.given
-import io.tyoras.cards.domain.game.war.model.{PlayerGameState, Turn}
+import io.tyoras.cards.domain.game.war.model.PlayerGameState
 import io.tyoras.cards.shared.protocol.chat.{ChatUser, OutputMessage as ChatMessage}
 import io.tyoras.cards.shared.protocol.game.OutputMessage as GameMessage
 import layoutz.TestKit.ScriptedTerminal

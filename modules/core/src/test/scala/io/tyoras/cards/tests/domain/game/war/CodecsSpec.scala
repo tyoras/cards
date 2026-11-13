@@ -7,14 +7,14 @@ import io.circe.syntax.*
 import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.war.model.*
 import io.circe.parser.decode
-import io.tyoras.cards.domain.card.{Card, Hand}
+import io.tyoras.cards.domain.card.{Card, Hand, Turn}
 import io.tyoras.cards.domain.card.Rank.{Ace, Eight, Jack, Ten}
 import io.tyoras.cards.domain.card.Suit.{Club, Heart, Spade}
 import io.tyoras.cards.domain.game.war.model.GameState.WarTurn.BattleRound
 import io.tyoras.cards.tests.{pick, userIdGen}
 
 import java.time.ZonedDateTime
-import pl.iterators.kebs.circe.snakified.*
+//import pl.iterators.kebs.circe.snakified.*
 
 class CodecsSpec extends AnyFlatSpec with Matchers:
 

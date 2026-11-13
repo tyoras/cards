@@ -1,6 +1,5 @@
 ## Egyptian Ratscrew
-Egyptian Ratscrew (aka Bataille Corse in France) is a dynamic card game which mixes tur by turn and first to slap mechanisms. I have chosen to implement it to demonstrate the usage of websocket for real time capabilities.
-
+Egyptian Ratscrew (aka Bataille Corse in France) is a fast-paced card game that combines turn-based play with a “first to slap” mechanic. I chose to implement it to showcase the use of WebSockets for real-time interaction.
 
 ### Game rules references
 - [Egyptian Ratscrew Rules (Wikipedia)](https://en.wikipedia.org/wiki/Egyptian_Ratscrew)

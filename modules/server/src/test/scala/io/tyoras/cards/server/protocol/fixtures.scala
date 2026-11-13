@@ -2,10 +2,9 @@ package io.tyoras.cards.server.protocol
 
 import cats.data.NonEmptyList
 import cats.effect.{IO, Ref}
-import cats.syntax.all.*
 import fs2.Stream
 import io.circe.{Codec, Decoder}
-import io.tyoras.cards.domain.card.international52Deck
+import io.tyoras.cards.domain.card.{Turn, international52Deck}
 import io.tyoras.cards.domain.game.stats.GameStatService
 import io.tyoras.cards.domain.game.stats.model.{PlayerGameStat, PlayerGameStats}
 import io.tyoras.cards.domain.game.war.model.*

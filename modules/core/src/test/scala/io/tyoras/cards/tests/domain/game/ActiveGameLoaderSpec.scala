@@ -2,8 +2,9 @@ package io.tyoras.cards.tests.domain.game
 
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
+import io.tyoras.cards.domain.card.Turn
 import io.tyoras.cards.domain.game.{ActiveGameLoader, GameTyp}
-import io.tyoras.cards.domain.game.war.model.{GameContext, GameState, Player, Turn}
+import io.tyoras.cards.domain.game.war.model.{GameContext, GameState, Player}
 import io.tyoras.cards.tests.{gameIdGen, pick, userIdGen}
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers

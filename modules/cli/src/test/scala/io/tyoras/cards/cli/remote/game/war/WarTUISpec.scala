@@ -12,8 +12,8 @@ import io.tyoras.cards.cli.tui.TUI.Message
 import io.tyoras.cards.cli.tui.TUI.Message.Notification
 import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.card.Suit.*
-import io.tyoras.cards.domain.card.Card
-import io.tyoras.cards.domain.game.war.model.{Elimination, PlayerGameState, Turn}
+import io.tyoras.cards.domain.card.{Card, Turn}
+import io.tyoras.cards.domain.game.war.model.{Elimination, PlayerGameState}
 import io.tyoras.cards.domain.game.war.model.PlayerGameState.*
 import layoutz.{Key, TestKit}
 import org.scalatest.flatspec.AsyncFlatSpec

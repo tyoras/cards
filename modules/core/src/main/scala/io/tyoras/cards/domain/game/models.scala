@@ -8,8 +8,10 @@ import scala.util.control.NoStackTrace
 import cats.syntax.all.*
 import io.circe.{Codec, Decoder, Encoder}
 import io.tyoras.cards.domain.game
+import io.tyoras.cards.domain.game.ers.codecs.given
 import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.schnapsen.codecs.given
+import io.tyoras.cards.domain.game.ers.model.PlayerGameState.given
 import io.tyoras.cards.domain.game.war.model.PlayerGameState.given
 import io.tyoras.cards.domain.game.schnapsen.model.PlayerGameState.given
 import io.tyoras.cards.domain.user.model.User
@@ -50,13 +52,15 @@ sealed abstract class GameTyp[S : Codec, I <: GameInput : Decoder](val label: St
   given Codec[PlayerState] = filter.codec.asInstanceOf[Codec[PlayerState]]
 
 object GameTyp:
-  case object Schnapsen extends GameTyp[schnapsen.model.GameState, schnapsen.model.SchnapsenInput]("schnapsen", 2, 2)
-  case object War       extends GameTyp[war.model.GameState, war.model.WarInput]("war", 2, 52)
+  case object EgyptianRatscrew extends GameTyp[ers.model.GameState, ers.model.ERSInput]("egyptian_ratscrew", 2, 52)
+  case object Schnapsen        extends GameTyp[schnapsen.model.GameState, schnapsen.model.SchnapsenInput]("schnapsen", 2, 2)
+  case object War              extends GameTyp[war.model.GameState, war.model.WarInput]("war", 2, 52)
   given Encoder[GameType] = Encoder.encodeString.contramap(_.label)
   given Decoder[GameType] = Decoder.decodeString.map(_.trim.toLowerCase).emap {
-    case Schnapsen.label => Schnapsen.asRight
-    case War.label       => War.asRight
-    case other           => s"Unknown game type $other".asLeft
+    case EgyptianRatscrew.label => EgyptianRatscrew.asRight
+    case Schnapsen.label        => Schnapsen.asRight
+    case War.label              => War.asRight
+    case other                  => s"Unknown game type $other".asLeft
   }
 
 trait ActiveGame[F[_], State, Input <: GameInput]:

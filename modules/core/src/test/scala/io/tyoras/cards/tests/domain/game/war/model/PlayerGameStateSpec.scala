@@ -3,10 +3,10 @@ package io.tyoras.cards.tests.domain.game.war.model
 import cats.data.{NonEmptyList, NonEmptySet}
 import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.card.Suit.*
-import io.tyoras.cards.domain.card.Card
+import io.tyoras.cards.domain.card.{Card, Turn}
 import io.tyoras.cards.domain.game.war.model.PlayerGameState.given
 import io.tyoras.cards.domain.game.war.model.*
-import io.tyoras.cards.domain.game.war.{PlayerCount, pickFirstCard, value}
+import io.tyoras.cards.domain.game.war.pickFirstCard
 import io.tyoras.cards.tests.{pick, userIdGen}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -101,22 +101,6 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers:
 
   "GameState.pickFirstCard" should "return the first card of the player" in {
     (GameState.Init(context): GameState).pickFirstCard(p2) shouldBe Some(p2Card)
-  }
-
-  "PlayerCount.from" should "accept the bounds" in {
-    PlayerCount.from(2).map(_.value) shouldBe Right(2)
-    PlayerCount.from(52).map(_.value) shouldBe Right(52)
-    PlayerCount.from(" 2".trim).map(_.value) shouldBe Right(2)
-  }
-
-  it should "refuse a value out of bounds" in {
-    PlayerCount.from(1) shouldBe Left(PlayerCount.ValidationError.OutOfBounds(1))
-    PlayerCount.from(53) shouldBe Left(PlayerCount.ValidationError.OutOfBounds(53))
-    PlayerCount.from("53") shouldBe Left(PlayerCount.ValidationError.OutOfBounds(53))
-  }
-
-  it should "refuse a text which is not a number" in {
-    PlayerCount.from("two") shouldBe Left(PlayerCount.ValidationError.InvalidNumber("two"))
   }
 
   "WarError" should "expose its code and message" in {

@@ -1,0 +1,114 @@
+package io.tyoras.cards.cli.local.game.ers
+
+import cats.data.NonEmptyList
+import cats.effect.std.Console
+import cats.effect.{Async, ExitCode, Sync}
+import cats.syntax.all.*
+import ErsCliError.*
+import io.tyoras.cards.cli.lineSeparator
+import io.tyoras.cards.cli.local.Launcher.PlayerCount
+import io.tyoras.cards.domain.game.ers.*
+import io.tyoras.cards.domain.game.ers.model.{GameState, PlayerId}
+import io.tyoras.cards.domain.game.ers.model.GameState.*
+import org.typelevel.log4cats.*
+import io.tyoras.cards.domain.user.model.User
+
+import java.util.UUID
+
+trait ErsCli[F[_]]:
+  def run: F[ExitCode]
+
+object ErsCli:
+  final case class Config(defaultPlayerCount: PlayerCount, autoNamePlayers: Boolean, autoPlay: Boolean)
+  val banner: String =
+    """  _____   ____   _____
+      | | ____| |  _ \ / ____|
+      | | |__   | |_) | (___
+      | |  __|  |  _ < \___ \
+      | | |___  | | \ \ ___) |
+      | |_____| |_|  \_\_____/
+      |
+      | EGYPTIAN RATSCREW""".stripMargin
+
+  def apply[F[_] : Async : LoggerFactory](config: Config)(using console: Console[F]): ErsCli[F] =
+    val logger      = LoggerFactory.getLogger
+    val inputParser = InputParser[F]
+
+    new ErsCli[F]:
+      private val displayIntro: F[Unit] =
+        console.println(banner) >>
+          console.println(lineSeparator) >>
+          console.println("Multi players game") >>
+          console.println("At any moment you can use \\q to quit the game or \\r to restart it.") >>
+          console.println(lineSeparator)
+
+      private val readPlayerCount: F[PlayerCount] =
+        console.readLine.flatMap {
+          case ""  => config.defaultPlayerCount.pure
+          case str =>
+            Sync[F]
+              .fromEither(PlayerCount.from(str))
+              .handleErrorWith { err =>
+                logger.warn(err)(s"Incorrect player count input $str") *>
+                  console.println(s"$str is not a valid number! Please try again:") >> readPlayerCount
+              }
+              .flatTap(c => console.println(s"Incorrect player count, it must be a number between 2 and 52. You entered $c"))
+        }
+
+      private val askPlayerInfos: F[Map[PlayerId, String]] =
+        for
+          _           <- console.println(s"How many players for this game? (default : ${config.defaultPlayerCount})")
+          playerCount <- readPlayerCount <* console.println(lineSeparator)
+          names       <- (1 to playerCount.value).toList.traverse(i => askPlayerName(s"Player $i"))
+          infos       <- names.traverse(name => Async[F].blocking(User.ID(UUID.randomUUID)).map(_ -> name))
+        yield infos.toMap
+
+      private def askPlayerName(defaultName: String): F[String] =
+        if config.autoNamePlayers then defaultName.pure
+        else
+          console.println(s"What is the name of this player? (default : $defaultName)") >>
+            console.readLine.map(_.trim).flatMap {
+              case name if name.nonEmpty => name.pure
+              case name                  => console.println(s"Using default name $defaultName for this player").as(defaultName)
+            } <* console.println(lineSeparator)
+
+      private def collectRawInput(state: GameState): F[String] = state match
+        case _: Finish            => console.readLine
+        case _ if config.autoPlay => "".pure
+        case _                    => console.readLine
+
+      override val run: F[ExitCode] =
+        def loop(game: EgyptianRatscrew[F], rendering: Rendering[F]): F[EgyptianRatscrew[F]] =
+          (for
+            state      <- game.currentState
+            playerId   <- Sync[F].fromEither(currentPlayer(state).left.map(UnexpectedError(_)))
+            _          <- rendering.renderGameState(state, playerId)
+            rawInput   <- collectRawInput(state)
+            gameInputs <- inputParser.parse(state, playerId, rawInput)
+            _          <- gameInputs.traverse_(game.submitInput)
+          yield ())
+            .recoverWith { case InvalidInput =>
+              console.println("Your last input is invalid, try again.")
+            }
+            .as(game)
+
+        for
+          _           <- displayIntro
+          playerNames <- askPlayerInfos
+          rendering = Rendering[F](playerNames)
+          game     <- EgyptianRatscrew(NonEmptyList.fromListUnsafe(playerNames.keys.toList))
+          exitCode <- game.tailRecM(_.currentState.flatMap {
+            case Exit(_) => ExitCode.Success.asRight.pure
+            case _       => loop(game, rendering).map(_.asLeft)
+          })
+        yield exitCode
+
+      private def currentPlayer(state: GameState): Either[String, PlayerId] =
+        state match
+          case s: Init          => s.notReady.headOption.toRight("Init state with everyone ready")
+          case s: PlayerTurn    => s.player.asRight
+          case s: ChallengeTurn => s.challenger.asRight
+          case s: PlayerWinTurn => s.notAcked.headOption.toRight("Player turn win state with everyone acked")
+          case s: SlapPenalty   => s.player.asRight
+          case s: Finish        => s.winnerId.asRight
+          case s                => s"Unable to find current player for state: $s".asLeft

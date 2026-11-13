@@ -10,7 +10,7 @@ import io.tyoras.cards.cli.remote.game.war.WarCli
 import io.tyoras.cards.cli.remote.tui.LauncherTUI
 import io.tyoras.cards.cli.tui.TUI
 import io.tyoras.cards.domain.game.GameTyp
-import io.tyoras.cards.domain.game.GameTyp.{Schnapsen, War}
+import io.tyoras.cards.domain.game.GameTyp.War
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
@@ -51,5 +51,5 @@ object Launcher extends CommandIOApp(name = "cards", header = banner, version = 
 
   private def launchGame(gameChoice: GameTyp[?, ?]): IO[ExitCode] =
     gameChoice match
-      case War       => WarCli.make[IO](WarCli.Config(false)).flatMap(_.run)
-      case Schnapsen => IO.println("Not implemented yet").as(ExitCode.Success)
+      case War => WarCli.make[IO](WarCli.Config(false)).flatMap(_.run)
+      case _   => IO.println("Not implemented yet").as(ExitCode.Success)

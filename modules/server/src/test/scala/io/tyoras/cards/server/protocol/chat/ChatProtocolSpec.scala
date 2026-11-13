@@ -2,7 +2,6 @@ package io.tyoras.cards.server.protocol.chat
 
 import cats.effect.{IO, Ref}
 import cats.effect.unsafe.implicits.global
-import cats.syntax.all.*
 import dev.profunktor.auth.jwt.JwtToken
 import io.tyoras.cards.server.endpoints.utils.{TestAuthService, TestData}
 import io.tyoras.cards.shared.protocol.chat.ChatUser

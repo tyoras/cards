@@ -3,8 +3,8 @@ package io.tyoras.cards.persistence.game
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.syntax.all.*
-import io.tyoras.cards.domain.card.Hand
-import io.tyoras.cards.domain.game.war.model.{GameContext, GameState, Player, Turn}
+import io.tyoras.cards.domain.card.{Hand, Turn}
+import io.tyoras.cards.domain.game.war.model.{GameContext, GameState, Player}
 import io.tyoras.cards.domain.game.{Game, GameRepository, GameTyp}
 import io.tyoras.cards.domain.user.UserRepository
 import io.tyoras.cards.domain.user.model.User

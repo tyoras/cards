@@ -2,7 +2,6 @@ package io.tyoras.cards.server.protocol.game
 
 import cats.effect.{IO, Ref}
 import cats.effect.unsafe.implicits.global
-import cats.syntax.all.*
 import io.circe.Json
 import io.circe.syntax.*
 import io.tyoras.cards.domain.game.war.codecs.given

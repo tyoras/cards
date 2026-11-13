@@ -1,0 +1,105 @@
+package io.tyoras.cards.tests.domain.game.ers.model
+
+import io.tyoras.cards.domain.card.Card
+import io.tyoras.cards.domain.card.Rank.Ace
+import io.tyoras.cards.domain.card.Suit.Spade
+import io.tyoras.cards.domain.game.ers.model.*
+import io.tyoras.cards.domain.game.ers.model.ERSInput.GameInput.{PlayCard, Ready, Slap}
+import io.tyoras.cards.domain.game.ers.model.ERSInput.MetaInput.{End, Restart}
+import io.tyoras.cards.domain.user.model.User
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+
+import java.util.UUID
+
+class ERSInputSpec extends AnyFlatSpec with Matchers {
+
+  val playerId: PlayerId = User.ID(UUID.randomUUID)
+  val card: Card         = Card(Spade, Ace())
+
+  "GameInput.Ready" should "have correct label with player id" in {
+    val ready = Ready(playerId)
+    ready.label should include("Ready to start next turn")
+    ready.label should include(playerId.toString)
+  }
+
+  it should "return player id" in {
+    val ready = Ready(playerId)
+    ready.playerId shouldBe playerId
+  }
+
+  it should "return label as toString" in {
+    val ready = Ready(playerId)
+    ready.toString shouldBe ready.label
+  }
+
+  "GameInput.Slap" should "have correct label with player id" in {
+    val slap = Slap(playerId)
+    slap.label should include("Slap heap")
+    slap.label should include(playerId.toString)
+  }
+
+  it should "return player id" in {
+    val slap = Slap(playerId)
+    slap.playerId shouldBe playerId
+  }
+
+  it should "return label as toString" in {
+    val slap = Slap(playerId)
+    slap.toString shouldBe slap.label
+  }
+
+  "MetaInput.Restart" should "have correct label with player id" in {
+    val restart = Restart(playerId)
+    restart.label should include("Restart game")
+    restart.label should include(playerId.toString)
+  }
+
+  it should "return player id" in {
+    val restart = Restart(playerId)
+    restart.playerId shouldBe playerId
+  }
+
+  it should "return label as toString" in {
+    val restart = Restart(playerId)
+    restart.toString shouldBe restart.label
+  }
+
+  "MetaInput.End" should "have correct label with player id" in {
+    val end = End(playerId)
+    end.label should include("Quit game")
+    end.label should include(playerId.toString)
+  }
+
+  it should "return player id" in {
+    val end = End(playerId)
+    end.playerId shouldBe playerId
+  }
+
+  it should "return label as toString" in {
+    val end = End(playerId)
+    end.toString shouldBe end.label
+  }
+
+  "GameInput.PlayCard" should "have correct label with card and player ids" in {
+    val playCard = PlayCard(playerId, card.id)
+    playCard.label should include("Play card")
+    playCard.label should include(card.id.toString)
+    playCard.label should include(playerId.toString)
+  }
+
+  it should "return player id" in {
+    val playCard = PlayCard(playerId, card.id)
+    playCard.playerId shouldBe playerId
+  }
+
+  it should "return card id" in {
+    val playCard: PlayCard = PlayCard(playerId, card.id)
+    playCard.cardId shouldBe card.id
+  }
+
+  it should "return label as toString" in {
+    val playCard = PlayCard(playerId, card.id)
+    playCard.toString shouldBe playCard.label
+  }
+}

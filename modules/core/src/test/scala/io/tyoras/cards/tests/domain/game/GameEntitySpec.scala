@@ -2,10 +2,11 @@ package io.tyoras.cards.tests.domain.game
 
 import cats.data.NonEmptyList
 import cats.syntax.show.*
+import io.tyoras.cards.domain.card.Turn
 import io.tyoras.cards.domain.game.GameError.{GameAlreadyFinished, GameNotFound, NoPlayersError}
 import io.tyoras.cards.domain.game.*
 import io.tyoras.cards.domain.game.war.model.PlayerGameState.given
-import io.tyoras.cards.domain.game.war.model.{GameContext, GameState, Turn, WarInput}
+import io.tyoras.cards.domain.game.war.model.{GameContext, GameState, WarInput}
 import io.tyoras.cards.tests.{gameIdGen, pick, userIdGen}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

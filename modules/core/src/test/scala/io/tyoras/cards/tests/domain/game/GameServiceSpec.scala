@@ -5,9 +5,10 @@ import cats.effect.{IO, Ref}
 import cats.effect.testing.scalatest.AsyncIOSpec
 import fs2.Stream
 import io.circe.{Decoder, Encoder}
+import io.tyoras.cards.domain.card.Turn
 import io.tyoras.cards.domain.game.GameError.{GameAlreadyFinished, GameNotFound}
 import io.tyoras.cards.domain.game.war.codecs.given
-import io.tyoras.cards.domain.game.war.model.{GameContext, GameState, Turn}
+import io.tyoras.cards.domain.game.war.model.{GameContext, GameState}
 import io.tyoras.cards.domain.game.*
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.tests.{gameIdGen, pick, userIdGen}

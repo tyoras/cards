@@ -3,6 +3,8 @@ package io.tyoras.cards.domain.card
 import Rank.*
 import Color.*
 import Suit.*
+import io.github.iltotore.iron.{DescribedAs, RefinedSubtype}
+import io.github.iltotore.iron.constraint.numeric.GreaterEqual
 
 lazy val allSuits: Set[Suit]   = Set(Heart, Diamond, Club, Spade)
 lazy val blackSuits: Set[Suit] = allSuits.filter(_.color == Black)
@@ -23,6 +25,10 @@ object Deck:
     s <- suits
     r <- ranks
   yield Card(s, r)).toList
+
+type Turn = Turn.T
+object Turn extends RefinedSubtype[Int, DescribedAs[GreaterEqual[1], "Turn number must be greater than or equal to 1"]]:
+  val firstTurn: Turn = Turn(1)
 
 extension (cards: List[Card])
   def shuffled: Deck = util.Random.shuffle(cards)

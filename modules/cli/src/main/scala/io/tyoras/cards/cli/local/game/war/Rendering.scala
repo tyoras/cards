@@ -8,7 +8,7 @@ import io.tyoras.cards.domain.game.war.model.GameState
 import io.tyoras.cards.domain.game.war.model.GameState.*
 import org.typelevel.log4cats.LoggerFactory
 import cats.syntax.all.*
-import io.tyoras.cards.domain.game.schnapsen.PlayerId
+import io.tyoras.cards.domain.game.war.model.PlayerId
 
 trait Rendering[F[_]]:
   def renderGameState(state: GameState, playerId: PlayerId): F[Unit]
