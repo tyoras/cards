@@ -8,7 +8,7 @@ import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.card.Suit.{Heart, Spade}
 import io.tyoras.cards.domain.card.Card
 import io.tyoras.cards.domain.game.war.War
-import io.tyoras.cards.domain.game.war.model.GameState.*
+import io.tyoras.cards.domain.game.war.model.WarGameState.*
 import io.tyoras.cards.domain.game.war.model.*
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.Ready
 import io.tyoras.cards.domain.game.war.model.WarInput.{GameInput, MetaInput}

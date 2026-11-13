@@ -4,7 +4,7 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import io.tyoras.cards.domain.game.GameTyp
 import io.tyoras.cards.domain.game.war.War
-import io.tyoras.cards.domain.game.war.model.GameState
+import io.tyoras.cards.domain.game.war.model.WarGameState
 import io.tyoras.cards.server.protocol.chat.Room
 import io.tyoras.cards.server.protocol.fixtures.*
 import io.tyoras.cards.server.protocol.game.{Games, ProtocolError}
@@ -43,7 +43,7 @@ class ModelsSpec extends AnyFunSpec with Matchers:
     val (p1, p2)         = (newUserId, newUserId)
     val (gameA, gameB)   = (newGameId, newGameId)
     val List(warA, warB) =
-      List(gameA, gameB).map(id => War.fromState[IO](id, GameState.Init(twoPlayersContext(p1, p2))).unsafeRunSync()): @unchecked
+      List(gameA, gameB).map(id => War.fromState[IO](id, WarGameState.Init(twoPlayersContext(p1, p2))).unsafeRunSync()): @unchecked
     val games = Games.empty[IO].upsert(warA).upsert(warB)
 
     it("should get an upserted game") {

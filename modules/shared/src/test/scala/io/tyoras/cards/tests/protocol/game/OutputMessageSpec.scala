@@ -51,7 +51,7 @@ class OutputMessageSpec extends AnyFlatSpec with Matchers with EitherValues with
       AuthError("auth", "denied"),
       UnsupportedCommand,
       PlayerConnectionSuccess(gameId, GameTyp.Schnapsen, userId, "alice"),
-      PlayerDisconnected(gameId, userId, "alice"),
+      PlayerDisconnected(gameId, GameTyp.Schnapsen, userId, "alice"),
       GameState(gameId, userId, Json.obj("turn" -> Json.fromInt(1))),
       GameError(gameId, userId, "invalid_move", "Not your turn"),
       ProtocolError(gameId, userId, "bad_input", "Cannot parse"),

@@ -109,7 +109,7 @@ object WarCli:
           case GameOutputMessage.ProtocolError(_, _, code, msg) =>
             logger.warn(s"Protocol error $code : $msg") *>
               messagesRef.update(_ :+ Notification.Error(s"Error $code : $msg"))
-          case GameOutputMessage.PlayerDisconnected(_, id, name) =>
+          case GameOutputMessage.PlayerDisconnected(_, _, id, name) =>
             logger.info(s"Player $name[id = $id] disconnected") *>
               messagesRef.update(_ :+ Notification.Info(s"Player $name has disconnected from the game"))
           case GameOutputMessage.PlayerConnectionSuccess(_, _, id, name) =>

@@ -13,7 +13,7 @@ import io.chrisdavenport.cats.effect.time.implicits.*
 import io.tyoras.cards.domain.game.GameError.NoPlayersError
 import io.tyoras.cards.domain.game.{ActiveGame, Game, GameTyp}
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.*
-import io.tyoras.cards.domain.game.war.model.GameState.*
+import io.tyoras.cards.domain.game.war.model.WarGameState.*
 import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.*
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.util.collection.syntax.*
@@ -21,8 +21,8 @@ import io.tyoras.cards.util.fsm.FinalStateMachine
 import io.tyoras.cards.util.logging.syntax.*
 import org.typelevel.log4cats.LoggerFactory
 
-trait War[F[_]] extends ActiveGame[F, GameState, WarInput]:
-  override val gameType: GameTyp[GameState, WarInput] = GameTyp.War
+trait War[F[_]] extends ActiveGame[F, WarGameState, WarInput]:
+  override val gameType: GameTyp[WarGameState, WarInput] = GameTyp.War
 
 object War:
 
@@ -41,25 +41,25 @@ object War:
       context               <- initGameContext(playerIds)
       id                    <- UUIDGen[F].randomUUID.map(Game.ID(_))
       _                     <- logger.debug(s"Starting new War game ($id) with initial game context : $context")
-      fsm                   <- SynchronizedConcurrentFSM.create[F, GameState](Init(context))
+      fsm                   <- SynchronizedConcurrentFSM.create[F, WarGameState](Init(context))
     yield new WarFSM[F](id, fsm)
 
-  def fromState[F[_] : Async : LoggerFactory](id: Game.ID, state: GameState): F[War[F]] =
+  def fromState[F[_] : Async : LoggerFactory](id: Game.ID, state: WarGameState): F[War[F]] =
     for
       logger <- LoggerFactory.create[F]
       _      <- logger.debug(s"Resuming War game from state : $state")
-      fsm    <- SynchronizedConcurrentFSM.create[F, GameState](state)
+      fsm    <- SynchronizedConcurrentFSM.create[F, WarGameState](state)
     yield new WarFSM[F](id, fsm)
 
-  private class WarFSM[F[_] : Async : LoggerFactory](id: Game.ID, fsm: FinalStateMachine[F, GameState]) extends War[F]:
+  private class WarFSM[F[_] : Async : LoggerFactory](id: Game.ID, fsm: FinalStateMachine[F, WarGameState]) extends War[F]:
     private val logger                               = LoggerFactory.getLogger
     override val gameId: Game.ID                     = id
-    override def currentState: F[GameState]          = fsm.getCurrentState
+    override def currentState: F[WarGameState]       = fsm.getCurrentState
     override def isFinished: F[Boolean]              = currentState.map(s => s.isInstanceOf[Finish] || s.isInstanceOf[Exit])
     override val playerIds: F[NonEmptyList[User.ID]] =
       currentState.map(_.context.players.keys.toList).flatMap(ids => Sync[F].fromOption(NonEmptyList.fromList(ids), NoPlayersError))
 
-    override def submitInput(input: WarInput): F[GameState] = fsm.transition { s =>
+    override def submitInput(input: WarInput): F[WarGameState] = fsm.transition { s =>
       val logCtx = input.playerId.ctx(playerIdKey)
       logger.debug(logCtx)(s"Submitting input [$input] on current state : $s") >>
         menu
@@ -70,20 +70,20 @@ object War:
           )
     }
 
-    private def menu: PartialFunction[(GameState, WarInput), F[GameState]] =
+    private def menu: PartialFunction[(WarGameState, WarInput), F[WarGameState]] =
       case (s, restart: Restart) =>
         logger.debug(restart.playerId.ctx(playerIdKey))("Player has asked to restart a new game") >>
           initGameContext(NonEmptyList.fromListUnsafe(s.context.players.keys.toList)).map(Init(_))
       case (s, end: End) =>
         logger.debug(end.playerId.ctx(playerIdKey))("Player has asked to exit the game").as(Exit(s.context))
 
-    private def game: PartialFunction[(GameState, WarInput), F[GameState]] =
+    private def game: PartialFunction[(WarGameState, WarInput), F[WarGameState]] =
       case (s: Init, i: Ready)          => playerReady(s, i)
       case (s: BattleTurn, i: PlayCard) => playCard(s, i)
       case (s: WarTurn, i: PlayCard)    => playCard(s, i)
       case (s: PlayerWinTurn, i: Ready) => ackTurnWin(s, i)
 
-    private def playerReady(state: Init, input: Ready): F[GameState] =
+    private def playerReady(state: Init, input: Ready): F[WarGameState] =
       for
         _ <- checkPlayer(state.notReady, input.playerId)
         readyPlayers = state.ready + input.playerId
@@ -92,7 +92,7 @@ object War:
         _ <- logger.debug(input.playerId.ctx(playerIdKey))("Player ready for next turn")
       yield nextState
 
-    private def ackTurnWin(state: PlayerWinTurn, input: Ready): F[GameState] =
+    private def ackTurnWin(state: PlayerWinTurn, input: Ready): F[WarGameState] =
       for
         _ <- checkPlayer(state.notAcked, input.playerId)
         ackedPlayers = state.acked + input.playerId
@@ -116,7 +116,7 @@ object War:
         InvalidCard(s"${input.playerId} has played an invalid card ${input.cardId}")
       )
 
-    private def playCard(state: BattleTurn, input: PlayCard): F[GameState] =
+    private def playCard(state: BattleTurn, input: PlayCard): F[WarGameState] =
       for
         _          <- checkPlayer(state.missingPlays, input.playerId)
         playedCard <- checkPlayedCard(input)(state.context)
@@ -126,7 +126,7 @@ object War:
         _ <- logger.debug(input.playerId.ctx(playerIdKey))(s"Card played: $playedCard")
       yield nextState
 
-    private def resolveBattle(battleTurn: BattleTurn): GameState =
+    private def resolveBattle(battleTurn: BattleTurn): WarGameState =
       val highestCard = battleTurn.playedCards.values.max
       val winners     = battleTurn.playedCards.filter(_._2.value == highestCard.value).keySet.toNes
       winners.toList match
@@ -145,7 +145,7 @@ object War:
         newlyEliminated.foldLeft(context)(_.eliminatePlayer(_)).updatePlayer(winnerId)(p => p.copy(hand = p.hand ::: wonCards)).incrementTurnNumber
       PlayerWinTurn(updatedCtx, winnerId, wonCards.toSet, newlyEliminated)
 
-    private def initWarTurn(battleTurn: BattleTurn, involvedPlayers: NonEmptySet[PlayerId]): GameState =
+    private def initWarTurn(battleTurn: BattleTurn, involvedPlayers: NonEmptySet[PlayerId]): WarGameState =
       val firstRound = WarTurn.BattleRound(
         involvedPlayers = battleTurn.playedCards.keySet.toNes,
         hiddenPlayedCards = Map.empty,
@@ -154,7 +154,7 @@ object War:
       val warTurn = WarTurn(battleTurn.context, NonEmptyList.one(firstRound))
       initNewWarRound(warTurn, involvedPlayers)
 
-    private def playCard(state: WarTurn, input: PlayCard): F[GameState] =
+    private def playCard(state: WarTurn, input: PlayCard): F[WarGameState] =
       for
         _          <- checkPlayer(state.missingPlays, input.playerId)
         playedCard <- checkPlayedCard(input)(state.context)
@@ -164,7 +164,7 @@ object War:
         _ <- logger.debug(input.playerId.ctx(playerIdKey))(s"Card played: $playedCard")
       yield nextState
 
-    private def resolveWarRound(warTurn: WarTurn): GameState =
+    private def resolveWarRound(warTurn: WarTurn): WarGameState =
       // in case both players don't have enough cards we use the hidden cards instead
       val fightingCards =
         if warTurn.currentRound.fightingCards.nonEmpty then warTurn.currentRound.fightingCards
@@ -179,7 +179,7 @@ object War:
           winTurn(winnerId, wonCards)(warTurn.context)
         case _ => initNewWarRound(warTurn, winners)
 
-    private def initNewWarRound(warTurn: WarTurn, involvedPlayers: NonEmptySet[PlayerId]): GameState =
+    private def initNewWarRound(warTurn: WarTurn, involvedPlayers: NonEmptySet[PlayerId]): WarGameState =
       val nextRound = WarTurn.BattleRound(
         involvedPlayers = involvedPlayers,
         hiddenPlayedCards = Map.empty,

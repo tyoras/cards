@@ -32,6 +32,7 @@ import org.typelevel.otel4s.trace.Tracer.Implicits.noop
 import pureconfig.ConfigSource
 import cats.syntax.all.*
 import io.tyoras.cards.persistence.auth.PostgresUserAuthRepository
+import io.tyoras.cards.server.endpoints.games.ers.ErsEndpoint
 import io.tyoras.cards.server.healtcheck.ServerHealthMonitor
 import io.tyoras.cards.util.crypto.Argon2Hasher
 
@@ -65,9 +66,10 @@ object Main extends IOApp:
       userEndpoint  <- Resource.eval(UserEndpoint.of(userService, userAuthService, gameStatService))
       gameEndpoint  <- Resource.eval(GameEndpoint.of(gameService))
       warEndpoint   <- WarEndpoint.make(gameService, userService, gameProtocol, chatProtocol)
+      ersEndpoint   <- ErsEndpoint.make(gameService, userService, gameProtocol, chatProtocol)
       authEndpoint  <- Resource.eval(AuthEndpoint.of(authService))
       chatEndpoint  <- ChatEndpoint.make(chatProtocol)
-      httpWsApp = Server.HttpWsApp.of(config.http, config.auth, authService)(authEndpoint, userEndpoint, gameEndpoint, warEndpoint, chatEndpoint)
+      httpWsApp = Server.HttpWsApp.of(config.http, config.auth, authService)(authEndpoint, userEndpoint, gameEndpoint, warEndpoint, ersEndpoint, chatEndpoint)
       healthEndpoint <- Resource.eval(HealthEndpoint.of(healthMonitor))
       adminHttpApp = AdminServer.AdminHttpApp.of(healthEndpoint)
       _ <- (Server.of(config.http, httpWsApp, healthMonitor).serve, AdminServer.of(config.http, adminHttpApp).serve).parTupled

@@ -5,6 +5,6 @@ import io.tyoras.cards.domain.game.war.model.*
 
 val warDeck = international52Deck
 
-extension (s: GameState)
+extension (s: WarGameState)
   def pickFirstCard(playerId: PlayerId): Option[Card] =
     s.context.pickFirstCard(playerId)

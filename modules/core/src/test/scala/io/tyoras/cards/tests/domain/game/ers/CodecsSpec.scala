@@ -69,115 +69,116 @@ class CodecsSpec extends AnyFlatSpec with Matchers:
   }
 
   "GameState.Init encoder and decoder" should "round-trip correctly with no ready players" in {
-    val init: GameState = GameState.Init(context)
-    val json            = init.asJson
+    val init: ERsGameState = ERsGameState.Init(context)
+    val json               = init.asJson
     json.hcursor.get[String]("code") shouldBe Right("Init")
-    val decoded = decode[GameState](json.noSpaces)
+    val decoded = decode[ERsGameState](json.noSpaces)
     decoded shouldBe Right(init)
   }
 
   it should "round-trip correctly with ready players" in {
-    val init: GameState = GameState.Init(context, Set(playerId1))
-    val json            = init.asJson
+    val init: ERsGameState = ERsGameState.Init(context, Set(playerId1))
+    val json               = init.asJson
     json.hcursor.get[String]("code") shouldBe Right("Init")
-    val decoded = decode[GameState](json.noSpaces)
+    val decoded = decode[ERsGameState](json.noSpaces)
     decoded shouldBe Right(init)
   }
 
   "GameState.PlayerWinTurn encoder and decoder" should "round-trip correctly with no acknowledgments" in {
-    val win: GameState = GameState.PlayerWinTurn(context, playerId1, NonEmptyList.one(player1FirstCard), Set.empty)
-    val json           = win.asJson
+    val win: ERsGameState = ERsGameState.PlayerWinTurn(context, playerId1, NonEmptyList.one(player1FirstCard), Set.empty)
+    val json              = win.asJson
     json.hcursor.get[String]("code") shouldBe Right("PlayerWinTurn")
-    val decoded = decode[GameState](json.noSpaces)
+    val decoded = decode[ERsGameState](json.noSpaces)
     decoded shouldBe Right(win)
   }
 
   it should "round-trip correctly with acknowledgments" in {
-    val win: GameState = GameState.PlayerWinTurn(context, playerId1, NonEmptyList.one(player1FirstCard), Set.empty, Set(playerId1))
-    val json           = win.asJson
+    val win: ERsGameState = ERsGameState.PlayerWinTurn(context, playerId1, NonEmptyList.one(player1FirstCard), Set.empty, Set(playerId1))
+    val json              = win.asJson
     json.hcursor.get[String]("code") shouldBe Right("PlayerWinTurn")
-    val decoded = decode[GameState](json.noSpaces)
+    val decoded = decode[ERsGameState](json.noSpaces)
     decoded shouldBe Right(win)
   }
 
   "GameState.SlapPenalty encoder and decoder" should "round-trip correctly with a ChallengeTurn original state" in {
-    val original           = GameState.ChallengeTurn(context, playerId1, playerId2, 3, 2, NonEmptyList.one(player1FirstCard))
-    val penalty: GameState =
-      GameState.SlapPenalty(context, playerId1, NonEmptyList.one(player1FirstCard), original, List(Card(Club, Ace())), Set(playerId2))
+    val original              = ERsGameState.ChallengeTurn(context, playerId1, playerId2, 3, 2, NonEmptyList.one(player1FirstCard))
+    val penalty: ERsGameState =
+      ERsGameState.SlapPenalty(context, playerId1, NonEmptyList.one(player1FirstCard), original, List(Card(Club, Ace())), Set(playerId2))
     val json = penalty.asJson
     json.hcursor.get[String]("code") shouldBe Right("SlapPenalty")
     json.hcursor.downField("original_state").get[String]("code") shouldBe Right("ChallengeTurn")
-    val decoded = decode[GameState](json.noSpaces)
+    val decoded = decode[ERsGameState](json.noSpaces)
     decoded shouldBe Right(penalty)
   }
 
   it should "round-trip correctly with a PlayerTurn original state" in {
-    val original           = GameState.PlayerTurn(context, playerId1, List(player1FirstCard))
-    val penalty: GameState = GameState.SlapPenalty(context, playerId2, NonEmptyList.one(player1FirstCard), original)
-    val json               = penalty.asJson
+    val original              = ERsGameState.PlayerTurn(context, playerId1, List(player1FirstCard))
+    val penalty: ERsGameState = ERsGameState.SlapPenalty(context, playerId2, NonEmptyList.one(player1FirstCard), original)
+    val json                  = penalty.asJson
     json.hcursor.downField("original_state").get[String]("code") shouldBe Right("PlayerTurn")
-    val decoded = decode[GameState](json.noSpaces)
+    val decoded = decode[ERsGameState](json.noSpaces)
     decoded shouldBe Right(penalty)
   }
 
   it should "reject an original state that is neither PlayerTurn nor ChallengeTurn" in {
-    val original           = GameState.PlayerTurn(context, playerId1)
-    val penalty: GameState = GameState.SlapPenalty(context, playerId2, NonEmptyList.one(player1FirstCard), original)
-    val json               = penalty.asJson.mapObject(_.add("original_state", (GameState.Init(context): GameState).asJson))
-    decode[GameState](json.noSpaces).isLeft shouldBe true
+    val original              = ERsGameState.PlayerTurn(context, playerId1)
+    val penalty: ERsGameState = ERsGameState.SlapPenalty(context, playerId2, NonEmptyList.one(player1FirstCard), original)
+    val json                  = penalty.asJson.mapObject(_.add("original_state", (ERsGameState.Init(context): ERsGameState).asJson))
+    decode[ERsGameState](json.noSpaces).isLeft shouldBe true
   }
 
   "GameState.PlayerTurn encoder and decoder" should "round-trip correctly with an empty pile" in {
-    val turn: GameState = GameState.PlayerTurn(context, playerId1)
-    val json            = turn.asJson
+    val turn: ERsGameState = ERsGameState.PlayerTurn(context, playerId1)
+    val json               = turn.asJson
     json.hcursor.get[String]("code") shouldBe Right("PlayerTurn")
-    decode[GameState](json.noSpaces) shouldBe Right(turn)
+    decode[ERsGameState](json.noSpaces) shouldBe Right(turn)
   }
 
   it should "round-trip correctly with a pile" in {
-    val turn: GameState = GameState.PlayerTurn(context, playerId1, List(player1FirstCard, Card(Club, Ace())))
-    decode[GameState](turn.asJson.noSpaces) shouldBe Right(turn)
+    val turn: ERsGameState = ERsGameState.PlayerTurn(context, playerId1, List(player1FirstCard, Card(Club, Ace())))
+    decode[ERsGameState](turn.asJson.noSpaces) shouldBe Right(turn)
   }
 
   "GameState.ChallengeTurn encoder and decoder" should "round-trip correctly" in {
-    val challenge: GameState = GameState.ChallengeTurn(context, playerId1, playerId2, 4, 1, NonEmptyList.of(player1FirstCard, Card(Club, Ace())))
-    val json                 = challenge.asJson
+    val challenge: ERsGameState = ERsGameState.ChallengeTurn(context, playerId1, playerId2, 4, 1, NonEmptyList.of(player1FirstCard, Card(Club, Ace())))
+    val json                    = challenge.asJson
     json.hcursor.get[String]("code") shouldBe Right("ChallengeTurn")
     json.hcursor.get[Int]("remaining_tries") shouldBe Right(1)
-    decode[GameState](json.noSpaces) shouldBe Right(challenge)
+    decode[ERsGameState](json.noSpaces) shouldBe Right(challenge)
   }
 
   "GameState.Finish encoder and decoder" should "round-trip correctly" in {
-    val finish: GameState = GameState.Finish(context, playerId1)
-    val json              = finish.asJson
+    val finish: ERsGameState = ERsGameState.Finish(context, playerId1)
+    val json                 = finish.asJson
     json.hcursor.get[String]("code") shouldBe Right("Finish")
-    decode[GameState](json.noSpaces) shouldBe Right(finish)
+    decode[ERsGameState](json.noSpaces) shouldBe Right(finish)
   }
 
   "GameState.Exit encoder and decoder" should "round-trip correctly" in {
-    val exit: GameState = GameState.Exit(context)
-    val json            = exit.asJson
+    val exit: ERsGameState = ERsGameState.Exit(context)
+    val json               = exit.asJson
     json.hcursor.get[String]("code") shouldBe Right("Exit")
-    decode[GameState](json.noSpaces) shouldBe Right(exit)
+    decode[ERsGameState](json.noSpaces) shouldBe Right(exit)
   }
 
   "PlayerTurn | ChallengeTurn encoder and decoder" should "round-trip a PlayerTurn" in {
-    val turn: GameState.PlayerTurn | GameState.ChallengeTurn = GameState.PlayerTurn(context, playerId1, List(player1FirstCard))
-    decode[GameState.PlayerTurn | GameState.ChallengeTurn](turn.asJson.noSpaces) shouldBe Right(turn)
+    val turn: ERsGameState.PlayerTurn | ERsGameState.ChallengeTurn = ERsGameState.PlayerTurn(context, playerId1, List(player1FirstCard))
+    decode[ERsGameState.PlayerTurn | ERsGameState.ChallengeTurn](turn.asJson.noSpaces) shouldBe Right(turn)
   }
 
   it should "round-trip a ChallengeTurn" in {
-    val turn: GameState.PlayerTurn | GameState.ChallengeTurn = GameState.ChallengeTurn(context, playerId1, playerId2, 3, 3, NonEmptyList.one(player1FirstCard))
-    decode[GameState.PlayerTurn | GameState.ChallengeTurn](turn.asJson.noSpaces) shouldBe Right(turn)
+    val turn: ERsGameState.PlayerTurn | ERsGameState.ChallengeTurn =
+      ERsGameState.ChallengeTurn(context, playerId1, playerId2, 3, 3, NonEmptyList.one(player1FirstCard))
+    decode[ERsGameState.PlayerTurn | ERsGameState.ChallengeTurn](turn.asJson.noSpaces) shouldBe Right(turn)
   }
 
   it should "reject any other game state" in {
-    val result = decode[GameState.PlayerTurn | GameState.ChallengeTurn]((GameState.Exit(context): GameState).asJson.noSpaces)
+    val result = decode[ERsGameState.PlayerTurn | ERsGameState.ChallengeTurn]((ERsGameState.Exit(context): ERsGameState).asJson.noSpaces)
     result.left.map(_.getMessage) shouldBe Left("DecodingFailure at : Expected player-turn or challenge-turn, got exit")
   }
 
   it should "reject an invalid json" in {
-    decode[GameState.PlayerTurn | GameState.ChallengeTurn]("""{"code":"Unknown"}""").isLeft shouldBe true
+    decode[ERsGameState.PlayerTurn | ERsGameState.ChallengeTurn]("""{"code":"Unknown"}""").isLeft shouldBe true
   }
 
   "PlayerId key encoder and decoder" should "round-trip a map keyed by player id" in {

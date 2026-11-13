@@ -4,11 +4,11 @@ import cats.data.NonEmptyList
 import cats.effect.{IO, Ref}
 import cats.effect.testing.scalatest.AsyncIOSpec
 import fs2.Stream
-import io.circe.{Decoder, Encoder}
+import io.circe.{Codec, Decoder}
 import io.tyoras.cards.domain.card.Turn
 import io.tyoras.cards.domain.game.GameError.{GameAlreadyFinished, GameNotFound}
 import io.tyoras.cards.domain.game.war.codecs.given
-import io.tyoras.cards.domain.game.war.model.{GameContext, GameState}
+import io.tyoras.cards.domain.game.war.model.{GameContext, WarGameState}
 import io.tyoras.cards.domain.game.*
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.tests.{gameIdGen, pick, userIdGen}
@@ -24,30 +24,30 @@ class GameServiceSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
   private val user1   = userIdGen.pick
   private val user2   = userIdGen.pick
   private val context = GameContext(Map.empty, now, Turn.firstTurn)
-  private val state   = GameState.Init(context): GameState
-  private val final_  = GameState.Exit(context): GameState
+  private val state   = WarGameState.Init(context): WarGameState
+  private val final_  = WarGameState.Exit(context): WarGameState
 
-  private def data(finishedAt: Option[ZonedDateTime] = None, players: NonEmptyList[User.ID] = NonEmptyList.of(user1, user2)): Game.Data[GameState] =
-    Game.Data[GameState](GameTyp.War, players, state, user1, finishedAt)
+  private def data(finishedAt: Option[ZonedDateTime] = None, players: NonEmptyList[User.ID] = NonEmptyList.of(user1, user2)): Game.Data[WarGameState] =
+    Game.Data[WarGameState](GameTyp.War, players, state, user1, finishedAt)
 
-  private def existing(finishedAt: Option[ZonedDateTime] = None, players: NonEmptyList[User.ID] = NonEmptyList.of(user1, user2)): Game.Existing[GameState] =
+  private def existing(finishedAt: Option[ZonedDateTime] = None, players: NonEmptyList[User.ID] = NonEmptyList.of(user1, user2)): Game.Existing[WarGameState] =
     Game.Existing(gameIdGen.pick, now, now, data(finishedAt, players))
 
   private class InMemoryRepo(games: Ref[IO, List[Game.Existing[?]]]) extends GameRepository[IO]:
-    override def insert[State : Decoder : Encoder](data: Game.Data[State], withId: Option[Game.ID]): IO[Game.Existing[State]] =
+    override def insert[State <: GameState : Codec](data: Game.Data[State], withId: Option[Game.ID]): IO[Game.Existing[State]] =
       val game = Game.Existing(withId.getOrElse(gameIdGen.pick), now, now, data)
       games.update(_ :+ game).as(game)
 
-    override def update[State : Decoder : Encoder](game: Game.Existing[State]): IO[Game.Existing[State]] =
+    override def update[State <: GameState : Codec](game: Game.Existing[State]): IO[Game.Existing[State]] =
       games.update(_.map(g => if g.id == game.id then game else g)).as(game)
 
-    override def readAll[State : Decoder](finished: Boolean): Stream[IO, Game.Existing[State]] =
+    override def readAll[State <: GameState : Decoder](finished: Boolean): Stream[IO, Game.Existing[State]] =
       Stream.evalSeq(games.get.map(_.filter(_.data.finishedAt.isDefined == finished).map(_.asInstanceOf[Game.Existing[State]])))
 
-    override def readManyById[State : Decoder](ids: List[Game.ID]): IO[List[Game.Existing[State]]] =
+    override def readManyById[State <: GameState : Decoder](ids: List[Game.ID]): IO[List[Game.Existing[State]]] =
       games.get.map(_.filter(g => ids.contains(g.id)).map(_.asInstanceOf[Game.Existing[State]]))
 
-    override def readManyByUser[State : Decoder](userId: User.ID, finished: Boolean): IO[List[Game.Existing[State]]] =
+    override def readManyByUser[State <: GameState : Decoder](userId: User.ID, finished: Boolean): IO[List[Game.Existing[State]]] =
       games.get.map(_.filter(g => g.players.toList.contains(userId) && g.data.finishedAt.isDefined == finished).map(_.asInstanceOf[Game.Existing[State]]))
 
     override def deleteMany(toDelete: List[Game.Existing[?]]): IO[Unit] =
@@ -123,11 +123,11 @@ class GameServiceSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
 
   "readById" should "return the game when it exists" in {
     val game = existing()
-    fixture(game).flatMap(_.service.readById[GameState](game.id)).asserting(_ shouldBe Some(game))
+    fixture(game).flatMap(_.service.readById[WarGameState](game.id)).asserting(_ shouldBe Some(game))
   }
 
   it should "return nothing when the game does not exist" in
-    fixture().flatMap(_.service.readById[GameState](gameIdGen.pick)).asserting(_ shouldBe None)
+    fixture().flatMap(_.service.readById[WarGameState](gameIdGen.pick)).asserting(_ shouldBe None)
 
   "readManyByUser" should "return the games of the user with the requested status" in {
     val ongoing  = existing()
@@ -135,8 +135,8 @@ class GameServiceSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
     val other    = existing(players = NonEmptyList.one(user2))
     for
       f       <- fixture(ongoing, finished, other)
-      current <- f.service.readManyByUser[GameState](user1, finished = false)
-      past    <- f.service.readManyByUser[GameState](user1, finished = true)
+      current <- f.service.readManyByUser[WarGameState](user1, finished = false)
+      past    <- f.service.readManyByUser[WarGameState](user1, finished = true)
     yield
       current shouldBe List(ongoing)
       past shouldBe List(finished)
@@ -145,7 +145,7 @@ class GameServiceSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
   "readAll" should "stream the games with the requested status" in {
     val ongoing  = existing()
     val finished = existing(finishedAt = Some(now))
-    fixture(ongoing, finished).flatMap(_.service.readAll[GameState](finished = true).compile.toList).asserting(_ shouldBe List(finished))
+    fixture(ongoing, finished).flatMap(_.service.readAll[WarGameState](finished = true).compile.toList).asserting(_ shouldBe List(finished))
   }
 
   "delete" should "remove only the given game" in {

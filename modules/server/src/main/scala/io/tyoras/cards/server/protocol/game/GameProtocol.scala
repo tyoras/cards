@@ -11,19 +11,25 @@ import io.tyoras.cards.domain.auth.AuthService
 import io.tyoras.cards.domain.auth.model.AuthError
 import io.tyoras.cards.domain.game.stats.GameStatService
 import io.tyoras.cards.domain.game.*
+import io.tyoras.cards.domain.game.ers.model.ERsGameState
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.shared.protocol.game.OutputMessage
 import io.tyoras.cards.shared.protocol.game.OutputMessage.{PlayerConnectionSuccess, PlayerDisconnected}
 import org.typelevel.log4cats.LoggerFactory
-import io.tyoras.cards.domain.game.war.codecs.given
+import io.tyoras.cards.domain.game.war.model.WarGameState
 
 trait GameProtocol[F[_]]:
   def activeGames: F[Games[F]]
   def connectPlayer(gameId: Game.ID, gameType: GameType, player: User.Existing): F[OutputMessage]
   def authPlayer(gameId: Game.ID, gameType: GameType, jwt: JwtToken): F[OutputMessage]
   def registerActiveGame(gameId: Game.ID, game: ActiveGame[F, ?, ?]): F[Unit]
-  def currentState[State](gameId: Game.ID, gameType: GameTyp[State, ?], playerId: User.ID): F[OutputMessage]
-  def submitInput[State, Input <: GameInput](gameId: Game.ID, gameType: GameTyp[State, Input], playerId: User.ID, input: Input): F[List[OutputMessage]]
+  def currentState[State <: GameState](gameId: Game.ID, gameType: GameTyp[State, ?], playerId: User.ID): F[OutputMessage]
+  def submitInput[State <: GameState, Input <: GameInput](
+      gameId: Game.ID,
+      gameType: GameTyp[State, Input],
+      playerId: User.ID,
+      input: Input
+  ): F[List[OutputMessage]]
   def saveGame(gameId: Game.ID, gameType: GameType): F[Game.Existing[gameType.State]]
   def endGame(gameId: Game.ID, gameType: GameType): F[List[OutputMessage]]
   def disconnect(playerRef: Ref[F, Option[ConnectedPlayer]]): F[OutputMessage]
@@ -66,7 +72,7 @@ object GameProtocol:
           yield found
         }
 
-        private def findActiveGameData[S : Decoder](gameId: Game.ID): F[Option[Game.Existing[S]]] =
+        private def findActiveGameData[S <: GameState : Decoder](gameId: Game.ID): F[Option[Game.Existing[S]]] =
           gameService.readById[S](gameId).ensure(ProtocolError.GameAlreadyFinished(gameId))(_.forall(_.data.finishedAt.isEmpty))
 
         override def authPlayer(gameId: Game.ID, gameType: GameType, jwt: JwtToken): F[OutputMessage] =
@@ -78,7 +84,7 @@ object GameProtocol:
         override def registerActiveGame(gameId: Game.ID, game: ActiveGame[F, ?, ?]): F[Unit] =
           gamesRef.update(_.upsert(game))
 
-        override def currentState[State](gameId: Game.ID, gameType: GameTyp[State, ?], playerId: User.ID): F[OutputMessage] =
+        override def currentState[State <: GameState](gameId: Game.ID, gameType: GameTyp[State, ?], playerId: User.ID): F[OutputMessage] =
           import gameType.given
           (for
             game      <- gamesRef.evalModify(games => findActiveGame(gameId, gameType, games))
@@ -90,7 +96,7 @@ object GameProtocol:
             case e => OutputMessage.GameError(gameId, playerId, "state_failure", e.getMessage)
           }
 
-        override def submitInput[State, Input <: GameInput](
+        override def submitInput[State <: GameState, Input <: GameInput](
             gameId: Game.ID,
             gameType: GameTyp[State, Input],
             playerId: User.ID,
@@ -144,35 +150,34 @@ object GameProtocol:
 
         // TODO improve
         private def endGameSpecific(gameType: GameType, state: gameType.State): F[Unit] =
-          gameType match
-            case GameTyp.War =>
-              (state match
-                case finish: war.model.GameState.Finish =>
-                  gameStatService.updatePlayersStats(gameType, winners = List(finish.winnerId), draws = Nil, losers = finish.losers).void
-                case _: war.model.GameState.Exit => logger.info("War game exited before finishing")
-                case _                           => logger.warn(s"War game $gameType ended in a non-finish state: $state")
-              ) *> logger.info(s"Finished war game in state: $state")
-            case _ => logger.warn(s"End game specific logic not implemented for game type: $gameType")
+          (state match
+            case finish: WarGameState.Finish =>
+              gameStatService.updatePlayersStats(gameType, winners = List(finish.winnerId), draws = Nil, losers = finish.losers).void
+            case finish: ERsGameState.Finish =>
+              gameStatService.updatePlayersStats(gameType, winners = List(finish.winnerId), draws = Nil, losers = finish.losers).void
+            case _: (ERsGameState.Exit | WarGameState.Exit) => logger.info(s"$gameType game exited before finishing")
+            case _                                          => logger.warn(s"$gameType game ended in a non-finish state: $state")
+          ) *> logger.info(s"Finished $gameType game in state: $state")
 
         override def disconnect(playerRef: Ref[F, Option[ConnectedPlayer]]): F[OutputMessage] = {
           playerRef
             .modify {
-              case Some(player) => None -> PlayerDisconnected(player.gameId, player.playerId, player.name)
+              case Some(player) => None -> PlayerDisconnected(player.gameId, player.gameType, player.playerId, player.name)
               case None         => None -> OutputMessage.DiscardMessage
             }
             .flatTap {
-              case PlayerDisconnected(gameId, playerId, playerName) =>
+              case PlayerDisconnected(gameId, gameType, playerId, playerName) =>
+                import gameType.given
                 gamesRef.evalUpdate(games =>
                   for
-                    activeGame   <- findActiveGame(gameId, GameTyp.War, games).map(_._2)
+                    activeGame   <- findActiveGame(gameId, gameType, games).map(_._2)
                     currentState <- activeGame.currentState
-                    found        <- findActiveGameData[war.model.GameState](gameId)
+                    found        <- findActiveGameData[gameType.State](gameId)
                     gameData     <- Async[F].fromOption(found, ProtocolError.ActiveGameNotFound(gameId, activeGame.gameType))
                     _            <- gameService.update(gameData.withUpdatedState(currentState))
                     _            <- logger.info(s"Persisted game state for game $gameId after player $playerName [id=$playerId] disconnection")
                   yield games
                 ) <* logger.info(s"Player $playerName [id=$playerId] disconnected from game $gameId")
-
               case _ => logger.warn("Disconnection on an already disconnected player")
             }
         }

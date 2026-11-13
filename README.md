@@ -25,4 +25,4 @@ The project is designed around a set of modules :
 | Game                                           | Logic | Local CLI (prototype) | Web API | Remote CLI | persistence |
 |------------------------------------------------|-------|------------------------|---------|------------|-------------|
 | [Schnapsen](docs/schnapsen.md)                 | ✅    | ✅        | ❌      | ❌         | ❌          |
-| [Egyptian Ratscrew](docs/egyptian_ratscrew.md) | ✅    | ❌        | ❌      | ❌         | ❌          |
+| [Egyptian Ratscrew](docs/egyptian_ratscrew.md) | ✅    | ✅        | ✅      | ❌         | ✅          |

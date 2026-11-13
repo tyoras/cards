@@ -60,14 +60,14 @@ class SchnapsenGameSpec extends AnyFlatSpec with Matchers with EitherValues:
       talonClosing
     )
 
-  private def gameFrom(state: GameState): Schnapsen[IO] =
-    SynchronizedConcurrentFSM.create[IO, GameState](state).map(fsm => new SchnapsenImplem[IO](gameIdGen.pick, fsm)(logger)).unsafeRunSync()
+  private def gameFrom(state: SchnapsenGameState): Schnapsen[IO] =
+    SynchronizedConcurrentFSM.create[IO, SchnapsenGameState](state).map(fsm => new SchnapsenImplem[IO](gameIdGen.pick, fsm)(logger)).unsafeRunSync()
 
-  private def submit(state: GameState, input: SchnapsenInput): GameState =
+  private def submit(state: SchnapsenGameState, input: SchnapsenInput): SchnapsenGameState =
     gameFrom(state).submitInput(input).unsafeRunSync()
 
   // submits an input that must be rejected with an error, and checks the game state did not move
-  private def rejection(state: GameState, input: SchnapsenInput): Throwable =
+  private def rejection(state: SchnapsenGameState, input: SchnapsenInput): Throwable =
     val game   = gameFrom(state)
     val result = game.submitInput(input).attempt.unsafeRunSync()
     game.currentState.unsafeRunSync() shouldBe state
@@ -75,7 +75,7 @@ class SchnapsenGameSpec extends AnyFlatSpec with Matchers with EitherValues:
 
   private def newGame(ctx: GameContext = context): Schnapsen[IO] = Schnapsen[IO](ctx).unsafeRunSync()
 
-  private def finished(state: GameState): Finish = state match
+  private def finished(state: SchnapsenGameState): Finish = state match
     case f: Finish => f
     case other     => fail(s"Expected Finish but got $other")
 
@@ -229,7 +229,7 @@ class SchnapsenGameSpec extends AnyFlatSpec with Matchers with EitherValues:
       forehandHand: Hand = List(jack(Diamond)),
       dealerHand: Hand = List(ten(Diamond)),
       talon: Deck = List(ten(Spade), jack(Spade), queen(Spade))
-  ): GameState =
+  ): SchnapsenGameState =
     val r = round(forehandHand = forehandHand, dealerHand = dealerCard :: dealerHand, talon = talon, trump = trump)
     submit(EarlyGameDealerTurn(r, forehandCard), PlayCard(dealerId, dealerCard))
 
@@ -458,7 +458,7 @@ class SchnapsenGameSpec extends AnyFlatSpec with Matchers with EitherValues:
     val id   = game.currentState.unsafeRunSync().round.forehand.id
     game.submitInput(Start(id)).unsafeRunSync() shouldBe a[EarlyGameForehandTurn]
 
-    def playOneTurn(): GameState =
+    def playOneTurn(): SchnapsenGameState =
       game.currentState.unsafeRunSync() match
         case s: PlayerTurn => game.submitInput(PlayCard(s.currentPlayer.id, s.playableCards.head)).unsafeRunSync()
         case s             => s

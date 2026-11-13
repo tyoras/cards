@@ -5,7 +5,7 @@ import cats.effect.unsafe.implicits.global
 import io.circe.Json
 import io.circe.syntax.*
 import io.tyoras.cards.domain.game.war.codecs.given
-import io.tyoras.cards.domain.game.war.model.{GameState, WarInput}
+import io.tyoras.cards.domain.game.war.model.{WarGameState, WarInput}
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.Ready
 import io.tyoras.cards.domain.game.{Game, GameTyp}
 import io.tyoras.cards.server.endpoints.utils.{TestAuthService, TestData}
@@ -30,7 +30,7 @@ class InputParserSpec extends AnyFunSpec with Matchers:
   /** Parses the input with the given connected player and returns the output and the connected player after parsing */
   private def parse(initialPlayer: Option[ConnectedPlayer], input: String): (List[OutputMessage], Option[ConnectedPlayer]) =
     (for
-      games  <- InMemoryGameService.make(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2))))
+      games  <- InMemoryGameService.make(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2))))
       stats  <- RecordingGameStatService.make
       result <- GameProtocol.make[IO](new TestAuthService, games, stats).use { protocol =>
         val parser = InputParser.make[IO](protocol)
@@ -96,6 +96,6 @@ class InputParserSpec extends AnyFunSpec with Matchers:
       connected shouldBe Some(player)
     }
     it("should be disconnected with the quit command") {
-      parse(Some(player), command(QuitCommand(gameId))) shouldBe (List(OutputMessage.PlayerDisconnected(gameId, p1, "test")) -> None)
+      parse(Some(player), command(QuitCommand(gameId))) shouldBe (List(OutputMessage.PlayerDisconnected(gameId, GameTyp.War, p1, "test")) -> None)
     }
   }

@@ -13,7 +13,7 @@ enum OutputMessage:
   case AuthError(code: String, msg: String)
   case UnsupportedCommand
   case PlayerConnectionSuccess(gameId: Game.ID, gameType: GameType, playerId: User.ID, playerName: String)
-  case PlayerDisconnected(gameId: Game.ID, playerId: User.ID, playerName: String)
+  case PlayerDisconnected(gameId: Game.ID, gameType: GameType, playerId: User.ID, playerName: String)
   case GameState(gameId: Game.ID, recipient: User.ID, state: Json)
   case GameError(gameId: Game.ID, recipient: User.ID, code: String, msg: String)
   case ProtocolError(gameId: Game.ID, recipient: User.ID, code: String, msg: String)

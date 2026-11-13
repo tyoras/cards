@@ -6,8 +6,8 @@ import cats.implicits.catsSyntaxApplicativeError
 import cats.syntax.all.*
 import fs2.{Chunk, Pipe, Stream}
 import io.chrisdavenport.cats.effect.time.implicits.*
-import io.circe.{Decoder, Encoder}
-import io.tyoras.cards.domain.game.{Game, GameRepository}
+import io.circe.{Decoder, Codec}
+import io.tyoras.cards.domain.game.{Game, GameRepository, GameState}
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.persistence.PersistenceError
 import io.tyoras.cards.persistence.game.Statements
@@ -27,7 +27,7 @@ object PostgresGameRepository:
     new GameRepository[F]:
       private val logger = LoggerFactory.getLogger
 
-      override def insert[State : Decoder : Encoder](data: Game.Data[State], withId: Option[Game.ID] = None): F[Game.Existing[State]] =
+      override def insert[State <: GameState : Codec](data: Game.Data[State], withId: Option[Game.ID] = None): F[Game.Existing[State]] = {
         sessionPool.use { session =>
           session.transaction.use { _ =>
             for
@@ -52,8 +52,9 @@ object PostgresGameRepository:
           }
 
         }
+      }
 
-      override def update[State : Decoder : Encoder](game: Game.Existing[State]): F[Game.Existing[State]] =
+      override def update[State <: GameState : Codec](game: Game.Existing[State]): F[Game.Existing[State]] =
         sessionPool.use { session =>
           for
             now     <- Clock[F].getZonedDateTimeUTC
@@ -66,7 +67,7 @@ object PostgresGameRepository:
           yield result
         }
 
-      override def readAll[State : Decoder](finished: Boolean): Stream[F, Game.Existing[State]] =
+      override def readAll[State <: GameState : Decoder](finished: Boolean): Stream[F, Game.Existing[State]] =
         for
           session  <- Stream.resource(sessionPool)
           prepared <- Stream.resource(session.prepareR(Statements.Select.all(finished)))
@@ -78,7 +79,7 @@ object PostgresGameRepository:
             .adaptErr(_ => PersistenceError("read_all_failed", s"Failed to read all games"))
         yield results
 
-      override def readManyById[State : Decoder](ids: List[Game.ID]): F[List[Game.Existing[State]]] =
+      override def readManyById[State <: GameState : Decoder](ids: List[Game.ID]): F[List[Game.Existing[State]]] =
         sessionPool
           .use(
             _.prepareR(Statements.Select.many(ids.size)).use(
@@ -88,7 +89,7 @@ object PostgresGameRepository:
           .onError(logger.error(_)(s"Failed to read games by ids $ids"))
           .adaptErr(_ => PersistenceError("read_many_failed", s"Failed to read games by ids $ids"))
 
-      override def readManyByUser[State : Decoder](userId: User.ID, finished: Boolean): F[List[Game.Existing[State]]] =
+      override def readManyByUser[State <: GameState : Decoder](userId: User.ID, finished: Boolean): F[List[Game.Existing[State]]] =
         sessionPool
           .use(
             _.prepareR(Statements.Select.byUser(finished)).use(
@@ -112,7 +113,7 @@ object PostgresGameRepository:
 
   }
 
-  private def toExisting[F[_] : MonadThrow, State : Decoder]: Pipe[F, (GameReadDBModel, Chunk[UUID]), Game.Existing[State]] = _.evalMap {
+  private def toExisting[F[_] : MonadThrow, State <: GameState : Decoder]: Pipe[F, (GameReadDBModel, Chunk[UUID]), Game.Existing[State]] = _.evalMap {
     case (read, userIds) =>
       for
         players <- MonadThrow[F].fromOption(userIds.toNel, PersistenceError("invalid_game", "Read a game without players"))

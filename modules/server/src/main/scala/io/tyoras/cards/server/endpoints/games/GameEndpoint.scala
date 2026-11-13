@@ -2,8 +2,8 @@ package io.tyoras.cards.server.endpoints.games
 
 import cats.effect.{Async, Sync}
 import cats.syntax.all.*
-import io.circe.Json
-import io.tyoras.cards.domain.game.{Game, GameService}
+import io.circe.{Decoder, Json}
+import io.tyoras.cards.domain.game.{Game, GameService, GameState}
 import io.tyoras.cards.server.endpoints.Endpoint
 import org.http4s.circe.*
 import org.http4s.circe.CirceEntityEncoder.*
@@ -35,18 +35,25 @@ object GameEndpoint:
       object UserIdParam   extends QueryParamDecoderMatcher[User.ID]("user_id")
       object FinishedParam extends FlagQueryParamMatcher("finished")
 
+      // hack: avoid to decode to the proper game state when all we need is its json representation
+      final private case class RawGameState(json: Json) extends GameState:
+        override val code  = "raw"
+        override val label = "raw"
+      private object RawGameState:
+        given Decoder[RawGameState] = Decoder.decodeJson.map(RawGameState(_))
+
       private def listByUser(userId: User.ID, finished: Boolean): F[Response[F]] =
-        gameService.readManyByUser[Json](userId, finished).map(_.map(Payloads.Response.Game.fromExistingGame)).flatMap(Ok(_))
+        gameService.readManyByUser[RawGameState](userId, finished).map(_.map(Payloads.Response.Game.fromExistingGame)).flatMap(Ok(_))
 
       private def listAll(finished: Boolean): F[Response[F]] =
-        Ok(gameService.readAll[Json](finished).map(Payloads.Response.Game.fromExistingGame))
+        Ok(gameService.readAll[RawGameState](finished).map(Payloads.Response.Game.fromExistingGame))
 
       private def searchById(id: Game.ID): F[Response[F]] =
-        gameService.readById[Json](id).flatMap(_.fold(notFoundResponse)(Payloads.Response.Game.fromExistingGame(_).pipe(Ok(_))))
+        gameService.readById[RawGameState](id).flatMap(_.fold(notFoundResponse)(Payloads.Response.Game.fromExistingGame(_).pipe(Ok(_))))
 
       private def deleteById(gameId: Game.ID, userId: User.ID): F[Response[F]] =
         gameService
-          .readById[Json](gameId)
+          .readById[RawGameState](gameId)
           .flatMap(_.fold(notFoundResponse) { game =>
             if game.data.createdBy == userId then gameService.delete(game) >> NoContent()
             else Forbidden()

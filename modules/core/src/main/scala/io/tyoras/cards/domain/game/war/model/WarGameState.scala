@@ -3,20 +3,19 @@ package io.tyoras.cards.domain.game.war.model
 import cats.data.{NonEmptyList, NonEmptySet}
 import io.tyoras.cards.domain.card.Card
 import cats.syntax.all.*
-import io.tyoras.cards.domain.game.war.model.GameState.WarTurn.BattleRound
+import io.tyoras.cards.domain.game.GameState
+import io.tyoras.cards.domain.game.war.model.WarGameState.WarTurn.BattleRound
 
-sealed trait GameState:
-  def code: String
-  def label: String
+sealed trait WarGameState extends GameState:
   def context: GameContext
 
-object GameState:
-  final case class Init(override val context: GameContext, ready: Set[PlayerId] = Set.empty) extends GameState:
+object WarGameState:
+  final case class Init(override val context: GameContext, ready: Set[PlayerId] = Set.empty) extends WarGameState:
     override val code: String        = "init"
     override val label: String       = "Initialisation"
     lazy val notReady: Set[PlayerId] = context.players.keySet.diff(ready)
 
-  final case class BattleTurn(override val context: GameContext, playedCards: Map[PlayerId, Card] = Map.empty) extends GameState:
+  final case class BattleTurn(override val context: GameContext, playedCards: Map[PlayerId, Card] = Map.empty) extends WarGameState:
     override val code: String            = "battle-turn"
     lazy val missingPlays: Set[PlayerId] =
       // only expect cards from players who still have cards to plays
@@ -24,7 +23,7 @@ object GameState:
 
     override val label: String = s"Waiting for players [${missingPlays.mkString(", ")}] to play"
 
-  final case class WarTurn(override val context: GameContext, battles: NonEmptyList[WarTurn.BattleRound]) extends GameState:
+  final case class WarTurn(override val context: GameContext, battles: NonEmptyList[WarTurn.BattleRound]) extends WarGameState:
     override val code: String                              = "war-turn"
     val currentRound: BattleRound                          = battles.last
     private val currentRoundPlayers: NonEmptySet[PlayerId] = currentRound.involvedPlayers
@@ -54,16 +53,16 @@ object GameState:
       wonCards: Set[Card],
       eliminated: Set[PlayerId],
       acked: Set[PlayerId] = Set.empty
-  ) extends GameState:
+  ) extends WarGameState:
     override val code: String        = "player-win-turn"
     override val label: String       = s"Player $winnerId has won the turn and won ${wonCards.size} cards."
     lazy val notAcked: Set[PlayerId] = context.players.keySet.diff(acked)
 
-  final case class Finish(override val context: GameContext, winnerId: PlayerId) extends GameState:
+  final case class Finish(override val context: GameContext, winnerId: PlayerId) extends WarGameState:
     override val code: String       = "finish"
     override val label: String      = "Finish"
     lazy val losers: List[PlayerId] = context.players.keySet.filterNot(_ == winnerId).toList
 
-  final case class Exit(override val context: GameContext) extends GameState:
+  final case class Exit(override val context: GameContext) extends WarGameState:
     override val code: String  = "exit"
     override val label: String = "Exit"

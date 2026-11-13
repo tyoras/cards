@@ -4,7 +4,7 @@ import cats.data.NonEmptyList
 import cats.effect.*
 import ErsCliError.{InvalidInput, InvalidState}
 import io.tyoras.cards.domain.game.ers.model.PlayerId
-import io.tyoras.cards.domain.game.ers.model.GameState.*
+import io.tyoras.cards.domain.game.ers.model.ERsGameState.*
 import io.tyoras.cards.domain.game.ers.model.ERSInput.MetaInput.*
 import io.tyoras.cards.domain.game.ers.model.*
 import io.tyoras.cards.domain.game.ers.*
@@ -14,13 +14,13 @@ import cats.syntax.all.*
 import io.tyoras.cards.domain.game.ers.model.ERSInput.GameInput.*
 
 trait InputParser[F[_]]:
-  def parse(state: GameState, playerId: PlayerId, rawInput: String): F[NonEmptyList[ERSInput]]
+  def parse(state: ERsGameState, playerId: PlayerId, rawInput: String): F[NonEmptyList[ERSInput]]
 
 object InputParser:
   def apply[F[_] : Sync : LoggerFactory]: InputParser[F] =
     val logger = LoggerFactory.getLogger
 
-    (state: GameState, playerId: PlayerId, rawInput: String) =>
+    (state: ERsGameState, playerId: PlayerId, rawInput: String) =>
       logger.debug(playerId.ctx(playerIdKey))(s"Input [${if rawInput.isEmpty then "❌" else rawInput}]") >>
         (rawInput match
           case "\\q" => NonEmptyList.one(End(playerId)).pure

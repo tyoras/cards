@@ -8,12 +8,14 @@ import io.tyoras.cards.domain.card.{Card, Hand, Turn}
 import io.tyoras.cards.domain.game.GameStateFilter
 import io.tyoras.cards.domain.game.war.codecs.given
 import io.tyoras.cards.domain.game.war.model.PlayerGameState.WarTurn.BattleRound
-import io.tyoras.cards.domain.game.war.model.{Elimination, GameState, PlayerId}
+import io.tyoras.cards.domain.game.war.model.{Elimination, WarGameState, PlayerId}
 
 sealed trait PlayerGameState:
   val code: String
   val label: String
   val turn: Turn
+
+  /** The ID of the player seeing the states */
   val playerId: PlayerId
 
 object PlayerGameState:
@@ -73,14 +75,14 @@ object PlayerGameState:
     override val code: String  = "exit"
     override val label: String = "Exit"
 
-  given GameStateFilter[GameState] with
+  given GameStateFilter[WarGameState] with
     type PlayerState = PlayerGameState
     override def codec: Codec[PlayerGameState] = summon[ConfiguredCodec[PlayerGameState]]
-    extension (gameState: GameState)
+    extension (gameState: WarGameState)
       def filterForPlayer(playerId: PlayerId): PlayerGameState =
         gameState match
-          case s: GameState.Init       => Init(s.context.turnNumber, playerId, s.ready, s.notReady)
-          case s: GameState.BattleTurn =>
+          case s: WarGameState.Init       => Init(s.context.turnNumber, playerId, s.ready, s.notReady)
+          case s: WarGameState.BattleTurn =>
             BattleTurn(
               s.context.turnNumber,
               playerId,
@@ -89,7 +91,7 @@ object PlayerGameState:
               s.playedCards,
               s.missingPlays
             )
-          case s: GameState.WarTurn =>
+          case s: WarGameState.WarTurn =>
             val battles = s.battles.map(b => WarTurn.BattleRound(b.involvedPlayers, b.hiddenPlayedCards, b.fightingCards))
             WarTurn(
               s.context.turnNumber,
@@ -100,7 +102,7 @@ object PlayerGameState:
               s.missingHidden,
               s.missingPlays
             )
-          case s: GameState.PlayerWinTurn =>
+          case s: WarGameState.PlayerWinTurn =>
             PlayerWinTurn(
               s.context.turnNumber,
               playerId,
@@ -112,5 +114,5 @@ object PlayerGameState:
               s.acked,
               s.notAcked
             )
-          case s: GameState.Finish => Finish(s.context.turnNumber, playerId, s.winnerId, s.context.eliminations)
-          case s: GameState.Exit   => Exit(s.context.turnNumber, playerId)
+          case s: WarGameState.Finish => Finish(s.context.turnNumber, playerId, s.winnerId, s.context.eliminations)
+          case s: WarGameState.Exit   => Exit(s.context.turnNumber, playerId)

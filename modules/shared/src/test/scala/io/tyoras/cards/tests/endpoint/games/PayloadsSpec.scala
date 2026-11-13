@@ -1,15 +1,16 @@
 package io.tyoras.cards.tests.endpoint.games
 
 import io.circe.testing.golden.GoldenCodecTests
-import io.tyoras.cards.tests.SharedCodecTestUtils
+import io.tyoras.cards.tests.{SharedCodecTestUtils, gameIdGen, pick, userIdGen}
 import org.scalatest.prop.Configuration
 import org.typelevel.discipline.scalatest.FlatSpecDiscipline
-
 import cats.data.NonEmptyList
 import io.circe.Json
 import io.circe.parser.parse
 import io.circe.syntax.*
 import io.scalaland.chimney.dsl.*
+import io.tyoras.cards.domain.card.Turn
+import io.tyoras.cards.domain.game.war.model.{GameContext, WarGameState}
 import io.tyoras.cards.domain.game.{Game, GameTyp}
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.shared.endpoint.games.Payloads.{Request, Response}
@@ -25,16 +26,16 @@ class PayloadsSpec extends AnyFlatSpec with Matchers with EitherValues with Shar
 
   private val createdAt = ZonedDateTime.parse("2026-01-01T10:00:00Z")
   private val updatedAt = ZonedDateTime.parse("2026-01-02T10:00:00Z")
-  private val gameId    = Game.ID(UUID.randomUUID())
-  private val player1   = User.ID(UUID.randomUUID())
-  private val player2   = User.ID(UUID.randomUUID())
+  private val gameId    = gameIdGen.pick
+  private val player1   = userIdGen.pick
+  private val player2   = userIdGen.pick
 
-  private val existingGame: Game.Existing[Json] =
+  private val existingGame: Game.Existing[WarGameState] =
     Game.Existing(
       gameId,
       createdAt,
       updatedAt,
-      Game.Data(GameTyp.War.asInstanceOf[GameTyp[Json, ?]], NonEmptyList.of(player1, player2), Json.Null, player1, None)
+      Game.Data(GameTyp.War, NonEmptyList.of(player1, player2), WarGameState.Exit(GameContext(Map.empty, createdAt, Turn.firstTurn)), player1, None)
     )
 
   private val expectedResponse = Response.Game(gameId, createdAt, updatedAt, GameTyp.War, NonEmptyList.of(player1, player2))

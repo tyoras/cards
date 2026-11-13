@@ -20,7 +20,7 @@ import org.scalatest.matchers.should.Matchers
 
 import java.time.{ZoneOffset, ZonedDateTime}
 
-class GameStateSpec extends AnyFlatSpec with Matchers:
+class SchnapsenGameStateSpec extends AnyFlatSpec with Matchers:
 
   private val dealerId: PlayerId   = userIdGen.pick
   private val forehandId: PlayerId = userIdGen.pick
@@ -204,9 +204,9 @@ class GameStateSpec extends AnyFlatSpec with Matchers:
   }
 
   "The player game state filter" should "be available and produce an encodable state" in {
-    GameStateFilter[GameState] should not be null
-    val codec = PlayerGameState.given_GameStateFilter_GameState.codec
-    val state = (Init(round()): GameState).filterForPlayer(dealerId)
+    GameStateFilter[SchnapsenGameState] should not be null
+    val codec = PlayerGameState.given_GameStateFilter_SchnapsenGameState.codec
+    val state = (Init(round()): SchnapsenGameState).filterForPlayer(dealerId)
     state shouldBe PlayerGameState()
     codec.decodeJson(codec(state)) shouldBe Right(state)
   }
@@ -218,7 +218,7 @@ class GameStateSpec extends AnyFlatSpec with Matchers:
       talon = List(jack(Club)),
       talonClosing = Some(TalonClosing(forehandId, 3))
     )
-    val states = List[GameState](
+    val states = List[SchnapsenGameState](
       Init(r),
       EarlyGameForehandTurn(r, Some(Marriage(Club, Common))),
       EarlyGameDealerTurn(r, ten(Club)),
@@ -228,7 +228,7 @@ class GameStateSpec extends AnyFlatSpec with Matchers:
       Finish(r, TalonExhausted(forehandId, dealerId)),
       Exit(r)
     )
-    states.foreach(state => decode[GameState](state.asJson.noSpaces) shouldBe Right(state))
+    states.foreach(state => decode[SchnapsenGameState](state.asJson.noSpaces) shouldBe Right(state))
   }
 
   "The input codec" should "round-trip every input" in {

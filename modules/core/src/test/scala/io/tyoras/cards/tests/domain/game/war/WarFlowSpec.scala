@@ -10,7 +10,7 @@ import io.tyoras.cards.domain.card.Suit.*
 import io.tyoras.cards.domain.game.GameError.NoPlayersError
 import io.tyoras.cards.domain.game.GameTyp
 import io.tyoras.cards.domain.game.war.War
-import io.tyoras.cards.domain.game.war.model.GameState.*
+import io.tyoras.cards.domain.game.war.model.WarGameState.*
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.*
 import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.*
 import io.tyoras.cards.domain.game.war.model.*
@@ -49,21 +49,21 @@ class WarFlowSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
   private def context(hands: (PlayerId, Hand)*): GameContext =
     GameContext(hands.map((id, hand) => id -> Player(id, hand)).toMap, ZonedDateTime.now(), Turn.firstTurn)
 
-  private def battle(hands: (PlayerId, Hand)*): GameState = BattleTurn(context(hands*))
+  private def battle(hands: (PlayerId, Hand)*): WarGameState = BattleTurn(context(hands*))
 
   // plays the first card of each listed player, in order
-  private def playAll(start: GameState, players: PlayerId*): IO[GameState] =
+  private def playAll(start: WarGameState, players: PlayerId*): IO[WarGameState] =
     War.fromState[IO](gameId, start).flatMap { war =>
       players.toList.foldLeftM(start) { (_, id) =>
         war.currentState.flatMap(s => war.submitInput(PlayCard(id, s.context.players(id).hand.head.id)))
       }
     }
 
-  private def asWin(state: GameState): PlayerWinTurn = state match
+  private def asWin(state: WarGameState): PlayerWinTurn = state match
     case s: PlayerWinTurn => s
     case other            => fail(s"Expected PlayerWinTurn but got $other")
 
-  private def asWar(state: GameState): WarTurn = state match
+  private def asWar(state: WarGameState): WarTurn = state match
     case s: WarTurn => s
     case other      => fail(s"Expected WarTurn but got $other")
 
@@ -256,7 +256,7 @@ class WarFlowSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
 
   // ---- turn acknowledgement and end of the game
 
-  private def winTurn(ctx: GameContext, acked: Set[PlayerId] = Set.empty): GameState = PlayerWinTurn(ctx, p1, Set(aceS), Set.empty, acked)
+  private def winTurn(ctx: GameContext, acked: Set[PlayerId] = Set.empty): WarGameState = PlayerWinTurn(ctx, p1, Set(aceS), Set.empty, acked)
 
   "Ready after a won turn" should "wait for all the players" in {
     War.fromState[IO](gameId, winTurn(context(p1 -> List(aceS), p2 -> List(twoS)))).flatMap(_.submitInput(Ready(p2))).asserting { state =>
@@ -302,7 +302,7 @@ class WarFlowSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
 
   // ---- meta inputs in the middle of the game
 
-  private def metaInput(input: WarInput)(check: GameState => Assertion): IO[Assertion] =
+  private def metaInput(input: WarInput)(check: WarGameState => Assertion): IO[Assertion] =
     War.fromState[IO](gameId, battle(p1 -> List(aceS), p2 -> List(twoS))).flatMap(_.submitInput(input)).asserting(check)
 
   "Restart" should "deal a new game for the same players from any state" in {

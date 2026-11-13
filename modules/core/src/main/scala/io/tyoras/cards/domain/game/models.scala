@@ -33,12 +33,16 @@ trait GameStateFilter[State]:
 object GameStateFilter:
   def apply[State](using filter: GameStateFilter[State]): GameStateFilter[State] = filter
 
+trait GameState:
+  def code: String
+  def label: String
+
 trait GameInput:
   def label: String
   def playerId: User.ID
 
 type GameType = GameTyp[?, ?]
-sealed abstract class GameTyp[S : Codec, I <: GameInput : Decoder](val label: String, val minPlayers: Int, val maxPlayers: Int)(using
+sealed abstract class GameTyp[S <: GameState : Codec, I <: GameInput : Decoder](val label: String, val minPlayers: Int, val maxPlayers: Int)(using
     filter: GameStateFilter[S]
 ):
   type State       = S
@@ -52,9 +56,9 @@ sealed abstract class GameTyp[S : Codec, I <: GameInput : Decoder](val label: St
   given Codec[PlayerState] = filter.codec.asInstanceOf[Codec[PlayerState]]
 
 object GameTyp:
-  case object EgyptianRatscrew extends GameTyp[ers.model.GameState, ers.model.ERSInput]("egyptian_ratscrew", 2, 52)
-  case object Schnapsen        extends GameTyp[schnapsen.model.GameState, schnapsen.model.SchnapsenInput]("schnapsen", 2, 2)
-  case object War              extends GameTyp[war.model.GameState, war.model.WarInput]("war", 2, 52)
+  case object EgyptianRatscrew extends GameTyp[ers.model.ERsGameState, ers.model.ERSInput]("egyptian_ratscrew", 2, 52)
+  case object Schnapsen        extends GameTyp[schnapsen.model.SchnapsenGameState, schnapsen.model.SchnapsenInput]("schnapsen", 2, 2)
+  case object War              extends GameTyp[war.model.WarGameState, war.model.WarInput]("war", 2, 52)
   given Encoder[GameType] = Encoder.encodeString.contramap(_.label)
   given Decoder[GameType] = Decoder.decodeString.map(_.trim.toLowerCase).emap {
     case EgyptianRatscrew.label => EgyptianRatscrew.asRight
@@ -63,7 +67,7 @@ object GameTyp:
     case other                  => s"Unknown game type $other".asLeft
   }
 
-trait ActiveGame[F[_], State, Input <: GameInput]:
+trait ActiveGame[F[_], State <: GameState, Input <: GameInput]:
   def gameId: Game.ID
   def gameType: GameTyp[State, Input]
   def playerIds: F[NonEmptyList[User.ID]]
@@ -71,7 +75,7 @@ trait ActiveGame[F[_], State, Input <: GameInput]:
   def submitInput(input: Input): F[State]
   def isFinished: F[Boolean]
 
-sealed abstract class Game[State] extends Product with Serializable:
+sealed abstract class Game[State <: GameState] extends Product with Serializable:
   protected type ThisType <: Game[State]
 
   def gameType: GameTyp[State, ?]
@@ -87,7 +91,7 @@ object Game:
   type Count      = Int :| Positive0
   type Percentage = Double :| Closed[0.0, 100.0]
 
-  final case class Existing[State](id: Game.ID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: Data[State]) extends Game[State]:
+  final case class Existing[State <: GameState](id: Game.ID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: Data[State]) extends Game[State]:
     override protected type ThisType = Existing[State]
 
     override def gameType: GameTyp[State, ?]    = data.gameType
@@ -101,10 +105,15 @@ object Game:
       copy(data = data.copy(finishedAt = Some(finishedAt)))
 
   object Existing:
-    given [State]: Show[Existing[State]] = e => s"id = ${e.id} | created_at = ${e.createdAt} | updated_at = ${e.updatedAt} | ${e.data.show}"
+    given [State <: GameState]: Show[Existing[State]] = e => s"id = ${e.id} | created_at = ${e.createdAt} | updated_at = ${e.updatedAt} | ${e.data.show}"
 
-  final case class Data[State](gameType: GameTyp[State, ?], players: NonEmptyList[User.ID], state: State, createdBy: User.ID, finishedAt: Option[ZonedDateTime])
-      extends Game[State]:
+  final case class Data[State <: GameState](
+      gameType: GameTyp[State, ?],
+      players: NonEmptyList[User.ID],
+      state: State,
+      createdBy: User.ID,
+      finishedAt: Option[ZonedDateTime]
+  ) extends Game[State]:
     override protected type ThisType = Data[State]
 
     override def withUpdatedState(newState: State): ThisType = copy(state = newState)
@@ -112,7 +121,7 @@ object Game:
     override def withFinishedAt(finishedAt: ZonedDateTime): ThisType = copy(finishedAt = Some(finishedAt))
 
   object Data:
-    given [State]: Show[Data[State]] = d =>
+    given [State <: GameState]: Show[Data[State]] = d =>
       s"""game = ${d.gameType} | players = ${d.players.toList
           .mkString(", ")} | State = ${d.state} | created_by = ${d.createdBy} | finished_at = ${d.finishedAt.map(_.toString).getOrElse("not finished")}"""
 

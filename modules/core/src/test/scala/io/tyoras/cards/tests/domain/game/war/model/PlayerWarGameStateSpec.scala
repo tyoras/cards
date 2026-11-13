@@ -13,7 +13,7 @@ import org.scalatest.matchers.should.Matchers
 
 import java.time.{ZoneOffset, ZonedDateTime}
 
-class PlayerGameStateSpec extends AnyFlatSpec with Matchers:
+class PlayerWarGameStateSpec extends AnyFlatSpec with Matchers:
 
   private val p1: PlayerId = userIdGen.pick
   private val p2: PlayerId = userIdGen.pick
@@ -28,14 +28,14 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers:
   )
   private val counts = context.playersCardCount
 
-  private def filtered(state: GameState): PlayerGameState = state.filterForPlayer(p1)
+  private def filtered(state: WarGameState): PlayerGameState = state.filterForPlayer(p1)
 
   private def roundTrip(state: PlayerGameState) =
-    val codec = PlayerGameState.given_GameStateFilter_GameState.codec
+    val codec = PlayerGameState.given_GameStateFilter_WarGameState.codec
     codec.decodeJson(codec(state)) shouldBe Right(state)
 
   "The filter" should "convert Init" in {
-    val state = filtered(GameState.Init(context, Set(p2)))
+    val state = filtered(WarGameState.Init(context, Set(p2)))
     state shouldBe PlayerGameState.Init(turn, p1, Set(p2), Set(p1))
     state.code shouldBe "init"
     state.label shouldBe "Initialisation"
@@ -43,7 +43,7 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers:
   }
 
   it should "convert BattleTurn showing only the hand of the player" in {
-    val state = filtered(GameState.BattleTurn(context, Map(p2 -> Card(Club, Ten()))))
+    val state = filtered(WarGameState.BattleTurn(context, Map(p2 -> Card(Club, Ten()))))
     state shouldBe PlayerGameState.BattleTurn(turn, p1, List(p1Card), counts, Map(p2 -> Card(Club, Ten())), Set(p1))
     state.code shouldBe "battle-turn"
     state.label should include(p1.toString)
@@ -52,8 +52,8 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers:
   }
 
   it should "convert WarTurn" in {
-    val round = GameState.WarTurn.BattleRound(NonEmptySet.of(p1, p2), Map.empty, Map(p1 -> Card(Club, Ten()), p2 -> Card(Diamond, Ten())))
-    val state = filtered(GameState.WarTurn(context, NonEmptyList.one(round)))
+    val round = WarGameState.WarTurn.BattleRound(NonEmptySet.of(p1, p2), Map.empty, Map(p1 -> Card(Club, Ten()), p2 -> Card(Diamond, Ten())))
+    val state = filtered(WarGameState.WarTurn(context, NonEmptyList.one(round)))
     val war   = state.asInstanceOf[PlayerGameState.WarTurn]
     war.hand shouldBe List(p1Card)
     war.opponents shouldBe counts
@@ -69,7 +69,7 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers:
 
   it should "convert PlayerWinTurn" in {
     val won   = Set(p1Card, p2Card)
-    val state = filtered(GameState.PlayerWinTurn(context, p2, won, Set(p1), Set(p2)))
+    val state = filtered(WarGameState.PlayerWinTurn(context, p2, won, Set(p1), Set(p2)))
     state shouldBe PlayerGameState.PlayerWinTurn(turn, p1, List(p1Card), counts, p2, won, Set(p1), Set(p2), Set(p1))
     state.code shouldBe "player-win-turn"
     state.label shouldBe s"Player $p2 has won the turn and won 2 cards."
@@ -78,7 +78,7 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers:
 
   it should "convert Finish" in {
     val eliminated = context.eliminatePlayer(p2)
-    val state      = filtered(GameState.Finish(eliminated, p1))
+    val state      = filtered(WarGameState.Finish(eliminated, p1))
     state shouldBe PlayerGameState.Finish(turn, p1, p1, List(Elimination(p2, turn)))
     state.code shouldBe "finish"
     state.label shouldBe "Finish"
@@ -86,7 +86,7 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers:
   }
 
   it should "convert Exit" in {
-    val state = filtered(GameState.Exit(context))
+    val state = filtered(WarGameState.Exit(context))
     state shouldBe PlayerGameState.Exit(turn, p1)
     state.code shouldBe "exit"
     state.label shouldBe "Exit"
@@ -94,13 +94,13 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers:
   }
 
   it should "give an empty hand to an unknown player" in {
-    val state = GameState.BattleTurn(context).filterForPlayer(userIdGen.pick)
+    val state = WarGameState.BattleTurn(context).filterForPlayer(userIdGen.pick)
     state.asInstanceOf[PlayerGameState.BattleTurn].hand shouldBe empty
     state.asInstanceOf[PlayerGameState.BattleTurn].pickFirstCard shouldBe None
   }
 
   "GameState.pickFirstCard" should "return the first card of the player" in {
-    (GameState.Init(context): GameState).pickFirstCard(p2) shouldBe Some(p2Card)
+    (WarGameState.Init(context): WarGameState).pickFirstCard(p2) shouldBe Some(p2Card)
   }
 
   "WarError" should "expose its code and message" in {

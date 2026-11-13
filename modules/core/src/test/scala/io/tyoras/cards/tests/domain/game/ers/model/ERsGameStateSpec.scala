@@ -5,14 +5,14 @@ import io.tyoras.cards.domain.card.Rank.*
 import io.tyoras.cards.domain.card.Suit.*
 import io.tyoras.cards.domain.card.{Card, Turn}
 import io.tyoras.cards.domain.game.ers.model.*
-import io.tyoras.cards.domain.game.ers.model.GameState.*
+import io.tyoras.cards.domain.game.ers.model.ERsGameState.*
 import io.tyoras.cards.tests.{pick, userIdGen}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.time.ZonedDateTime
 
-class GameStateSpec extends AnyFlatSpec with Matchers:
+class ERsGameStateSpec extends AnyFlatSpec with Matchers:
 
   private val p1: PlayerId = userIdGen.pick
   private val p2: PlayerId = userIdGen.pick

@@ -9,7 +9,7 @@ import io.tyoras.cards.domain.card.Suit.*
 import io.tyoras.cards.domain.game.GameTyp
 import io.tyoras.cards.domain.game.ers.EgyptianRatscrew
 import io.tyoras.cards.domain.game.ers.model.*
-import io.tyoras.cards.domain.game.ers.model.GameState.*
+import io.tyoras.cards.domain.game.ers.model.ERsGameState.*
 import io.tyoras.cards.domain.game.ers.model.ERSInput.{GameInput, MetaInput}
 import io.tyoras.cards.domain.game.ers.model.ERSInput.GameInput.{PlayCard, Ready, Slap}
 import io.tyoras.cards.domain.user.model.User
@@ -39,9 +39,9 @@ class EgyptianRatscrewSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers 
       NonEmptyList.fromListUnsafe(hands.map(_._1).toList)
     )
 
-  private def game(state: GameState): IO[EgyptianRatscrew[IO]] = EgyptianRatscrew.fromState[IO](gameId, state)
+  private def game(state: ERsGameState): IO[EgyptianRatscrew[IO]] = EgyptianRatscrew.fromState[IO](gameId, state)
 
-  private def play(state: GameState, inputs: ERSInput*): IO[GameState] =
+  private def play(state: ERsGameState, inputs: ERSInput*): IO[ERsGameState] =
     game(state).flatMap(g => inputs.foldLeft(g.currentState)((acc, i) => acc >> g.submitInput(i)))
 
   private def play(playerId: PlayerId, card: Card): PlayCard = PlayCard(playerId, card.id)

@@ -21,7 +21,7 @@ import org.http4s.{AuthedRoutes, EntityDecoder, HttpRoutes, Response}
 import io.tyoras.cards.shared.protocol.game.OutputMessage.{DiscardMessage, GameEnded, KeepAlive, PlayerConnectionSuccess, PlayerDisconnected}
 import io.tyoras.cards.domain.game.war.War
 import io.tyoras.cards.domain.game.war.codecs.given
-import io.tyoras.cards.domain.game.war.model.GameState
+import io.tyoras.cards.domain.game.war.model.WarGameState
 import io.tyoras.cards.domain.user.UserService
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.server.endpoints.ErrorHandling.ApiError.InvalidRequest
@@ -78,7 +78,7 @@ object WarEndpoint:
         players   <- playersValidation(payload.players)
         war       <- War(payload.players)
         initState <- war.currentState
-        created   <- gameService.create(Game.Data[GameState](GameTyp.War, payload.players, initState, user.id, None), war.gameId.some)
+        created   <- gameService.create(Game.Data[WarGameState](GameTyp.War, payload.players, initState, user.id, None), war.gameId.some)
         _         <- gameProtocol.registerActiveGame(created.id, war)
         _         <- createGameChat(created.id, players)
         response  <- Created(Payloads.Response.Game.fromExistingGame(created))
@@ -129,7 +129,7 @@ object WarEndpoint:
           case OutputMessage.GameError(gameId, recipient, _, _)     => playerRef.get.map(_.fold(false)(p => p.gameId == gameId && p.playerId == recipient))
           case OutputMessage.ProtocolError(gameId, recipient, _, _) => playerRef.get.map(_.fold(false)(p => p.gameId == gameId && p.playerId == recipient))
           case PlayerConnectionSuccess(gameId, _, _, _)             => playerRef.get.map(_.fold(false)(_.gameId == gameId))
-          case PlayerDisconnected(gameId, _, _)                     => playerRef.get.map(_.fold(false)(_.gameId == gameId))
+          case PlayerDisconnected(gameId, _, _, _)                  => playerRef.get.map(_.fold(false)(_.gameId == gameId))
           case GameEnded(gameId)                                    => playerRef.get.map(_.fold(false)(_.gameId == gameId))
           case _                                                    => true.pure
 

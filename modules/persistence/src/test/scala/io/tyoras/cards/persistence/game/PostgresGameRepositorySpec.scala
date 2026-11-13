@@ -4,7 +4,8 @@ import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.syntax.all.*
 import io.tyoras.cards.domain.card.{Hand, Turn}
-import io.tyoras.cards.domain.game.war.model.{GameContext, GameState, Player}
+import io.tyoras.cards.domain.game.ers.model.ERsGameState
+import io.tyoras.cards.domain.game.ers.model.{GameContext, Player}
 import io.tyoras.cards.domain.game.{Game, GameRepository, GameTyp}
 import io.tyoras.cards.domain.user.UserRepository
 import io.tyoras.cards.domain.user.model.User
@@ -23,12 +24,12 @@ object PostgresGameRepositorySpec:
   private val playerData     = User.Data(User.Name("Julio"), User.About("Cool cat"))
   private val existingPlayer = User.Existing(playerId, ZonedDateTime.now(), ZonedDateTime.now(), playerData)
   private val gameId         = Game.ID(UUID.randomUUID())
-  private val gameType       = GameTyp.War
+  private val gameType       = GameTyp.EgyptianRatscrew
   private val now            = ZonedDateTime.now()
   private val gameData       = Game.Data(
     gameType,
     NonEmptyList.one(playerId),
-    GameState.Exit(GameContext(Map(playerId -> Player(playerId, Hand.empty)), now, Turn.assume(10), Nil)),
+    ERsGameState.Exit(GameContext(Map(playerId -> Player(playerId, Hand.empty)), now, Turn.assume(10), NonEmptyList.one(playerId), Nil)),
     playerId,
     None
   )
@@ -188,9 +189,9 @@ class PostgresGameRepositorySpec extends PgIntegrationTest with BeforeAndAfterEa
           userRepo.flatMap(_.insert(existingPlayer.data, withId = existingPlayer.id.some)) *>
             initPgRepo.flatMap { testedRepo =>
               for
-                created1 <- testedRepo.insert(gameData.copy(state = GameState.Exit(gameData.state.context), finishedAt = now.some), withId = None)
+                created1 <- testedRepo.insert(gameData.copy(state = ERsGameState.Exit(gameData.state.context), finishedAt = now.some), withId = None)
                 created2 <- testedRepo.insert(
-                  gameData.copy(players = NonEmptyList.of(existingPlayer.id), state = GameState.Exit(gameData.state.context), finishedAt = now.some),
+                  gameData.copy(players = NonEmptyList.of(existingPlayer.id), state = ERsGameState.Exit(gameData.state.context), finishedAt = now.some),
                   withId = None
                 )
                 read <- testedRepo.readManyByUser[gameType.State](existingPlayer.id, finished = true)

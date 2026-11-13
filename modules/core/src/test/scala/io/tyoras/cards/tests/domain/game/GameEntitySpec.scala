@@ -6,7 +6,7 @@ import io.tyoras.cards.domain.card.Turn
 import io.tyoras.cards.domain.game.GameError.{GameAlreadyFinished, GameNotFound, NoPlayersError}
 import io.tyoras.cards.domain.game.*
 import io.tyoras.cards.domain.game.war.model.PlayerGameState.given
-import io.tyoras.cards.domain.game.war.model.{GameContext, GameState, WarInput}
+import io.tyoras.cards.domain.game.war.model.{GameContext, WarGameState, WarInput}
 import io.tyoras.cards.tests.{gameIdGen, pick, userIdGen}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -20,10 +20,10 @@ class GameEntitySpec extends AnyFlatSpec with Matchers:
   private val user2   = userIdGen.pick
   private val gameId  = gameIdGen.pick
   private val context = GameContext(Map.empty, now, Turn.firstTurn)
-  private val state   = GameState.Exit(context): GameState
-  private val other   = GameState.Init(context): GameState
+  private val state   = WarGameState.Exit(context): WarGameState
+  private val other   = WarGameState.Init(context): WarGameState
 
-  private val data     = Game.Data[GameState](GameTyp.War, NonEmptyList.of(user1, user2), state, user1, None)
+  private val data     = Game.Data[WarGameState](GameTyp.War, NonEmptyList.of(user1, user2), state, user1, None)
   private val existing = Game.Existing(gameId, now, now, data)
 
   "Game.Data" should "update its state" in {
@@ -74,7 +74,7 @@ class GameEntitySpec extends AnyFlatSpec with Matchers:
   }
 
   "GameStateFilter.apply" should "summon the filter of the state" in {
-    GameStateFilter[GameState].codec should not be null
+    GameStateFilter[WarGameState].codec should not be null
   }
 
   "GameTyp" should "provide the codecs and the filter of its state and input" in {

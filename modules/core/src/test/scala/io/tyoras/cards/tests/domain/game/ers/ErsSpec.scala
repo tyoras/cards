@@ -6,7 +6,7 @@ import io.tyoras.cards.domain.card.Suit.*
 import io.tyoras.cards.domain.card.{Card, Turn}
 import io.tyoras.cards.domain.game.ers.*
 import io.tyoras.cards.domain.game.ers.model.*
-import io.tyoras.cards.domain.game.ers.model.GameState.Init
+import io.tyoras.cards.domain.game.ers.model.ERsGameState.Init
 import io.tyoras.cards.tests.{pick, userIdGen}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

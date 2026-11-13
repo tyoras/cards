@@ -28,41 +28,22 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers:
     List(Elimination(p2, Turn(2)))
   )
 
-  private def filtered(state: GameState): PlayerGameState = state.filterForPlayer(p1)
+  private def filtered(state: ERsGameState): PlayerGameState = state.filterForPlayer(p1)
 
   private def roundTrip(state: PlayerGameState) =
-    val codec = PlayerGameState.given_GameStateFilter_GameState.codec
+    val codec = PlayerGameState.given_GameStateFilter_ERsGameState.codec
     codec.decodeJson(codec(state)) shouldBe Right(state)
 
   "The filter" should "convert Init" in {
-    val state = filtered(GameState.Init(context, Set(p2)))
+    val state = filtered(ERsGameState.Init(context, Set(p2)))
     state shouldBe PlayerGameState.Init(turn, p1, Set(p2), Set(p1))
     state.code shouldBe "init"
     state.label shouldBe "Initialisation"
     roundTrip(state)
   }
 
-  it should "convert PlayerWinTurn showing only the hand of the player" in {
-    val wonCards = NonEmptyList.of(Card(Club, Ten()), Card(Club, Nine()))
-    val state    = filtered(GameState.PlayerWinTurn(context, p2, wonCards, Set.empty, Set(p2)))
-    state shouldBe PlayerGameState.PlayerWinTurn(
-      turn,
-      p1,
-      List(p1Card),
-      context.playersCardCount,
-      p2,
-      wonCards,
-      Set.empty,
-      Set(p2),
-      Set(p1)
-    )
-    state.code shouldBe "player-win-turn"
-    state.label shouldBe s"Player $p2 has won the turn and won 2 cards."
-    roundTrip(state)
-  }
-
   it should "convert Finish" in {
-    val state = filtered(GameState.Finish(context, p1))
+    val state = filtered(ERsGameState.Finish(context, p1))
     state shouldBe PlayerGameState.Finish(turn, p1, p1, context.eliminations)
     state.code shouldBe "finish"
     state.label shouldBe "Finish"
@@ -70,7 +51,7 @@ class PlayerGameStateSpec extends AnyFlatSpec with Matchers:
   }
 
   it should "convert Exit" in {
-    val state = filtered(GameState.Exit(context))
+    val state = filtered(ERsGameState.Exit(context))
     state shouldBe PlayerGameState.Exit(turn, p1)
     state.code shouldBe "exit"
     state.label shouldBe "Exit"

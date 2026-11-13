@@ -16,8 +16,8 @@ object ActiveGameLoader:
       gameType match
         case GameTyp.EgyptianRatscrew =>
           EgyptianRatscrew
-            .fromState[F](gameId, gameState.asInstanceOf[game.ers.model.GameState])
+            .fromState[F](gameId, gameState.asInstanceOf[game.ers.model.ERsGameState])
             .map(_.asInstanceOf[ActiveGame[F, gameType.State, gameType.Input]])
         case GameTyp.Schnapsen => ??? // TODO implement Schnapsen.fromState[F](gameId, gameState.asInstanceOf[game.schnapsen.model.GameState])
         case GameTyp.War       =>
-          War.fromState[F](gameId, gameState.asInstanceOf[game.war.model.GameState]).map(_.asInstanceOf[ActiveGame[F, gameType.State, gameType.Input]])
+          War.fromState[F](gameId, gameState.asInstanceOf[game.war.model.WarGameState]).map(_.asInstanceOf[ActiveGame[F, gameType.State, gameType.Input]])

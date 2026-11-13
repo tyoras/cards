@@ -8,7 +8,7 @@ import io.tyoras.cards.domain.card.{Turn, international52Deck}
 import io.tyoras.cards.domain.game.stats.GameStatService
 import io.tyoras.cards.domain.game.stats.model.{PlayerGameStat, PlayerGameStats}
 import io.tyoras.cards.domain.game.war.model.*
-import io.tyoras.cards.domain.game.{Game, GameService, GameTyp, GameType}
+import io.tyoras.cards.domain.game.{Game, GameService, GameState, GameTyp, GameType}
 import io.tyoras.cards.domain.user.model.User
 
 import java.time.ZonedDateTime
@@ -29,16 +29,16 @@ object fixtures:
     GameContext(Map(p1 -> Player(p1, h1), p2 -> Player(p2, h2)), now, Turn.firstTurn)
 
   /** Context where p2 is already eliminated so the next acknowledgement of the turn finishes the game */
-  def almostFinishedState(p1: PlayerId, p2: PlayerId): GameState.PlayerWinTurn =
+  def almostFinishedState(p1: PlayerId, p2: PlayerId): WarGameState.PlayerWinTurn =
     val ctx = GameContext(
       Map(p1 -> Player(p1, international52Deck), p2 -> Player(p2, Nil)),
       now,
       Turn.firstTurn,
       eliminations = List(Elimination(p2, Turn.firstTurn))
     )
-    GameState.PlayerWinTurn(ctx, p1, Set.empty, Set(p2), acked = Set(p2))
+    WarGameState.PlayerWinTurn(ctx, p1, Set.empty, Set(p2), acked = Set(p2))
 
-  def warGame(id: Game.ID, state: GameState, finishedAt: Option[ZonedDateTime] = None): Game.Existing[GameState] =
+  def warGame(id: Game.ID, state: WarGameState, finishedAt: Option[ZonedDateTime] = None): Game.Existing[WarGameState] =
     Game.Existing(
       id,
       now,
@@ -48,26 +48,26 @@ object fixtures:
 
   /** In memory game service keeping track of the stored games */
   class InMemoryGameService(val store: Ref[IO, Map[Game.ID, Game.Existing[?]]]) extends GameService[IO]:
-    override def create[State : Codec](game: Game.Data[State], withId: Option[Game.ID]): IO[Game.Existing[State]] =
+    override def create[State <: GameState : Codec](game: Game.Data[State], withId: Option[Game.ID]): IO[Game.Existing[State]] =
       val created = Game.Existing(withId.getOrElse(newGameId), now, now, game)
       store.update(_.updated(created.id, created)).as(created)
 
-    override def update[State : Codec](game: Game.Existing[State]): IO[Game.Existing[State]] =
+    override def update[State <: GameState : Codec](game: Game.Existing[State]): IO[Game.Existing[State]] =
       store.update(_.updated(game.id, game)).as(game)
 
-    override def finish[State : Codec](gameId: Game.ID, finalState: State, finishedAt: ZonedDateTime): IO[Game.Existing[State]] =
+    override def finish[State <: GameState : Codec](gameId: Game.ID, finalState: State, finishedAt: ZonedDateTime): IO[Game.Existing[State]] =
       readById[State](gameId).flatMap {
         case Some(game) => update(game.withUpdatedState(finalState).withFinishedAt(finishedAt))
         case None       => IO.raiseError(new NoSuchElementException(s"game $gameId not found"))
       }
 
-    override def readById[State : Decoder](id: Game.ID): IO[Option[Game.Existing[State]]] =
+    override def readById[State <: GameState : Decoder](id: Game.ID): IO[Option[Game.Existing[State]]] =
       store.get.map(_.get(id).map(_.asInstanceOf[Game.Existing[State]]))
 
-    override def readManyByUser[State : Decoder](userId: User.ID, finished: Boolean): IO[List[Game.Existing[State]]] = IO.pure(Nil)
-    override def readAll[State : Decoder](finished: Boolean): Stream[IO, Game.Existing[State]]                       = Stream.empty
-    override def deleteMany(games: List[Game.Existing[?]]): IO[Unit]                                                 = IO.unit
-    override val deleteAll: IO[Unit]                                                                                 = IO.unit
+    override def readManyByUser[State <: GameState : Decoder](userId: User.ID, finished: Boolean): IO[List[Game.Existing[State]]] = IO.pure(Nil)
+    override def readAll[State <: GameState : Decoder](finished: Boolean): Stream[IO, Game.Existing[State]]                       = Stream.empty
+    override def deleteMany(games: List[Game.Existing[?]]): IO[Unit]                                                              = IO.unit
+    override val deleteAll: IO[Unit]                                                                                              = IO.unit
 
   object InMemoryGameService:
     def make(games: Game.Existing[?]*): IO[InMemoryGameService] =

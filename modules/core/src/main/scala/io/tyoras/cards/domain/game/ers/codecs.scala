@@ -4,8 +4,8 @@ import io.circe.{Codec, Decoder, DecodingFailure, Encoder, KeyDecoder, KeyEncode
 import io.circe.derivation.{ConfiguredCodec, ConfiguredDecoder, ConfiguredEncoder, renaming}
 import io.tyoras.cards.domain.card.codecs.given
 import io.github.iltotore.iron.circe.given
-import io.tyoras.cards.domain.game.ers.model.{ERSInput, Elimination, GameContext, GameState, Player, PlayerGameState, PlayerId}
-import io.tyoras.cards.domain.game.ers.model.GameState.{ChallengeTurn, PlayerTurn}
+import io.tyoras.cards.domain.game.ers.model.{ERSInput, Elimination, GameContext, ERsGameState, Player, PlayerGameState, PlayerId}
+import io.tyoras.cards.domain.game.ers.model.ERsGameState.{ChallengeTurn, PlayerTurn}
 import io.tyoras.cards.domain.user.model.User
 import pl.iterators.kebs.circe.snakified.*
 
@@ -28,6 +28,6 @@ object codecs:
     Encoder.instance(s => gameStateCodec(s))
   )
 
-  given gameStateCodec: ConfiguredCodec[GameState] = ConfiguredCodec.derive(discriminator = Some("code"), transformMemberNames = renaming.snakeCase)
-  given ConfiguredCodec[ERSInput]                  = ConfiguredCodec.derive(discriminator = Some("input_type"), transformMemberNames = renaming.snakeCase)
-  given ConfiguredCodec[PlayerGameState]           = ConfiguredCodec.derive(discriminator = Some("code"), transformMemberNames = renaming.snakeCase)
+  given gameStateCodec: ConfiguredCodec[ERsGameState] = ConfiguredCodec.derive(discriminator = Some("code"), transformMemberNames = renaming.snakeCase)
+  given ConfiguredCodec[ERSInput]                     = ConfiguredCodec.derive(discriminator = Some("input_type"), transformMemberNames = renaming.snakeCase)
+  given ConfiguredCodec[PlayerGameState]              = ConfiguredCodec.derive(discriminator = Some("code"), transformMemberNames = renaming.snakeCase)

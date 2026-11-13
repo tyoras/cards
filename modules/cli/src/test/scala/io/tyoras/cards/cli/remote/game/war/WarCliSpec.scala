@@ -38,7 +38,7 @@ class WarCliSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
     GameMessage.GameState(id, alice.id, initState.asJson),
     GameMessage.GameError(id, alice.id, "bad_input", "Invalid input"),
     GameMessage.ProtocolError(id, alice.id, "bad_command", "Invalid command"),
-    GameMessage.PlayerDisconnected(id, carol.id, "Carol"),
+    GameMessage.PlayerDisconnected(id, War, carol.id, "Carol"),
     GameMessage.GameEnded(id)
   )
 

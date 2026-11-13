@@ -10,7 +10,7 @@ import io.circe.parser.decode
 import io.tyoras.cards.domain.card.{Card, Hand, Turn}
 import io.tyoras.cards.domain.card.Rank.{Ace, Eight, Jack, Ten}
 import io.tyoras.cards.domain.card.Suit.{Club, Heart, Spade}
-import io.tyoras.cards.domain.game.war.model.GameState.WarTurn.BattleRound
+import io.tyoras.cards.domain.game.war.model.WarGameState.WarTurn.BattleRound
 import io.tyoras.cards.tests.{pick, userIdGen}
 
 import java.time.ZonedDateTime
@@ -65,7 +65,7 @@ class CodecsSpec extends AnyFlatSpec with Matchers:
   }
 
   "BattleRound encoder and decoder" should "round-trip correctly with all cards played" in {
-    val round = GameState.WarTurn.BattleRound(
+    val round = WarGameState.WarTurn.BattleRound(
       NonEmptySet.of(playerId1, playerId2),
       Map(playerId1 -> player1FirstCard, playerId2 -> player2.hand.head),
       Map(playerId1 -> player1.hand(1), playerId2  -> Card(Heart, Eight()))
@@ -76,67 +76,67 @@ class CodecsSpec extends AnyFlatSpec with Matchers:
   }
 
   it should "round-trip correctly with no cards played" in {
-    val round   = GameState.WarTurn.BattleRound(NonEmptySet.of(playerId1), Map.empty, Map.empty)
+    val round   = WarGameState.WarTurn.BattleRound(NonEmptySet.of(playerId1), Map.empty, Map.empty)
     val json    = round.asJson
     val decoded = decode[BattleRound](json.noSpaces)
     decoded shouldBe Right(round)
   }
 
   "GameState.Init encoder and decoder" should "round-trip correctly with no ready players" in {
-    val init: GameState = GameState.Init(context)
-    val json            = init.asJson
+    val init: WarGameState = WarGameState.Init(context)
+    val json               = init.asJson
     json.hcursor.get[String]("code") shouldBe Right("Init")
-    val decoded = decode[GameState](json.noSpaces)
+    val decoded = decode[WarGameState](json.noSpaces)
     decoded shouldBe Right(init)
   }
 
   it should "round-trip correctly with ready players" in {
-    val init: GameState = GameState.Init(context, Set(playerId1))
-    val json            = init.asJson
+    val init: WarGameState = WarGameState.Init(context, Set(playerId1))
+    val json               = init.asJson
     json.hcursor.get[String]("code") shouldBe Right("Init")
-    val decoded = decode[GameState](json.noSpaces)
+    val decoded = decode[WarGameState](json.noSpaces)
     decoded shouldBe Right(init)
   }
 
   "GameState.BattleTurn encoder and decoder" should "round-trip correctly with no played cards" in {
-    val battle: GameState = GameState.BattleTurn(context)
-    val json              = battle.asJson
+    val battle: WarGameState = WarGameState.BattleTurn(context)
+    val json                 = battle.asJson
     json.hcursor.get[String]("code") shouldBe Right("BattleTurn")
-    val decoded = decode[GameState](json.noSpaces)
+    val decoded = decode[WarGameState](json.noSpaces)
     decoded shouldBe Right(battle)
   }
 
   it should "round-trip correctly with played cards" in {
-    val battle: GameState = GameState.BattleTurn(context, Map(playerId1 -> player1FirstCard))
-    val json              = battle.asJson
+    val battle: WarGameState = WarGameState.BattleTurn(context, Map(playerId1 -> player1FirstCard))
+    val json                 = battle.asJson
     json.hcursor.get[String]("code") shouldBe Right("BattleTurn")
-    val decoded = decode[GameState](json.noSpaces)
+    val decoded = decode[WarGameState](json.noSpaces)
     decoded shouldBe Right(battle)
   }
 
   "GameState.WarTurn encoder and decoder" should "round-trip correctly" in {
     val firstWarRound =
-      GameState.WarTurn.BattleRound(NonEmptySet.of(playerId1, playerId2), Map(playerId1 -> player1FirstCard, playerId2 -> player2.hand.head), Map.empty)
-    val war: GameState = GameState.WarTurn(context, NonEmptyList.of(firstWarRound))
-    val json           = war.asJson
+      WarGameState.WarTurn.BattleRound(NonEmptySet.of(playerId1, playerId2), Map(playerId1 -> player1FirstCard, playerId2 -> player2.hand.head), Map.empty)
+    val war: WarGameState = WarGameState.WarTurn(context, NonEmptyList.of(firstWarRound))
+    val json              = war.asJson
     json.hcursor.get[String]("code") shouldBe Right("WarTurn")
-    val decoded = decode[GameState](json.noSpaces)
+    val decoded = decode[WarGameState](json.noSpaces)
     decoded shouldBe Right(war)
   }
 
   "GameState.PlayerWinTurn encoder and decoder" should "round-trip correctly with no acknowledgments" in {
-    val win: GameState = GameState.PlayerWinTurn(context, playerId1, Set(player1FirstCard), Set.empty)
-    val json           = win.asJson
+    val win: WarGameState = WarGameState.PlayerWinTurn(context, playerId1, Set(player1FirstCard), Set.empty)
+    val json              = win.asJson
     json.hcursor.get[String]("code") shouldBe Right("PlayerWinTurn")
-    val decoded = decode[GameState](json.noSpaces)
+    val decoded = decode[WarGameState](json.noSpaces)
     decoded shouldBe Right(win)
   }
 
   it should "round-trip correctly with acknowledgments" in {
-    val win: GameState = GameState.PlayerWinTurn(context, playerId1, Set(player1FirstCard), Set.empty, Set(playerId1))
-    val json           = win.asJson
+    val win: WarGameState = WarGameState.PlayerWinTurn(context, playerId1, Set(player1FirstCard), Set.empty, Set(playerId1))
+    val json              = win.asJson
     json.hcursor.get[String]("code") shouldBe Right("PlayerWinTurn")
-    val decoded = decode[GameState](json.noSpaces)
+    val decoded = decode[WarGameState](json.noSpaces)
     decoded shouldBe Right(win)
   }
 

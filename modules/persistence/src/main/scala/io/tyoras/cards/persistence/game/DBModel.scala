@@ -19,16 +19,16 @@ final case class GameCreationDBModel(game: GameType, state: Json, createdBy: UUI
 object GameCreationDBModel:
   val codec: Codec[GameCreationDBModel] = (gameType *: jsonb *: uuid *: timestampTZ.opt).to[GameCreationDBModel]
 
-  def fromGameData[State : Encoder](data: Game.Data[State]): GameCreationDBModel =
+  def fromGameData[State <: GameState : Encoder](data: Game.Data[State]): GameCreationDBModel =
     GameCreationDBModel(data.gameType, data.state.asJson, data.createdBy.unwrap, data.finishedAt)
 
 final case class GameUpdateDBModel(state: Json, updateDate: ZonedDateTime, finishedAt: Option[ZonedDateTime], id: UUID, previousUpdate: ZonedDateTime)
 object GameUpdateDBModel:
-  def fromExisingGame[State : Encoder](existing: Existing[State], updateDate: ZonedDateTime): GameUpdateDBModel =
+  def fromExisingGame[State <: GameState : Encoder](existing: Existing[State], updateDate: ZonedDateTime): GameUpdateDBModel =
     GameUpdateDBModel(existing.data.state.asJson, updateDate, existing.data.finishedAt, existing.id.unwrap, existing.updatedAt)
 
 final case class GameReadDBModel(id: UUID, createdAt: ZonedDateTime, updatedAt: ZonedDateTime, data: GameCreationDBModel):
-  def toExistingGame[State : Decoder](players: NonEmptyList[UUID]): Either[DecodingFailure, Game.Existing[State]] =
+  def toExistingGame[State <: GameState : Decoder](players: NonEmptyList[UUID]): Either[DecodingFailure, Game.Existing[State]] =
     data.state
       .as[State]
       .map(state =>

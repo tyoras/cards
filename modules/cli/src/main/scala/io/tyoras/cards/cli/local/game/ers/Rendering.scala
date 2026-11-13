@@ -4,14 +4,14 @@ import cats.effect.Sync
 import cats.effect.std.Console
 import ErsCliError.InvalidState
 import io.tyoras.cards.cli.lineSeparator
-import io.tyoras.cards.domain.game.ers.model.GameState
-import io.tyoras.cards.domain.game.ers.model.GameState.*
+import io.tyoras.cards.domain.game.ers.model.ERsGameState
+import io.tyoras.cards.domain.game.ers.model.ERsGameState.*
 import org.typelevel.log4cats.LoggerFactory
 import cats.syntax.all.*
 import io.tyoras.cards.domain.game.ers.model.PlayerId
 
 trait Rendering[F[_]]:
-  def renderGameState(state: GameState, playerId: PlayerId): F[Unit]
+  def renderGameState(state: ERsGameState, playerId: PlayerId): F[Unit]
 
 object Rendering:
   def apply[F[_] : Sync : LoggerFactory](playerNames: Map[PlayerId, String])(using console: Console[F]): Rendering[F] =
@@ -70,7 +70,7 @@ object Rendering:
         ) >>
         console.println(s"\nUse \\q to quit the game or \\r to restart a new game with same players...")
 
-    (state: GameState, playerId: PlayerId) =>
+    (state: ERsGameState, playerId: PlayerId) =>
       console.println(lineSeparator) >>
         (state match
           case _: Init          => console.println("Press 'Enter' when you are ready to start the game...")

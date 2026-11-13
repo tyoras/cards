@@ -20,5 +20,5 @@ object codecs extends KebsCirceSnakified:
   given Codec[GameRound]       = ConfiguredCodec.derived
   given Codec[RoundOutcome]    = ConfiguredCodec.derived
 
-  given ConfiguredCodec[GameState]      = ConfiguredCodec.derive(discriminator = Some("code"), transformMemberNames = renaming.snakeCase)
-  given ConfiguredCodec[SchnapsenInput] = ConfiguredCodec.derive(discriminator = Some("input_type"), transformMemberNames = renaming.snakeCase)
+  given ConfiguredCodec[SchnapsenGameState] = ConfiguredCodec.derive(discriminator = Some("code"), transformMemberNames = renaming.snakeCase)
+  given ConfiguredCodec[SchnapsenInput]     = ConfiguredCodec.derive(discriminator = Some("input_type"), transformMemberNames = renaming.snakeCase)

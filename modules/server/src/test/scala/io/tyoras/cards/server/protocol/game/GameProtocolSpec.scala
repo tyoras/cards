@@ -6,7 +6,7 @@ import cats.syntax.all.*
 import dev.profunktor.auth.jwt.JwtToken
 import io.tyoras.cards.domain.game.war.War
 import io.tyoras.cards.domain.game.war.codecs.given
-import io.tyoras.cards.domain.game.war.model.GameState
+import io.tyoras.cards.domain.game.war.model.WarGameState
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.Ready
 import io.tyoras.cards.domain.game.{Game, GameTyp}
 import io.tyoras.cards.server.endpoints.utils.{TestAuthService, TestData}
@@ -33,13 +33,13 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
       result <- GameProtocol.make[IO](new TestAuthService, games, stats).use(p => test(Env(p, games, stats)))
     yield result).unsafeRunSync()
 
-  private def storedState(env: Env, gameId: Game.ID): IO[Option[Game.Existing[GameState]]] =
-    env.games.readById[GameState](gameId)
+  private def storedState(env: Env, gameId: Game.ID): IO[Option[Game.Existing[WarGameState]]] =
+    env.games.readById[WarGameState](gameId)
 
   describe("connectPlayer") {
     it("should connect a player of a stored game and load it as an active game") {
       val gameId             = newGameId
-      val (output, isActive) = withProtocol(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2)))) { env =>
+      val (output, isActive) = withProtocol(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2)))) { env =>
         for
           out    <- env.protocol.connectPlayer(gameId, GameTyp.War, TestData.existingUser)
           active <- env.protocol.activeGames
@@ -51,7 +51,7 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
 
     it("should reject a player who does not belong to the game") {
       val gameId = newGameId
-      val output = withProtocol(warGame(gameId, GameState.Init(twoPlayersContext(newUserId, p2)))) {
+      val output = withProtocol(warGame(gameId, WarGameState.Init(twoPlayersContext(newUserId, p2)))) {
         _.protocol.connectPlayer(gameId, GameTyp.War, TestData.existingUser)
       }
       output shouldBe OutputMessage.AuthError("player_does_not_belong_to_game", ProtocolError.PlayerDoesNotBelongToGame(p1, gameId, GameTyp.War).getMessage)
@@ -65,7 +65,7 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
 
     it("should reject on a finished game") {
       val gameId = newGameId
-      val output = withProtocol(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2)), finishedAt = Some(now))) {
+      val output = withProtocol(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2)), finishedAt = Some(now))) {
         _.protocol.authPlayer(gameId, GameTyp.War, TestData.existingUserAuthToken)
       }
       output shouldBe OutputMessage.AuthError("game_already_finished", s"Game with id $gameId is already finished")
@@ -75,7 +75,7 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
   describe("authPlayer") {
     it("should connect the player owning a valid token") {
       val gameId = newGameId
-      val output = withProtocol(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2)))) {
+      val output = withProtocol(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2)))) {
         _.protocol.authPlayer(gameId, GameTyp.War, TestData.existingUserAuthToken)
       }
       output shouldBe a[OutputMessage.PlayerConnectionSuccess]
@@ -83,7 +83,7 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
 
     it("should reject an invalid token") {
       val gameId = newGameId
-      val output = withProtocol(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2)))) {
+      val output = withProtocol(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2)))) {
         _.protocol.authPlayer(gameId, GameTyp.War, JwtToken("invalid"))
       }
       output shouldBe OutputMessage.AuthError("token_auth", "Invalid token: unknown token")
@@ -91,7 +91,7 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
 
     it("should reject on a finished game") {
       val gameId = newGameId
-      val output = withProtocol(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2)), finishedAt = Some(now))) {
+      val output = withProtocol(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2)), finishedAt = Some(now))) {
         _.protocol.authPlayer(gameId, GameTyp.War, TestData.existingUserAuthToken)
       }
       output shouldBe OutputMessage.AuthError("game_already_finished", s"Game with id $gameId is already finished")
@@ -102,8 +102,8 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
     it("should make the game active") {
       val gameId = newGameId
       // the game is also stored as the protocol saves all the active games on release
-      val active = withProtocol(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2)))) { env =>
-        War.fromState[IO](gameId, GameState.Init(twoPlayersContext(p1, p2))).flatMap(env.protocol.registerActiveGame(gameId, _)) >>
+      val active = withProtocol(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2)))) { env =>
+        War.fromState[IO](gameId, WarGameState.Init(twoPlayersContext(p1, p2))).flatMap(env.protocol.registerActiveGame(gameId, _)) >>
           env.protocol.activeGames
       }
       active.activeGames.keySet shouldBe Set(gameId -> GameTyp.War)
@@ -113,7 +113,7 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
   describe("currentState") {
     it("should return the game state filtered for the player") {
       val gameId = newGameId
-      val output = withProtocol(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2))))(_.protocol.currentState(gameId, GameTyp.War, p1))
+      val output = withProtocol(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2))))(_.protocol.currentState(gameId, GameTyp.War, p1))
       output match
         case OutputMessage.GameState(id, recipient, state) =>
           id shouldBe gameId
@@ -130,7 +130,7 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
 
     it("should return a game error for any other failure") {
       val gameId = newGameId
-      val output = withProtocol(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2)), finishedAt = Some(now))) {
+      val output = withProtocol(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2)), finishedAt = Some(now))) {
         _.protocol.currentState(gameId, GameTyp.War, p1)
       }
       output shouldBe OutputMessage.GameError(gameId, p1, "state_failure", ProtocolError.GameAlreadyFinished(gameId).getMessage)
@@ -140,7 +140,7 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
   describe("submitInput") {
     it("should apply the input and send the new state to every player") {
       val gameId          = newGameId
-      val (output, state) = withProtocol(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2)))) { env =>
+      val (output, state) = withProtocol(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2)))) { env =>
         for
           out   <- env.protocol.submitInput(gameId, GameTyp.War, p1, Ready(p1))
           game  <- env.protocol.activeGames.map(_.get(gameId, GameTyp.War).get)
@@ -148,12 +148,12 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
         yield out -> state
       }
       output.collect { case OutputMessage.GameState(`gameId`, recipient, _) => recipient } should contain theSameElementsAs List(p1, p2)
-      state shouldBe GameState.Init(twoPlayersContext(p1, p2), ready = Set(p1))
+      state shouldBe WarGameState.Init(twoPlayersContext(p1, p2), ready = Set(p1))
     }
 
     it("should reject an input submitted on behalf of another player") {
       val gameId = newGameId
-      val output = withProtocol(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2)))) {
+      val output = withProtocol(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2)))) {
         _.protocol.submitInput(gameId, GameTyp.War, p1, Ready(p2))
       }
       output shouldBe List(
@@ -170,7 +170,7 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
 
     it("should return a game error when the game rejects the input") {
       val gameId = newGameId
-      val state  = GameState.Init(twoPlayersContext(p1, p2), ready = Set(p1))
+      val state  = WarGameState.Init(twoPlayersContext(p1, p2), ready = Set(p1))
       val output = withProtocol(warGame(gameId, state))(_.protocol.submitInput(gameId, GameTyp.War, p1, Ready(p1)))
       output.loneElement match
         case OutputMessage.GameError(`gameId`, `p1`, code, _) => code shouldBe "input_submission_failure"
@@ -189,7 +189,7 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
       }
       output.last shouldBe OutputMessage.GameEnded(gameId)
       stored.flatMap(_.data.finishedAt) shouldBe defined
-      stored.map(_.state) shouldBe Some(GameState.Finish(almostFinishedState(p1, p2).context, p1))
+      stored.map(_.state) shouldBe Some(WarGameState.Finish(almostFinishedState(p1, p2).context, p1))
       active.activeGames shouldBe empty
       upd shouldBe List(StatUpdate(GameTyp.War, winners = List(p1), draws = Nil, losers = List(p2)))
     }
@@ -198,28 +198,28 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
   describe("saveGame") {
     it("should persist the current state of the active game") {
       val gameId = newGameId
-      val stored = withProtocol(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2)))) { env =>
+      val stored = withProtocol(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2)))) { env =>
         env.protocol.submitInput(gameId, GameTyp.War, p1, Ready(p1)) >> env.protocol.saveGame(gameId, GameTyp.War) >> storedState(env, gameId)
       }
-      stored.map(_.state) shouldBe Some(GameState.Init(twoPlayersContext(p1, p2), ready = Set(p1)))
+      stored.map(_.state) shouldBe Some(WarGameState.Init(twoPlayersContext(p1, p2), ready = Set(p1)))
     }
 
     it("should persist the active games when the protocol is released") {
       val gameId = newGameId
       val stored = (for
-        games <- InMemoryGameService.make(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2))))
+        games <- InMemoryGameService.make(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2))))
         stats <- RecordingGameStatService.make
         _     <- GameProtocol.make[IO](new TestAuthService, games, stats).use(_.submitInput(gameId, GameTyp.War, p1, Ready(p1)))
-        state <- games.readById[GameState](gameId)
+        state <- games.readById[WarGameState](gameId)
       yield state).unsafeRunSync()
-      stored.map(_.state) shouldBe Some(GameState.Init(twoPlayersContext(p1, p2), ready = Set(p1)))
+      stored.map(_.state) shouldBe Some(WarGameState.Init(twoPlayersContext(p1, p2), ready = Set(p1)))
     }
   }
 
   describe("endGame") {
     it("should finish the game without updating the stats when it was exited") {
       val gameId                  = newGameId
-      val exit                    = GameState.Exit(twoPlayersContext(p1, p2))
+      val exit                    = WarGameState.Exit(twoPlayersContext(p1, p2))
       val (output, stored, stats) = withProtocol(warGame(gameId, exit)) { env =>
         (env.protocol.endGame(gameId, GameTyp.War), storedState(env, gameId), env.stats.updates.get).tupled
       }
@@ -236,7 +236,7 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
   describe("disconnect") {
     it("should disconnect the player and persist the game state") {
       val gameId                     = newGameId
-      val (output, playerRef, saved) = withProtocol(warGame(gameId, GameState.Init(twoPlayersContext(p1, p2)))) { env =>
+      val (output, playerRef, saved) = withProtocol(warGame(gameId, WarGameState.Init(twoPlayersContext(p1, p2)))) { env =>
         for
           ref   <- Ref.of[IO, Option[ConnectedPlayer]](Some(ConnectedPlayer(gameId, GameTyp.War, p1, "test")))
           _     <- env.protocol.submitInput(gameId, GameTyp.War, p1, Ready(p1))
@@ -245,9 +245,9 @@ class GameProtocolSpec extends AnyFunSpec with Matchers:
           saved <- storedState(env, gameId)
         yield (out, after, saved)
       }
-      output shouldBe OutputMessage.PlayerDisconnected(gameId, p1, "test")
+      output shouldBe OutputMessage.PlayerDisconnected(gameId, GameTyp.War, p1, "test")
       playerRef shouldBe None
-      saved.map(_.state) shouldBe Some(GameState.Init(twoPlayersContext(p1, p2), ready = Set(p1)))
+      saved.map(_.state) shouldBe Some(WarGameState.Init(twoPlayersContext(p1, p2), ready = Set(p1)))
     }
 
     it("should discard the disconnection of an already disconnected player") {

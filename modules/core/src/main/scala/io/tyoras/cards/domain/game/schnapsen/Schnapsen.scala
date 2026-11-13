@@ -18,8 +18,8 @@ import io.tyoras.cards.domain.game.schnapsen.model.SchnapsenInput.MetaInput.*
 import io.tyoras.cards.domain.game.schnapsen.model.RoundOutcome.*
 import io.tyoras.cards.domain.user.model.User
 
-trait Schnapsen[F[_]] extends ActiveGame[F, GameState, SchnapsenInput]:
-  override val gameType: GameTyp[GameState, SchnapsenInput] = GameTyp.Schnapsen
+trait Schnapsen[F[_]] extends ActiveGame[F, SchnapsenGameState, SchnapsenInput]:
+  override val gameType: GameTyp[SchnapsenGameState, SchnapsenInput] = GameTyp.Schnapsen
 
 object Schnapsen:
 
@@ -32,26 +32,26 @@ object Schnapsen:
       initialRound          <- initGameRound(context)(logger)
       _                     <- logger.debug(s"Initial round : $initialRound")
       initialState = Init(initialRound)
-      fsm <- SynchronizedConcurrentFSM.create[F, GameState](initialState)
+      fsm <- SynchronizedConcurrentFSM.create[F, SchnapsenGameState](initialState)
     yield new SchnapsenImplem[F](id, fsm)(logger)
 
-class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l: StructuredLogger[F])(using F: Sync[F]) extends Schnapsen[F]:
+class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, SchnapsenGameState])(l: StructuredLogger[F])(using F: Sync[F]) extends Schnapsen[F]:
   given logger: StructuredLogger[F] = l
 
   override val gameId: Game.ID                     = id
   override val playerIds: F[NonEmptyList[User.ID]] = currentState.map(state => NonEmptyList.of(state.round.context.player1.id, state.round.context.player2.id))
 
-  override def submitInput(input: SchnapsenInput): F[GameState] = fsm.transition { s =>
+  override def submitInput(input: SchnapsenInput): F[SchnapsenGameState] = fsm.transition { s =>
     Logger[F].debug(s"Submitting input $input on current state : $s") >>
       menu
         .orElse(game)
         .applyOrElse(
           s -> input,
-          (_: (GameState, SchnapsenInput)) => Logger[F].debug(s"Ignoring wrong input : $input") *> s.pure[F]
+          (_: (SchnapsenGameState, SchnapsenInput)) => Logger[F].debug(s"Ignoring wrong input : $input") *> s.pure[F]
         )
   }
 
-  private def menu: PartialFunction[(GameState, SchnapsenInput), F[GameState]] =
+  private def menu: PartialFunction[(SchnapsenGameState, SchnapsenInput), F[SchnapsenGameState]] =
     case (s, restart: Restart) =>
       Logger[F].debug(s"Player ${restart.playerId} has asked to restart a new game") >>
         Clock[F].getZonedDateTimeUTC
@@ -60,7 +60,7 @@ class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l
     case (s, end: End) =>
       Logger[F].debug(s"Player ${end.playerId} has asked to exit the game").as(Exit(s.round))
 
-  private def game: PartialFunction[(GameState, SchnapsenInput), F[GameState]] =
+  private def game: PartialFunction[(SchnapsenGameState, SchnapsenInput), F[SchnapsenGameState]] =
     case (Init(g), _: Start)            => Sync[F].pure(EarlyGameForehandTurn(g))
     case (s: ForehandTurn, i: PlayCard) =>
       forehandTurn(s, i).handleErrorWith { case se: SchnapsenError =>
@@ -77,7 +77,7 @@ class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l
     case (s: LateGameForehandTurn, i: Meld) => marriage(s, i)
     case (Finish(r, _), _: Start)           => initGameRound[F](r.context)(logger).map(newRound => EarlyGameForehandTurn(newRound))
 
-  private def forehandTurn(state: ForehandTurn, input: PlayCard): F[GameState] =
+  private def forehandTurn(state: ForehandTurn, input: PlayCard): F[SchnapsenGameState] =
     val forehand = state.currentPlayer
     for
       _           <- checkPlayer(forehand, input.playerId)
@@ -87,7 +87,7 @@ class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l
       case _: EarlyGame => EarlyGameDealerTurn(updatedGame, card)
       case _: LateGame  => LateGameDealerTurn(updatedGame, card)
 
-  private def exchangeTrumpJack(state: EarlyGameForehandTurn, input: ExchangeTrumpJack): F[GameState] =
+  private def exchangeTrumpJack(state: EarlyGameForehandTurn, input: ExchangeTrumpJack): F[SchnapsenGameState] =
     val forehand  = state.currentPlayer
     val trumpCard = state.round.trumpCard
     for
@@ -99,7 +99,7 @@ class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l
       _ <- Logger[F].debug(s"Player ${forehand.name} has exchanged the trump jack ${state.trumpJack} with the trump card $trumpCard")
     yield EarlyGameForehandTurn(updatedRound)
 
-  private def closeTalon(state: EarlyGameForehandTurn, input: CloseTalon): F[GameState] =
+  private def closeTalon(state: EarlyGameForehandTurn, input: CloseTalon): F[SchnapsenGameState] =
     val forehand = state.currentPlayer
     val dealer   = state.round.dealer
     for
@@ -109,7 +109,7 @@ class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l
       _ <- Logger[F].debug(s"Player ${forehand.name} has closed the talon.")
     yield LateGameForehandTurn(lateGame)
 
-  private def marriage(state: ForehandTurn, input: Meld): F[GameState] =
+  private def marriage(state: ForehandTurn, input: Meld): F[SchnapsenGameState] =
     val forehand = state.currentPlayer
     for
       _ <- checkPlayer(forehand, input.playerId)
@@ -124,7 +124,7 @@ class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l
       case _: EarlyGame => EarlyGameForehandTurn(updatedRound, ongoingMarriage = marriage.some)
       case _: LateGame  => LateGameForehandTurn(updatedRound, ongoingMarriage = marriage.some)
 
-  private def dealerTurn(state: DealerTurn, input: PlayCard): F[GameState] =
+  private def dealerTurn(state: DealerTurn, input: PlayCard): F[SchnapsenGameState] =
 
     def resolveTurn(fhCard: Card, dlCard: Card): InternalGameState[F, Unit] = for
       _      <- playCard(state.currentPlayer, dlCard)
@@ -137,7 +137,7 @@ class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l
       _ <- dealer[F] >>= drawCard
     yield ()
 
-    def nextState(game: GameRound): F[GameState] = state match
+    def nextState(game: GameRound): F[SchnapsenGameState] = state match
       case _: EarlyGameDealerTurn =>
         game.talon match
           case _ :: Nil => finishEarlyGame(game)
@@ -196,7 +196,7 @@ class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l
   private def checkPlayedCard(card: Card, playableRule: Card => Boolean): F[Card] =
     if playableRule.apply(card) then card.pure[F] else F.raiseError(InvalidCard())
 
-  private def finishEarlyGame(game: GameRound): F[GameState] = for
+  private def finishEarlyGame(game: GameRound): F[SchnapsenGameState] = for
     drawn <- game.talon.drawFirstCardF[F]
     (lastCard, updatedDeck) = drawn
     updatedForehand         = game.forehand.copy(hand = game.forehand.hand :+ lastCard)
@@ -206,7 +206,7 @@ class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l
     _ <- Logger[F].debug(s"Player ${updatedDealer.name} has drawn the trump card ${game.trumpCard}")
   yield LateGameForehandTurn(lateGame)
 
-  private def finishLateGame(game: GameRound): F[GameState] = for
+  private def finishLateGame(game: GameRound): F[SchnapsenGameState] = for
     _ <- Logger[F].debug("Last hand played with both player hands exhausted.")
     winner      = game.forehand // forehand is the winner of the last trick
     loser       = game.dealer
@@ -214,7 +214,7 @@ class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l
     updatedGame = game.copy(lastHandWonBy = winner.id.some)
   yield applyRoundOutcome(updatedGame, outcome)
 
-  private def claimVictory(state: ForehandTurn, input: ClaimVictory): F[GameState] =
+  private def claimVictory(state: ForehandTurn, input: ClaimVictory): F[SchnapsenGameState] =
     val forehand = state.currentPlayer
     for
       _ <- checkPlayer(forehand, input.playerId)
@@ -246,6 +246,6 @@ class SchnapsenImplem[F[_]](id: Game.ID, fsm: FinalStateMachine[F, GameState])(l
     val updatedRound   = round.copy(context = updatedContext)
     Finish(updatedRound, outcome)
 
-  override def currentState: F[GameState] = fsm.getCurrentState
+  override def currentState: F[SchnapsenGameState] = fsm.getCurrentState
 
   override def isFinished: F[Boolean] = currentState.map(s => s.isInstanceOf[Finish] || s.isInstanceOf[Exit])

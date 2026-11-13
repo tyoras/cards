@@ -18,9 +18,10 @@ object skunk:
   val gameType: Codec[GameType] = `enum`[GameType](
     _.label,
     {
-      case Schnapsen.label => Some(Schnapsen)
-      case War.label       => Some(War)
-      case _               => None
+      case EgyptianRatscrew.label => Some(EgyptianRatscrew)
+      case Schnapsen.label        => Some(Schnapsen)
+      case War.label              => Some(War)
+      case _                      => None
     },
     Type("game_type")
   )

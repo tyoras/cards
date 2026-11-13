@@ -10,6 +10,7 @@ import io.tyoras.cards.shared.endpoint.ErrorPayloads.Response.{ApiFieldError, Ap
 import io.tyoras.cards.shared.endpoint.admin.health.Payloads.Response.HealthStatus
 import io.tyoras.cards.shared.endpoint.auth.Payloads as AuthPayloads
 import io.tyoras.cards.shared.endpoint.games.Payloads as GamePayloads
+import io.tyoras.cards.shared.endpoint.games.ers.Payloads as ErsPayloads
 import io.tyoras.cards.shared.endpoint.games.war.Payloads as WarPayloads
 import io.tyoras.cards.shared.endpoint.users.Payloads as UserPayloads
 import io.tyoras.cards.shared.protocol.chat.{ChatUser, OutputMessage as ChatOutputMessage}
@@ -88,7 +89,7 @@ object SharedGens:
       Gen.zip(textGen, textGen).map(AuthError(_, _)),
       Gen.const(UnsupportedCommand),
       Gen.zip(gameIdGen, gameTypeGen, userIdGen, textGen).map(PlayerConnectionSuccess(_, _, _, _)),
-      Gen.zip(gameIdGen, userIdGen, textGen).map(PlayerDisconnected(_, _, _)),
+      Gen.zip(gameIdGen, gameTypeGen, userIdGen, textGen).map(PlayerDisconnected(_, _, _, _)),
       Gen.zip(gameIdGen, userIdGen, jsonGen).map(GameState(_, _, _)),
       Gen.zip(gameIdGen, userIdGen, textGen, textGen).map(GameError(_, _, _, _)),
       Gen.zip(gameIdGen, userIdGen, textGen, textGen).map(ProtocolError(_, _, _, _)),
@@ -131,6 +132,10 @@ trait SharedCodecTestUtils extends CodecTestUtils:
   // war
   given arbWarCreation: Arbitrary[WarPayloads.Request.Creation] = Arbitrary(playersGen.map(WarPayloads.Request.Creation(_)))
   given eqWarCreation: Eq[WarPayloads.Request.Creation]         = universalEq
+
+  // egyptian ratscrew
+  given arbErsCreation: Arbitrary[ErsPayloads.Request.Creation] = Arbitrary(playersGen.map(ErsPayloads.Request.Creation(_)))
+  given eqErsCreation: Eq[ErsPayloads.Request.Creation]         = universalEq
 
   // users
   given arbUserCreation: Arbitrary[UserPayloads.Request.Creation] =

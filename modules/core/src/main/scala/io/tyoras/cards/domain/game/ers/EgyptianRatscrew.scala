@@ -12,15 +12,15 @@ import io.chrisdavenport.cats.effect.time.implicits.*
 import io.tyoras.cards.domain.game.GameError.NoPlayersError
 import io.tyoras.cards.domain.game.{ActiveGame, Game, GameTyp}
 import io.tyoras.cards.domain.game.ers.model.ERSInput.GameInput.*
-import io.tyoras.cards.domain.game.ers.model.GameState.*
+import io.tyoras.cards.domain.game.ers.model.ERsGameState.*
 import io.tyoras.cards.domain.game.ers.model.ERSInput.MetaInput.*
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.util.fsm.FinalStateMachine
 import io.tyoras.cards.util.logging.syntax.*
 import org.typelevel.log4cats.LoggerFactory
 
-trait EgyptianRatscrew[F[_]] extends ActiveGame[F, GameState, ERSInput]:
-  override val gameType: GameTyp[GameState, ERSInput] = GameTyp.EgyptianRatscrew
+trait EgyptianRatscrew[F[_]] extends ActiveGame[F, ERsGameState, ERSInput]:
+  override val gameType: GameTyp[ERsGameState, ERSInput] = GameTyp.EgyptianRatscrew
 
 object EgyptianRatscrew:
 
@@ -39,25 +39,25 @@ object EgyptianRatscrew:
       context               <- initGameContext(playerIds)
       id                    <- UUIDGen[F].randomUUID.map(Game.ID(_))
       _                     <- logger.debug(s"Starting new Egyptian Ratscrew game ($id) with initial game context : $context")
-      fsm                   <- SynchronizedConcurrentFSM.create[F, GameState](Init(context))
+      fsm                   <- SynchronizedConcurrentFSM.create[F, ERsGameState](Init(context))
     yield new EgyptianRatscrewFSM[F](id, fsm)
 
-  def fromState[F[_] : Async : LoggerFactory](id: Game.ID, state: GameState): F[EgyptianRatscrew[F]] =
+  def fromState[F[_] : Async : LoggerFactory](id: Game.ID, state: ERsGameState): F[EgyptianRatscrew[F]] =
     for
       logger <- LoggerFactory.create[F]
       _      <- logger.debug(s"Resuming Egyptian ratscrew game from state : $state")
-      fsm    <- SynchronizedConcurrentFSM.create[F, GameState](state)
+      fsm    <- SynchronizedConcurrentFSM.create[F, ERsGameState](state)
     yield new EgyptianRatscrewFSM[F](id, fsm)
 
-  private class EgyptianRatscrewFSM[F[_] : Async : LoggerFactory](id: Game.ID, fsm: FinalStateMachine[F, GameState]) extends EgyptianRatscrew[F]:
+  private class EgyptianRatscrewFSM[F[_] : Async : LoggerFactory](id: Game.ID, fsm: FinalStateMachine[F, ERsGameState]) extends EgyptianRatscrew[F]:
     private val logger                               = LoggerFactory.getLogger
     override val gameId: Game.ID                     = id
-    override def currentState: F[GameState]          = fsm.getCurrentState
+    override def currentState: F[ERsGameState]       = fsm.getCurrentState
     override def isFinished: F[Boolean]              = currentState.map(s => s.isInstanceOf[Finish] || s.isInstanceOf[Exit])
     override val playerIds: F[NonEmptyList[User.ID]] =
       currentState.map(_.context.players.keys.toList).flatMap(ids => Sync[F].fromOption(NonEmptyList.fromList(ids), NoPlayersError))
 
-    override def submitInput(input: ERSInput): F[GameState] = fsm.transition { s =>
+    override def submitInput(input: ERSInput): F[ERsGameState] = fsm.transition { s =>
       val logCtx = input.playerId.ctx(playerIdKey)
       logger.debug(logCtx)(s"Submitting input [$input] on current state : $s") >>
         menu
@@ -68,14 +68,14 @@ object EgyptianRatscrew:
           )
     }
 
-    private def menu: PartialFunction[(GameState, ERSInput), F[GameState]] =
+    private def menu: PartialFunction[(ERsGameState, ERSInput), F[ERsGameState]] =
       case (s, restart: Restart) =>
         logger.debug(restart.playerId.ctx(playerIdKey))("Player has asked to restart a new game") >>
           initGameContext(NonEmptyList.fromListUnsafe(s.context.players.keys.toList)).map(Init(_))
       case (s, end: End) =>
         logger.debug(end.playerId.ctx(playerIdKey))("Player has asked to exit the game").as(Exit(s.context))
 
-    private def game: PartialFunction[(GameState, ERSInput), F[GameState]] =
+    private def game: PartialFunction[(ERsGameState, ERSInput), F[ERsGameState]] =
       case (s: Init, i: Ready)             => playerReady(s, i)
       case (s: PlayerTurn, i: PlayCard)    => playCard(s, i)
       case (s: PlayerTurn, i: Slap)        => slap(s, i)
@@ -85,7 +85,7 @@ object EgyptianRatscrew:
       case (s: SlapPenalty, i: PlayCard)   => discardCard(s, i)
       case (s: PlayerWinTurn, i: Ready)    => ackTurnWin(s, i)
 
-    private def playerReady(state: Init, input: Ready): F[GameState] =
+    private def playerReady(state: Init, input: Ready): F[ERsGameState] =
       for
         _ <- checkPlayer(state.notReady, input.playerId)
         readyPlayers = state.ready + input.playerId
@@ -94,7 +94,7 @@ object EgyptianRatscrew:
         _ <- logger.debug(input.playerId.ctx(playerIdKey))("Player ready for next turn")
       yield nextState
 
-    private def ackTurnWin(state: PlayerWinTurn, input: Ready): F[GameState] =
+    private def ackTurnWin(state: PlayerWinTurn, input: Ready): F[ERsGameState] =
       for
         _ <- checkPlayer(state.notAcked, input.playerId)
         ackedPlayers = state.acked + input.playerId
@@ -118,7 +118,7 @@ object EgyptianRatscrew:
         InvalidCard(s"${input.playerId} has played an invalid card ${input.cardId}")
       )
 
-    private def playCard(state: PlayerTurn, input: PlayCard): F[GameState] =
+    private def playCard(state: PlayerTurn, input: PlayCard): F[ERsGameState] =
       val currentPlayerId = input.playerId
       for
         _          <- checkPlayer(Set(state.player), currentPlayerId)
@@ -129,7 +129,7 @@ object EgyptianRatscrew:
         _ <- logger.debug(input.playerId.ctx(playerIdKey))(s"Card played: $playedCard")
       yield nextState
 
-    private def playCardNextState(newCtx: GameContext, heap: NonEmptyList[Card], currentPlayerId: PlayerId, playedCard: Card): GameState =
+    private def playCardNextState(newCtx: GameContext, heap: NonEmptyList[Card], currentPlayerId: PlayerId, playedCard: Card): ERsGameState =
       newCtx.nextPlayerWithCards(currentPlayerId) match
         case Some(nextPlayerId) if playedCard.rank > Rank.Ten() =>
           val challenge = headCardChallenge(playedCard.rank)
@@ -139,7 +139,7 @@ object EgyptianRatscrew:
         case None =>
           winTurn(newCtx, currentPlayerId, heap)
 
-    private def playCard(state: ChallengeTurn, input: PlayCard): F[GameState] =
+    private def playCard(state: ChallengeTurn, input: PlayCard): F[ERsGameState] =
       val currentPlayerId = input.playerId
       for
         _          <- checkPlayer(Set(state.challenger), currentPlayerId)
@@ -158,7 +158,7 @@ object EgyptianRatscrew:
         remainingTries: Int,
         currentPlayerId: PlayerId,
         playedCard: Card
-    ): GameState =
+    ): ERsGameState =
       newCtx.nextPlayerWithCards(currentPlayerId) match
         case Some(nextPlayerId) if playedCard.rank > Rank.Ten() =>
           val newChallenge = headCardChallenge(playedCard.rank)
@@ -175,15 +175,15 @@ object EgyptianRatscrew:
       val updatedCtx       = turnEliminations.foldLeft(withWonCards)(_.eliminatePlayer(_))
       PlayerWinTurn(updatedCtx, winnerId, wonCards, turnEliminations)
 
-    private def slap(state: PlayerTurn, input: Slap): F[GameState] =
+    private def slap(state: PlayerTurn, input: Slap): F[ERsGameState] =
       NonEmptyList.fromList(state.pile) match
         case Some(pile) => slap(state, pile, input.playerId).pure
         case None       => InvalidAction(s"Player [${input.playerId}] tried to slap an empty pile").raiseError
 
-    private def slap(state: ChallengeTurn, input: Slap): F[GameState] =
+    private def slap(state: ChallengeTurn, input: Slap): F[ERsGameState] =
       slap(state, state.pile, input.playerId).pure
 
-    private def slap(state: PlayerTurn | ChallengeTurn, pile: NonEmptyList[Card], playerId: PlayerId): GameState =
+    private def slap(state: PlayerTurn | ChallengeTurn, pile: NonEmptyList[Card], playerId: PlayerId): ERsGameState =
       if validateSlap(pile) then winTurn(state.context, playerId, pile)
       else SlapPenalty(state.context, playerId, pile, state)
 
@@ -191,7 +191,7 @@ object EgyptianRatscrew:
       val topCardsRanks = pile.take(2).map(_.rank)
       topCardsRanks.size == 2 && topCardsRanks.head == topCardsRanks.last
 
-    private def ackPenalty(state: SlapPenalty, input: Ready): F[GameState] =
+    private def ackPenalty(state: SlapPenalty, input: Ready): F[ERsGameState] =
       for
         _ <- checkPlayer(state.notAcked, input.playerId)
         ackedPlayers = state.acked + input.playerId
@@ -199,7 +199,7 @@ object EgyptianRatscrew:
         _ <- logger.debug(input.playerId.ctx(playerIdKey))(s"Player ${input.playerId} acked player ${state.player} slap penalty")
       yield penaltyNextState(updated)
 
-    private def discardCard(state: SlapPenalty, input: PlayCard): F[GameState] =
+    private def discardCard(state: SlapPenalty, input: PlayCard): F[ERsGameState] =
       for
         _             <- checkPlayer(Set(state.player), input.playerId)
         discardedCard <- checkPlayedCard(input)(state.context)
@@ -208,7 +208,7 @@ object EgyptianRatscrew:
         updated = state.copy(context = newCtx, discardedCards = state.discardedCards :+ discardedCard)
       yield penaltyNextState(updated)
 
-    private def penaltyNextState(state: SlapPenalty): GameState =
+    private def penaltyNextState(state: SlapPenalty): ERsGameState =
       if state.notAcked.nonEmpty || !state.penaltyPayed then state
       else
         state.originalState match

@@ -10,7 +10,7 @@ import io.tyoras.cards.domain.card.Suit.*
 import io.tyoras.cards.domain.card.{Card, Hand, Turn}
 import io.tyoras.cards.domain.game.war.model.*
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.Ready
-import io.tyoras.cards.domain.game.war.model.GameState.{Exit, Finish, Init, PlayerWinTurn, WarTurn}
+import io.tyoras.cards.domain.game.war.model.WarGameState.{Exit, Finish, Init, PlayerWinTurn, WarTurn}
 import io.tyoras.cards.domain.game.war.model.WarInput.MetaInput.Restart
 import io.tyoras.cards.domain.game.war.model.WarInput.{GameInput, MetaInput}
 import io.tyoras.cards.domain.user.model.User
@@ -78,7 +78,7 @@ class InputParserSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
   }
 
   it should "return PlayCard input with first card in BattleTurn state" in {
-    val battleTurn = GameState.BattleTurn(context)
+    val battleTurn = WarGameState.BattleTurn(context)
     parser.parse(battleTurn, playerId1, "").asserting { inputs =>
       inputs.head shouldBe GameInput.PlayCard(playerId1, card1.id)
       inputs.size shouldBe 1
@@ -88,7 +88,7 @@ class InputParserSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
   it should "fail with InvalidState when player has no cards in BattleTurn state" in {
     val emptyHandPlayer      = Player(playerId1, Hand.empty)
     val contextWithEmptyHand = context.copy(players = Map(playerId1 -> emptyHandPlayer, playerId2 -> player2))
-    val battleTurn           = GameState.BattleTurn(contextWithEmptyHand)
+    val battleTurn           = WarGameState.BattleTurn(contextWithEmptyHand)
     parser.parse(battleTurn, playerId1, "").attempt.asserting { result =>
       result.isLeft shouldBe true
       result.left.exists(_ == InvalidState) shouldBe true
@@ -155,7 +155,7 @@ class InputParserSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
   }
 
   it should "prioritize quit command over state-specific parsing" in {
-    val battleTurn = GameState.BattleTurn(context)
+    val battleTurn = WarGameState.BattleTurn(context)
     parser.parse(battleTurn, playerId1, "\\q").asserting { inputs =>
       inputs.head shouldBe MetaInput.End(playerId1)
       inputs.size shouldBe 1
@@ -163,7 +163,7 @@ class InputParserSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
   }
 
   it should "prioritize restart command over state-specific parsing" in {
-    val battleTurn = GameState.BattleTurn(context)
+    val battleTurn = WarGameState.BattleTurn(context)
     parser.parse(battleTurn, playerId1, "\\r").asserting { inputs =>
       inputs.head shouldBe Restart(playerId1)
       inputs.size shouldBe 1

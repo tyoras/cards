@@ -10,7 +10,7 @@ case class PlayerGameState()
 object PlayerGameState:
 
   given ConfiguredCodec[PlayerGameState] = ConfiguredCodec.derive(discriminator = Some("code"), transformMemberNames = renaming.snakeCase)
-  given GameStateFilter[GameState] with
+  given GameStateFilter[SchnapsenGameState] with
     type PlayerState = PlayerGameState
-    override def codec: Codec[PlayerGameState]                                                = summon[ConfiguredCodec[PlayerGameState]]
-    extension (gameState: GameState) def filterForPlayer(playerId: PlayerId): PlayerGameState = PlayerGameState()
+    override def codec: Codec[PlayerGameState]                                                         = summon[ConfiguredCodec[PlayerGameState]]
+    extension (gameState: SchnapsenGameState) def filterForPlayer(playerId: PlayerId): PlayerGameState = PlayerGameState()

@@ -81,7 +81,7 @@ object SchnapsenCli:
         })
       yield exitCode
 
-    private def renderGameState(state: GameState): F[Unit] =
+    private def renderGameState(state: SchnapsenGameState): F[Unit] =
       console.println(lineSeparator) >>
         (state match {
           case _: Init        => console.println("Press 'Enter' if you are ready to start the game...")
@@ -148,7 +148,7 @@ object SchnapsenCli:
         }
         console.println(s"${choices.mkString("\n")}")
 
-    private def parseInput(state: GameState, rawInput: String): F[SchnapsenInput] =
+    private def parseInput(state: SchnapsenGameState, rawInput: String): F[SchnapsenInput] =
       rawInput match
         case "\\q" => End(state.round.forehand.id).pure
         case "\\r" => Restart(state.round.forehand.id).pure

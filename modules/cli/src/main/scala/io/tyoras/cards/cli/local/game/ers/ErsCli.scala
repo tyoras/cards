@@ -8,8 +8,8 @@ import ErsCliError.*
 import io.tyoras.cards.cli.lineSeparator
 import io.tyoras.cards.cli.local.Launcher.PlayerCount
 import io.tyoras.cards.domain.game.ers.*
-import io.tyoras.cards.domain.game.ers.model.{GameState, PlayerId}
-import io.tyoras.cards.domain.game.ers.model.GameState.*
+import io.tyoras.cards.domain.game.ers.model.{ERsGameState, PlayerId}
+import io.tyoras.cards.domain.game.ers.model.ERsGameState.*
 import org.typelevel.log4cats.*
 import io.tyoras.cards.domain.user.model.User
 
@@ -72,7 +72,7 @@ object ErsCli:
               case name                  => console.println(s"Using default name $defaultName for this player").as(defaultName)
             } <* console.println(lineSeparator)
 
-      private def collectRawInput(state: GameState): F[String] = state match
+      private def collectRawInput(state: ERsGameState): F[String] = state match
         case _: Finish            => console.readLine
         case _ if config.autoPlay => "".pure
         case _                    => console.readLine
@@ -103,7 +103,7 @@ object ErsCli:
           })
         yield exitCode
 
-      private def currentPlayer(state: GameState): Either[String, PlayerId] =
+      private def currentPlayer(state: ERsGameState): Either[String, PlayerId] =
         state match
           case s: Init          => s.notReady.headOption.toRight("Init state with everyone ready")
           case s: PlayerTurn    => s.player.asRight
