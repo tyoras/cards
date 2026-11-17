@@ -16,7 +16,8 @@ import io.tyoras.cards.domain.game.Game.ID as GameID
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.shared.endpoint
 import io.tyoras.cards.shared.endpoint.games.Payloads.Response
-import io.tyoras.cards.shared.endpoint.games.war.Payloads
+import io.tyoras.cards.shared.endpoint.games.war.Payloads as WarPayloads
+import io.tyoras.cards.shared.endpoint.games.ers.Payloads as ERsPayloads
 import org.http4s.Method.{DELETE, GET, POST}
 import org.http4s.client.websocket.{WSClient, WSRequest}
 import org.typelevel.log4cats.LoggerFactory
@@ -28,6 +29,8 @@ trait GamesClient[F[_]]:
   def removeById(gameId: GameID): F[Boolean]
   def createWarGame(players: NonEmptyList[PlayerId]): F[Game]
   def connectWarGame(gameId: GameID): Resource[F, WarClient[F]]
+  def createERsGame(players: NonEmptyList[PlayerId]): F[Game]
+  def connectERsGame(gameId: GameID): Resource[F, ERsClient[F]]
 
 object GamesClient:
   given Transformer[Response.Game, Game] =
@@ -42,7 +45,9 @@ object GamesClient:
     new:
       private val gamesApiUri = config.apiUri / "api" / "games"
       private val warApiUri   = config.apiUri / "api" / "games" / "war"
+      private val ersApiUri   = config.apiUri / "api" / "games" / "ers"
       private val warWsUri    = config.wsUri / "ws" / "games" / "war"
+      private val ersWsUri    = config.wsUri / "ws" / "games" / "ers"
 
       override def listAll: F[List[Game]] =
         for
@@ -73,9 +78,18 @@ object GamesClient:
 
       override def createWarGame(players: NonEmptyList[PlayerId]): F[Game] =
         for
-          request <- Request[F](POST, warApiUri).withEntity(Payloads.Request.Creation(players)).pure
+          request <- Request[F](POST, warApiUri).withEntity(WarPayloads.Request.Creation(players)).pure
           result  <- httpClient.expect[Response.Game](request)
         yield result.transformInto[Game]
 
       override def connectWarGame(gameId: GameID): Resource[F, WarClient[F]] =
         webSocketClient.connectHighLevel(WSRequest(warWsUri)).evalMap(WarClient.make(gameId, _, authProvider))
+
+      override def createERsGame(players: NonEmptyList[PlayerId]): F[Game] =
+        for
+          request <- Request[F](POST, ersApiUri).withEntity(ERsPayloads.Request.Creation(players)).pure
+          result  <- httpClient.expect[Response.Game](request)
+        yield result.transformInto[Game]
+
+      override def connectERsGame(gameId: GameID): Resource[F, ERsClient[F]] =
+        webSocketClient.connectHighLevel(WSRequest(ersWsUri)).evalMap(ERsClient.make(gameId, _, authProvider))

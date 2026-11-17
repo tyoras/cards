@@ -56,7 +56,7 @@ sealed abstract class GameTyp[S <: GameState : Codec, I <: GameInput : Decoder](
   given Codec[PlayerState] = filter.codec.asInstanceOf[Codec[PlayerState]]
 
 object GameTyp:
-  case object EgyptianRatscrew extends GameTyp[ers.model.ERsGameState, ers.model.ERSInput]("egyptian_ratscrew", 2, 52)
+  case object EgyptianRatscrew extends GameTyp[ers.model.ERsGameState, ers.model.ERsInput]("egyptian_ratscrew", 2, 52)
   case object Schnapsen        extends GameTyp[schnapsen.model.SchnapsenGameState, schnapsen.model.SchnapsenInput]("schnapsen", 2, 2)
   case object War              extends GameTyp[war.model.WarGameState, war.model.WarInput]("war", 2, 52)
   given Encoder[GameType] = Encoder.encodeString.contramap(_.label)

@@ -5,7 +5,7 @@ import cats.effect.std.Dispatcher
 import io.tyoras.cards.cli
 import io.tyoras.cards.cli.remote.tui.LauncherTUI.*
 import io.tyoras.cards.cli.tui.TUI
-import io.tyoras.cards.domain.game.GameTyp.{Schnapsen, War}
+import io.tyoras.cards.domain.game.GameTyp.*
 import io.tyoras.cards.domain.game.GameType
 import layoutz.*
 
@@ -21,7 +21,7 @@ object LauncherTUI:
     new LauncherTUI[F](gameChoice)(_)
 
 class LauncherTUI[F[_]](gameChoice: Deferred[F, GameType])(override val dispatcher: Dispatcher[F]) extends TUI[F, State, Msg]:
-  private val games = Seq(War, Schnapsen)
+  private val games = Seq(EgyptianRatscrew, War, Schnapsen)
 
   override val pageBanner: String = cli.banner
 

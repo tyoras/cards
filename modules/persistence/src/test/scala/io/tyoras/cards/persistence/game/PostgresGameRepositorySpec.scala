@@ -3,7 +3,9 @@ package io.tyoras.cards.persistence.game
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.syntax.all.*
-import io.tyoras.cards.domain.card.{Hand, Turn}
+import io.tyoras.cards.domain.card.{Card, Hand, Turn}
+import io.tyoras.cards.domain.card.Rank.{Five, Queen}
+import io.tyoras.cards.domain.card.Suit.{Club, Heart}
 import io.tyoras.cards.domain.game.ers.model.ERsGameState
 import io.tyoras.cards.domain.game.ers.model.{GameContext, Player}
 import io.tyoras.cards.domain.game.{Game, GameRepository, GameTyp}
@@ -89,6 +91,25 @@ class PostgresGameRepositorySpec extends PgIntegrationTest with BeforeAndAfterEa
               }
               .assertThrowsError(_ shouldBe PersistenceError("already_exist", s"Game $gameId already exist"))
         }
+      }
+    }
+    "storing an in progress Egyptian Ratscrew game" should {
+      "read back the exact same nested game state" in {
+        val queen     = Card(Club, Queen())
+        val five      = Card(Heart, Five())
+        val context   = GameContext(Map(playerId -> Player(playerId, List(five))), now, Turn.firstTurn, NonEmptyList.one(playerId), Nil)
+        val challenge = ERsGameState.ChallengeTurn(context, playerId, playerId, 2, 1, NonEmptyList.of(five, queen))
+        val penalty   = ERsGameState.SlapPenalty(context, playerId, challenge.pile, challenge, discardedCards = List(five))
+        val data      = gameData.copy(state = penalty: ERsGameState)
+        userRepo.flatMap(_.insert(existingPlayer.data, withId = existingPlayer.id.some)) *>
+          initPgRepo.flatMap { testedRepo =>
+            for
+              created <- testedRepo.insert(data, withId = None)
+              read    <- testedRepo.readManyById[ERsGameState](List(created.id))
+            yield
+              read.map(_.data.gameType) shouldBe List(GameTyp.EgyptianRatscrew)
+              read.map(_.state) shouldBe List(penalty)
+          }
       }
     }
     "updating a game" when {

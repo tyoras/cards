@@ -22,7 +22,7 @@ abstract class TUI[F[_], State, Msg] extends LayoutzApp[State, Msg]:
   protected def appLayout(elements: layoutz.Element*): layoutz.Element = {
     box("")(
       layout(
-        banner(Text(pageBanner)).border(Border.Double).colorBg(Black).color(BrightGreen).center() +: elements*
+        banner(Text(pageBanner)).border(Border.Double).colorBg(Black).color(BrightGreen).center() +: br +: elements*
       ).center(appWidth)
     ).colorBg(BrightGreen).color(BrightBlack)
   }

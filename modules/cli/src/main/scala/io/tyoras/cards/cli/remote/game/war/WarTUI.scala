@@ -191,8 +191,8 @@ object WarTUI:
             layout(
               "=== Ready to start ===".leftAlign(chatWidth),
               kv(playerNames.toSeq.map {
-                case (id, name) if state.ready.contains(id) => rowTight("⚫".color(Blue), s" $name".style(Bold))             -> "Ready".color(Blue)
-                case (id, name)                             => rowTight("⚫".color(Red).style(Blink), s" $name".style(Bold)) -> "Not ready".color(Red)
+                case (id, name) if state.ready.contains(id) => rowTight("●".color(Blue), s" $name".style(Bold))             -> "Ready".color(Blue)
+                case (id, name)                             => rowTight("●".color(Red).style(Blink), s" $name".style(Bold)) -> "Not ready".color(Red)
               }*)
             )
           ).border(Round),
@@ -220,7 +220,7 @@ object WarTUI:
               "=== Waiting cards from players ===".leftAlign(chatWidth),
               kv(playerNames.toSeq.mapFilter {
                 case (id, name) if state.missingPlays.contains(id) =>
-                  (rowTight("⚫".style(Blink).color(Red), s" $name".style(Bold)) -> "Waiting".color(Red)).some
+                  (rowTight("●".style(Blink).color(Red), s" $name".style(Bold)) -> "Waiting".color(Red)).some
                 case _ => None
               }*)
             )
@@ -265,7 +265,7 @@ object WarTUI:
               "=== Waiting cards from players ===".leftAlign(chatWidth),
               kv(playerNames.toSeq.mapFilter {
                 case (id, name) if state.missingPlays.contains(id) =>
-                  (rowTight("⚫".style(Blink).color(Red), s" $name".style(Bold)) -> "Waiting".color(Red)).some
+                  (rowTight("●".style(Blink).color(Red), s" $name".style(Bold)) -> "Waiting".color(Red)).some
                 case _ => None
               }*)
             )
@@ -281,9 +281,9 @@ object WarTUI:
           layout(
             s"$winner won turn $turn and won ${state.wonCards.size} cards.",
             br,
-            section("Won cards")(row(state.wonCards.toSeq.map(renderCard(_, title = winnerName.some))*).colorBg(BrightWhite)),
+            section("Won cards")(renderCards(state.wonCards.toList, 4, title = winnerName.some).colorBg(BrightWhite)),
             if state.eliminated.nonEmpty then
-              section("Players eliminated during this turn")(kv(state.eliminated.toSeq.map(playerNames(_) -> "Eliminated ❌".color(Red))*))
+              section("Players eliminated during this turn")(kv(state.eliminated.toSeq.map(playerNames(_) -> "Eliminated ✗".color(Red))*))
             else empty,
             "Waiting for everyone to be ready before starting the next turn...",
             br,
@@ -294,8 +294,8 @@ object WarTUI:
             layout(
               "=== Ready to play next turn ===".leftAlign(chatWidth),
               kv(playerNames.toSeq.map {
-                case (id, name) if state.acked.contains(id) => rowTight("⚫".color(Blue), s" $name".style(Bold))             -> "Ready".color(Blue)
-                case (id, name)                             => rowTight("⚫".color(Red).style(Blink), s" $name".style(Bold)) -> "Not ready".color(Red)
+                case (id, name) if state.acked.contains(id) => rowTight("●".color(Blue), s" $name".style(Bold))             -> "Ready".color(Blue)
+                case (id, name)                             => rowTight("●".color(Red).style(Blink), s" $name".style(Bold)) -> "Not ready".color(Red)
               }*)
             )
           ).border(Round),

@@ -4,10 +4,10 @@ import cats.data.NonEmptyList
 import cats.effect.{IO, Ref, Resource}
 import fs2.Stream
 import io.tyoras.cards.cli.fixtures.now
-import io.tyoras.cards.cli.remote.client.{ChatClient, Game, GamesClient, UsersClient, WarClient}
+import io.tyoras.cards.cli.remote.client.{ChatClient, ERsClient, Game, GamesClient, UsersClient, WarClient}
 import io.tyoras.cards.domain.card.Card
 import io.tyoras.cards.domain.game.Game.ID as GameID
-import io.tyoras.cards.domain.game.GameType
+import io.tyoras.cards.domain.game.{GameTyp, GameType}
 import io.tyoras.cards.domain.game.war.model.PlayerId
 import io.tyoras.cards.domain.user.model.User
 import io.tyoras.cards.shared.protocol.chat.OutputMessage as ChatMessage
@@ -30,15 +30,19 @@ object fakes:
   class FakeGamesClient(
       games: IO[List[Game]] = IO.pure(Nil),
       created: Ref[IO, List[NonEmptyList[PlayerId]]],
-      warClient: Resource[IO, WarClient[IO]] = Resource.eval(IO.raiseError(new UnsupportedOperationException("no war client")))
+      warClient: Resource[IO, WarClient[IO]] = Resource.eval(IO.raiseError(new UnsupportedOperationException("no war client"))),
+      ersClient: Resource[IO, ERsClient[IO]] = Resource.eval(IO.raiseError(new UnsupportedOperationException("no ers client")))
   ) extends GamesClient[IO]:
     override def listAll: IO[List[Game]]                                          = games
     override def findById(gameId: GameID): IO[Option[Game]]                       = games.map(_.find(_.id == gameId))
     override def findByUserId(userId: User.ID, finished: Boolean): IO[List[Game]] = games.map(_.filter(_.players.toList.contains(userId)))
     override def removeById(gameId: GameID): IO[Boolean]                          = IO.pure(true)
     override def createWarGame(players: NonEmptyList[PlayerId]): IO[Game]         =
-      created.update(_ :+ players).as(Game(gameId(99), now, now, io.tyoras.cards.domain.game.GameTyp.War, players))
+      created.update(_ :+ players).as(Game(gameId(99), now, now, GameTyp.War, players))
     override def connectWarGame(gameId: GameID): Resource[IO, WarClient[IO]] = warClient
+    override def createERsGame(players: NonEmptyList[PlayerId]): IO[Game]    =
+      created.update(_ :+ players).as(Game(gameId(99), now, now, GameTyp.EgyptianRatscrew, players))
+    override def connectERsGame(gameId: GameID): Resource[IO, ERsClient[IO]] = ersClient
 
   /** War client recording the calls made to it */
   class FakeWarClient(val gameId: GameID, messages: List[GameMessage], calls: Ref[IO, List[String]], failing: Boolean = false) extends WarClient[IO]:
@@ -46,6 +50,17 @@ object fakes:
     override def streamServerMessages: Stream[IO, GameMessage] = Stream.emits(messages)
     override def ready: IO[Unit]                               = record("ready")
     override def playCard(card: Card): IO[Unit]                = record(s"play ${card.id}")
+    override def getState: IO[Unit]                            = record("state")
+    override def quit: IO[Unit]                                = record("quit")
+
+  /** Egyptian ratscrew client recording the calls made to it */
+  class FakeERsClient(val gameId: GameID, messages: List[GameMessage], calls: Ref[IO, List[String]], failing: Boolean = false) extends ERsClient[IO]:
+    private def record(call: String): IO[Unit]                 = if failing then IO.raiseError(new Exception(s"$call failed")) else calls.update(_ :+ call)
+    override def streamServerMessages: Stream[IO, GameMessage] = Stream.emits(messages)
+    override def ready: IO[Unit]                               = record("ready")
+    override def playCard: IO[Unit]                            = record("play")
+    override def discard(card: Card): IO[Unit]                 = record(s"discard ${card.id}")
+    override def slap: IO[Unit]                                = record("slap")
     override def getState: IO[Unit]                            = record("state")
     override def quit: IO[Unit]                                = record("quit")
 

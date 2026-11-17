@@ -219,6 +219,18 @@ class HttpClientsSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
       body shouldBe Json.obj("players" -> Json.arr(alice.id.toString.asJson, bob.id.toString.asJson))
   }
 
+  it should "create a Egyptian ratscrew game" in {
+    for
+      (client, requests) <- recordingClient(_ => ok(gamePayload(5)))
+      game               <- GamesClient.make[IO](config, client, noWsClient, authProvider()).createERsGame(NonEmptyList.of(alice.id, bob.id))
+      reqs               <- requests
+      body               <- reqs.head.as[Json]
+    yield
+      game.id shouldBe gameId(5)
+      reqs.map(r => r.method -> r.uri) shouldBe List(Method.POST -> uri"http://cards.test/api/games/ers")
+      body shouldBe Json.obj("players" -> Json.arr(alice.id.toString.asJson, bob.id.toString.asJson))
+  }
+
   "authedClient" should "add the authentication and accept headers" in {
     for
       (client, requests) <- recordingClient(_ => status(Status.Ok))

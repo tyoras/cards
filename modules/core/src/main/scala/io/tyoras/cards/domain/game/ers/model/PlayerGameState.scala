@@ -38,8 +38,8 @@ object PlayerGameState:
   final case class ChallengeTurn(
       override val turn: Turn,
       override val playerId: PlayerId,
-      owner: PlayerId,
       challenger: PlayerId,
+      challenged: PlayerId,
       totalTries: Int,
       remainingTries: Int,
       pileTopCard: Card,
@@ -48,7 +48,7 @@ object PlayerGameState:
       opponents: Map[PlayerId, Card.Count]
   ) extends PlayerGameState:
     override val code: String  = "challenge-turn"
-    override val label: String = s"Challenge turn for player [$owner] against player [$challenger] | Tries ${totalTries - remainingTries}/$totalTries"
+    override val label: String = s"Challenge turn for player [$challenger] against player [$challenged] | Tries ${totalTries - remainingTries}/$totalTries"
 
   final case class SlapPenalty(
       override val turn: Turn,
@@ -56,6 +56,7 @@ object PlayerGameState:
       penalizedPlayer: PlayerId,
       pileTopCard: Card,
       pileSize: Card.Count,
+      handTopCard: Option[Card],
       handSize: Card.Count,
       opponents: Map[PlayerId, Card.Count],
       discardedCards: List[Card],
@@ -110,8 +111,8 @@ object PlayerGameState:
             ChallengeTurn(
               turn = s.context.turnNumber,
               playerId = playerId,
-              owner = s.owner,
               challenger = s.challenger,
+              challenged = s.challenged,
               totalTries = s.totalTries,
               remainingTries = s.remainingTries,
               pileTopCard = s.pile.head,
@@ -126,6 +127,7 @@ object PlayerGameState:
               penalizedPlayer = s.player,
               pileTopCard = s.pile.head,
               pileSize = Card.Count.assume(s.pile.size),
+              handTopCard = s.context.playerHand(playerId).headOption,
               handSize = Card.Count.assume(s.context.playerHand(playerId).size),
               opponents = s.context.playersCardCount,
               discardedCards = s.discardedCards,

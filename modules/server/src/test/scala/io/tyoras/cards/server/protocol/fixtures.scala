@@ -4,12 +4,16 @@ import cats.data.NonEmptyList
 import cats.effect.{IO, Ref}
 import fs2.Stream
 import io.circe.{Codec, Decoder}
-import io.tyoras.cards.domain.card.{Turn, international52Deck}
+import io.tyoras.cards.domain.card.{Hand, Turn, international52Deck}
+import io.tyoras.cards.domain.game.ers.model.ERsGameState
 import io.tyoras.cards.domain.game.stats.GameStatService
 import io.tyoras.cards.domain.game.stats.model.{PlayerGameStat, PlayerGameStats}
 import io.tyoras.cards.domain.game.war.model.*
 import io.tyoras.cards.domain.game.{Game, GameService, GameState, GameTyp, GameType}
 import io.tyoras.cards.domain.user.model.User
+import io.tyoras.cards.domain.game.ers.model.GameContext as ERsGameContext
+import io.tyoras.cards.domain.game.ers.model.PlayerId as ERsPlayerId
+import io.tyoras.cards.domain.game.ers.model.Player as ERsPlayer
 
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -44,6 +48,32 @@ object fixtures:
       now,
       now,
       Game.Data(GameTyp.War, NonEmptyList.fromListUnsafe(state.context.players.keys.toList), state, state.context.players.keys.head, finishedAt)
+    )
+
+  def ersContext(hands: (ERsPlayerId, Hand)*): ERsGameContext =
+    ERsGameContext(
+      hands.map((id, hand) => id -> ERsPlayer(id, hand)).toMap,
+      now,
+      Turn.firstTurn,
+      NonEmptyList.fromListUnsafe(hands.map(_._1).toList)
+    )
+
+  /** Two players context where each player holds half of a 52 cards deck */
+  def ersTwoPlayersContext(p1: ERsPlayerId, p2: ERsPlayerId): ERsGameContext =
+    val (h1, h2) = international52Deck.splitAt(26)
+    ersContext(p1 -> h1, p2 -> h2)
+
+  /** Context where p2 is already eliminated so the next acknowledgement of the turn finishes the game */
+  def ersAlmostFinishedState(p1: ERsPlayerId, p2: ERsPlayerId): ERsGameState.PlayerWinTurn =
+    val ctx = ersContext(p1 -> international52Deck, p2 -> Nil).eliminatePlayer(p2)
+    ERsGameState.PlayerWinTurn(ctx, p1, NonEmptyList.of(international52Deck.head), Set(p2), acked = Set(p2))
+
+  def ersGame(id: Game.ID, state: ERsGameState, finishedAt: Option[ZonedDateTime] = None): Game.Existing[ERsGameState] =
+    Game.Existing(
+      id,
+      now,
+      now,
+      Game.Data(GameTyp.EgyptianRatscrew, state.context.playerOrder, state, state.context.playerOrder.head, finishedAt)
     )
 
   /** In memory game service keeping track of the stored games */

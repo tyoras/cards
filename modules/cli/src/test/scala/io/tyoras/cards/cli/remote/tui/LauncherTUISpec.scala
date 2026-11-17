@@ -5,7 +5,7 @@ import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.{Deferred, IO}
 import io.tyoras.cards.cli
 import io.tyoras.cards.cli.remote.tui.LauncherTUI.{Msg, State}
-import io.tyoras.cards.domain.game.GameTyp.{Schnapsen, War}
+import io.tyoras.cards.domain.game.GameTyp.{EgyptianRatscrew, Schnapsen, War}
 import io.tyoras.cards.domain.game.GameType
 import layoutz.{Key, TestKit}
 import org.scalatest.flatspec.AsyncFlatSpec
@@ -34,16 +34,16 @@ class LauncherTUISpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
 
   it should "cycle through the games when moving up" in {
     withLauncher { (tui, _) =>
-      IO((tui.update(Msg.MoveUp, State(0))._1, tui.update(Msg.MoveUp, State(1))._1)).asserting { (fromFirst, fromLast) =>
-        fromFirst shouldBe State(1)
-        fromLast shouldBe State(0)
+      IO((tui.update(Msg.MoveUp, State(0))._1, tui.update(Msg.MoveUp, State(2))._1)).asserting { (fromFirst, fromLast) =>
+        fromFirst shouldBe State(2)
+        fromLast shouldBe State(1)
       }
     }
   }
 
   it should "cycle through the games when moving down" in {
     withLauncher { (tui, _) =>
-      IO((tui.update(Msg.MoveDown, State(0))._1, tui.update(Msg.MoveDown, State(1))._1)).asserting { (fromFirst, fromLast) =>
+      IO((tui.update(Msg.MoveDown, State(0))._1, tui.update(Msg.MoveDown, State(2))._1)).asserting { (fromFirst, fromLast) =>
         fromFirst shouldBe State(1)
         fromLast shouldBe State(0)
       }
@@ -53,19 +53,25 @@ class LauncherTUISpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
   it should "complete the game choice and exit on submit" in {
     withLauncher { (tui, choice) =>
       for
-        (state, cmd) <- IO(tui.update(Msg.Submit, State(1)))
+        (state, cmd) <- IO(tui.update(Msg.Submit, State(2)))
         _            <- IO(TestKit.run(cmd))
         chosen       <- choice.get.timeout(5.seconds)
       yield
-        state shouldBe State(1)
+        state shouldBe State(2)
         TestKit.hasExit(cmd) shouldBe true
         chosen shouldBe Schnapsen
     }
   }
 
-  it should "select War when submitting the first game" in {
+  it should "select Egyptian ratscrew when submitting the first game" in {
     withLauncher { (tui, choice) =>
-      IO(TestKit.run(tui.update(Msg.Submit, State(0))._2)) >> choice.get.timeout(5.seconds).asserting(_ shouldBe War)
+      IO(TestKit.run(tui.update(Msg.Submit, State(0))._2)) >> choice.get.timeout(5.seconds).asserting(_ shouldBe EgyptianRatscrew)
+    }
+  }
+
+  it should "select War when submitting the second game" in {
+    withLauncher { (tui, choice) =>
+      IO(TestKit.run(tui.update(Msg.Submit, State(1))._2)) >> choice.get.timeout(5.seconds).asserting(_ shouldBe War)
     }
   }
 
@@ -86,6 +92,7 @@ class LauncherTUISpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
     withLauncher { (tui, _) =>
       IO(ansi.replaceAllIn(tui.view(State(1)).render, "")).asserting { view =>
         view should (include("Welcome!").and(include("Which card game do you want to play?")).and(include("War")).and(include("Schnapsen")))
+        view should include("Egyptian_ratscrew")
       }
     }
   }

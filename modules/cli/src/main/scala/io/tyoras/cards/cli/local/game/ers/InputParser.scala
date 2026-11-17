@@ -5,16 +5,16 @@ import cats.effect.*
 import ErsCliError.{InvalidInput, InvalidState}
 import io.tyoras.cards.domain.game.ers.model.PlayerId
 import io.tyoras.cards.domain.game.ers.model.ERsGameState.*
-import io.tyoras.cards.domain.game.ers.model.ERSInput.MetaInput.*
+import io.tyoras.cards.domain.game.ers.model.ERsInput.MetaInput.*
 import io.tyoras.cards.domain.game.ers.model.*
 import io.tyoras.cards.domain.game.ers.*
 import io.tyoras.cards.util.logging.syntax.*
 import org.typelevel.log4cats.LoggerFactory
 import cats.syntax.all.*
-import io.tyoras.cards.domain.game.ers.model.ERSInput.GameInput.*
+import io.tyoras.cards.domain.game.ers.model.ERsInput.GameInput.*
 
 trait InputParser[F[_]]:
-  def parse(state: ERsGameState, playerId: PlayerId, rawInput: String): F[NonEmptyList[ERSInput]]
+  def parse(state: ERsGameState, playerId: PlayerId, rawInput: String): F[NonEmptyList[ERsInput]]
 
 object InputParser:
   def apply[F[_] : Sync : LoggerFactory]: InputParser[F] =
@@ -32,9 +32,9 @@ object InputParser:
           case _ =>
             state match
               case s: Init          => Sync[F].fromOption(NonEmptyList.fromList(s.notReady.toList.map(Ready(_))), InvalidState)
-              case s: PlayerTurn    => Sync[F].fromOption(s.pickFirstCard(playerId), InvalidState).map(_.id).map(PlayCard(playerId, _)).map(NonEmptyList.one)
-              case s: ChallengeTurn => Sync[F].fromOption(s.pickFirstCard(playerId), InvalidState).map(_.id).map(PlayCard(playerId, _)).map(NonEmptyList.one)
-              case s: SlapPenalty   => Sync[F].fromOption(s.pickFirstCard(playerId), InvalidState).map(_.id).map(PlayCard(playerId, _)).map(NonEmptyList.one)
+              case s: PlayerTurn    => Sync[F].fromOption(s.pickFirstCard(playerId), InvalidState).as(NonEmptyList.one(PlayCard(playerId)))
+              case s: ChallengeTurn => Sync[F].fromOption(s.pickFirstCard(playerId), InvalidState).as(NonEmptyList.one(PlayCard(playerId)))
+              case s: SlapPenalty   => Sync[F].fromOption(s.pickFirstCard(playerId), InvalidState).map(_.id).map(Discard(playerId, _)).map(NonEmptyList.one)
               case s: PlayerWinTurn => Sync[F].fromOption(NonEmptyList.fromList(s.notAcked.toList.map(Ready(_))), InvalidState)
               // In finish state we only expect Quit or Restart inputs
               case _: Finish => logger.warn("Unexpected input in Finish state") *> InvalidInput.raiseError

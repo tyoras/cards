@@ -10,7 +10,7 @@ import io.tyoras.cards.cli.remote.client.Game
 import io.tyoras.cards.cli.remote.fakes.*
 import io.tyoras.cards.cli.remote.tui.GameStartMenuTUI.*
 import io.tyoras.cards.cli.tui.TUI.Message.Notification
-import io.tyoras.cards.domain.game.GameTyp.{Schnapsen, War}
+import io.tyoras.cards.domain.game.GameTyp.{EgyptianRatscrew, Schnapsen, War}
 import io.tyoras.cards.domain.game.{GameType, Game as DomainGame}
 import io.tyoras.cards.domain.game.war.model.PlayerId
 import io.tyoras.cards.domain.user.model.User
@@ -42,6 +42,8 @@ class GameStartMenuTUISpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
         val gamesClient = new FakeGamesClient(games, created):
           override def createWarGame(players: NonEmptyList[PlayerId]): IO[Game] =
             if creationFails then IO.raiseError(new Exception("creation refused")) else super.createWarGame(players)
+          override def createERsGame(players: NonEmptyList[PlayerId]): IO[Game] =
+            if creationFails then IO.raiseError(new Exception("creation refused")) else super.createERsGame(players)
         val tui = GameStartMenuTUI.make(gameType, "BANNER", auth, FakeUsersClient(users), gamesClient, gameId)(d)
         f(Env(tui, gameId, created))
       }
@@ -184,6 +186,26 @@ class GameStartMenuTUISpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
     withTUI(games = IO.pure(games))(env => submit(env, State(Mode.Menu(MenuSelection.Join))).asserting(_ shouldBe List(Msg.Output(gameId(2)))))
   }
 
+  it should "output the most recently updated Egyptian ratscrew game" in {
+    val players = NonEmptyList.of(alice.id, bob.id)
+    val games   = List(
+      game(1, EgyptianRatscrew, players, now.minusDays(1)),
+      game(2, EgyptianRatscrew, players, now),
+      game(3, War, players, now.plusDays(1))
+    )
+    withTUI(gameType = EgyptianRatscrew, games = IO.pure(games)) { env =>
+      submit(env, State(Mode.Menu(MenuSelection.Join))).asserting(_ shouldBe List(Msg.Output(gameId(2))))
+    }
+  }
+
+  it should "display an error when no Egyptian ratscrew game is found" in {
+    withTUI(gameType = EgyptianRatscrew, games = IO.pure(List(game(1, War, NonEmptyList.of(alice.id, bob.id))))) { env =>
+      submit(env, State(Mode.Menu(MenuSelection.Join))).asserting {
+        _ shouldBe List(Msg.DisplayNotif(Notification.Error("No egyptian_ratscrew game found... Please try joining again after a moment.")))
+      }
+    }
+  }
+
   it should "display an error when no game is found" in {
     withTUI() { env =>
       submit(env, State(Mode.Menu(MenuSelection.Join))).asserting {
@@ -209,6 +231,26 @@ class GameStartMenuTUISpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
       yield
         msgs shouldBe List(Msg.Output(gameId(99)))
         created.map(_.toList.toSet) shouldBe List(Set(alice.id, carol.id))
+    }
+  }
+
+  it should "create an Egyptian ratscrew game with the selected players" in {
+    withTUI(gameType = EgyptianRatscrew) { env =>
+      for
+        msgs    <- submit(env, State(creation(selection = Set(0, 1, 2))))
+        created <- env.created.get
+      yield
+        msgs shouldBe List(Msg.Output(gameId(99)))
+        created.map(_.toList.toSet) shouldBe List(Set(alice.id, bob.id, carol.id))
+    }
+  }
+
+  it should "display an error when the Egyptian ratscrew game cannot be created" in {
+    withTUI(gameType = EgyptianRatscrew, creationFails = true) { env =>
+      submit(env, State(creation(selection = Set(0, 1)))).asserting {
+        case List(Msg.DisplayNotif(Notification.Error(msg))) => msg should (startWith("Client error : ").and(include("creation refused")))
+        case other                                           => fail(s"unexpected messages $other")
+      }
     }
   }
 

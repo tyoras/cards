@@ -22,7 +22,7 @@ The project is designed around a set of modules :
 
 ## Work in progress
 
-| Game                                           | Logic | Local CLI (prototype) | Web API | Remote CLI | persistence |
+| Game                                           | Logic | Local CLI (prototype) | Web API | Remote CLI | Web UI |
 |------------------------------------------------|-------|------------------------|---------|------------|-------------|
 | [Schnapsen](docs/schnapsen.md)                 | ✅    | ✅        | ❌      | ❌         | ❌          |
-| [Egyptian Ratscrew](docs/egyptian_ratscrew.md) | ✅    | ✅        | ✅      | ❌         | ✅          |
+| [Egyptian Ratscrew](docs/egyptian_ratscrew.md) | ✅    | ✅        | ✅      | ✅         | ❌         |

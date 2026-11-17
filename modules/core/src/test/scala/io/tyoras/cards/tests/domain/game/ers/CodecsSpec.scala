@@ -193,41 +193,50 @@ class CodecsSpec extends AnyFlatSpec with Matchers:
   }
 
   "ERSInput.GameInput.Ready encoder and decoder" should "round-trip correctly" in {
-    val ready: ERSInput = ERSInput.GameInput.Ready(playerId1)
+    val ready: ERsInput = ERsInput.GameInput.Ready(playerId1)
     val json            = ready.asJson
     json.hcursor.get[String]("input_type") shouldBe Right("Ready")
-    val decoded = decode[ERSInput](json.noSpaces)
+    val decoded = decode[ERsInput](json.noSpaces)
     decoded shouldBe Right(ready)
   }
 
   "ERSInput.GameInput.PlayCard encoder and decoder" should "round-trip correctly" in {
-    val playCard: ERSInput = ERSInput.GameInput.PlayCard(playerId1, player1FirstCard.id)
+    val playCard: ERsInput = ERsInput.GameInput.PlayCard(playerId1)
     val json               = playCard.asJson
     json.hcursor.get[String]("input_type") shouldBe Right("PlayCard")
-    val decoded = decode[ERSInput](json.noSpaces)
+    val decoded = decode[ERsInput](json.noSpaces)
     decoded shouldBe Right(playCard)
   }
 
+  "ERSInput.GameInput.Discard encoder and decoder" should "round-trip correctly" in {
+    val discard: ERsInput = ERsInput.GameInput.Discard(playerId1, player1FirstCard.id)
+    val json              = discard.asJson
+    json.hcursor.get[String]("input_type") shouldBe Right("Discard")
+    json.hcursor.get[String]("card_id") shouldBe Right(player1FirstCard.id.value)
+    val decoded = decode[ERsInput](json.noSpaces)
+    decoded shouldBe Right(discard)
+  }
+
   "ERSInput.GameInput.Slap encoder and decoder" should "round-trip correctly" in {
-    val slap: ERSInput = ERSInput.GameInput.Slap(playerId1)
+    val slap: ERsInput = ERsInput.GameInput.Slap(playerId1)
     val json           = slap.asJson
     json.hcursor.get[String]("input_type") shouldBe Right("Slap")
-    val decoded = decode[ERSInput](json.noSpaces)
+    val decoded = decode[ERsInput](json.noSpaces)
     decoded shouldBe Right(slap)
   }
 
   "ERSInput.MetaInput.Restart encoder and decoder" should "round-trip correctly" in {
-    val restart: ERSInput = ERSInput.MetaInput.Restart(playerId1)
+    val restart: ERsInput = ERsInput.MetaInput.Restart(playerId1)
     val json              = restart.asJson
     json.hcursor.get[String]("input_type") shouldBe Right("Restart")
-    val decoded = decode[ERSInput](json.noSpaces)
+    val decoded = decode[ERsInput](json.noSpaces)
     decoded shouldBe Right(restart)
   }
 
   "ERSInput.MetaInput.End encoder and decoder" should "round-trip correctly" in {
-    val end: ERSInput = ERSInput.MetaInput.End(playerId1)
+    val end: ERsInput = ERsInput.MetaInput.End(playerId1)
     val json          = end.asJson
     json.hcursor.get[String]("input_type") shouldBe Right("End")
-    val decoded = decode[ERSInput](json.noSpaces)
+    val decoded = decode[ERsInput](json.noSpaces)
     decoded shouldBe Right(end)
   }

@@ -3,7 +3,7 @@ package io.tyoras.cards.tests
 import cats.Eq
 import io.circe.testing.ArbitraryInstances
 import io.tyoras.cards.domain.card.*
-import io.tyoras.cards.domain.game.GameTyp.{Schnapsen, War}
+import io.tyoras.cards.domain.game.GameTyp.{EgyptianRatscrew, Schnapsen, War}
 import io.tyoras.cards.domain.game.{Game, GameType}
 import io.tyoras.cards.domain.user.model.User
 import org.scalacheck.{Arbitrary, Gen}
@@ -41,4 +41,4 @@ trait CodecTestUtils extends ArbitraryInstances:
   given Arbitrary[Deck]      = Arbitrary(randomDeckGen)
   given Arbitrary[Card]      = Arbitrary(cardGen)
   given Eq[GameType]         = Eq.fromUniversalEquals
-  given Arbitrary[GameType]  = Arbitrary(Gen.oneOf(Schnapsen, War))
+  given Arbitrary[GameType]  = Arbitrary(Gen.oneOf(EgyptianRatscrew, Schnapsen, War))

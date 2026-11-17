@@ -8,7 +8,7 @@ import cats.effect.std.Queue
 import cats.syntax.all.*
 import fs2.concurrent.Topic
 import fs2.{Pipe, Stream}
-import io.tyoras.cards.domain.game.war.model.PlayerId
+import io.tyoras.cards.domain.game.ers.model.PlayerId
 import io.tyoras.cards.domain.game.{Game, GameService, GameTyp}
 import io.tyoras.cards.server.endpoints.Endpoint
 import io.tyoras.cards.shared.endpoint.games.Payloads.Response.Game.given
@@ -37,7 +37,7 @@ import io.tyoras.cards.shared.endpoint.games.Payloads
 import io.tyoras.cards.shared.protocol.chat.ChatUser
 import io.tyoras.cards.shared.protocol.game.OutputMessage
 
-object ErsEndpoint:
+object ERsEndpoint:
   def make[F[_] : Async : Concurrent : Temporal : LoggerFactory](
       gameService: GameService[F],
       userService: UserService[F],
@@ -98,7 +98,7 @@ object ErsEndpoint:
       private def listPlayerGames(player: User.Existing): F[Response[F]] =
         for
           games       <- gameProtocol.activeGames
-          playerGames <- games.filtered(GameTyp.War).filterA(_.playerIds.map(_.exists(_ == player.id))).map(_.map(_.gameId.unwrap))
+          playerGames <- games.filtered(GameTyp.EgyptianRatscrew).filterA(_.playerIds.map(_.exists(_ == player.id))).map(_.map(_.gameId.unwrap))
           response    <- Ok(playerGames)
         yield response
 

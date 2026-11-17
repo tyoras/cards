@@ -14,8 +14,9 @@ import io.tyoras.cards.cli.tui.TUI
 import io.tyoras.cards.domain.user.model.User
 import layoutz.*
 import cats.syntax.all.*
+import io.tyoras.cards.cli.remote.client
 import io.tyoras.cards.cli.tui.TUI.Message.Notification
-import io.tyoras.cards.domain.game.{Game, GameType}
+import io.tyoras.cards.domain.game.{Game, GameTyp, GameType}
 
 import scala.util.Try
 
@@ -115,7 +116,11 @@ object GameStartMenuTUI:
         )
 
       private def createGame(creation: Creation): F[Msg] =
-        validatePlayerSelection(creation).fold(e => Msg.DisplayNotif(Notification.Error(e)).pure, gameClient.createWarGame(_).map(g => Msg.Output(g.id)))
+        val gameCreation: NonEmptyList[User.ID] => F[client.Game] = gameType match
+          case GameTyp.EgyptianRatscrew => gameClient.createERsGame
+          case GameTyp.War              => gameClient.createWarGame
+          case _                        => _ => NotImplementedError(s"Creating $gameType game is not supported yet").raiseError
+        validatePlayerSelection(creation).fold(e => Msg.DisplayNotif(Notification.Error(e)).pure, gameCreation(_).map(g => Msg.Output(g.id)))
 
       private def validatePlayerSelection(creation: Creation): Either[String, NonEmptyList[User.ID]] =
         for

@@ -35,8 +35,8 @@ object Rendering:
       val currentPlayerName = playerName(playerId)
       val action            = "play a card"
       val nextCard          = ctx.pickFirstCard(playerId).getOrElse("unknown card")
-      console.println(s"Turn ${ctx.turnNumber}: ${playerName(s.owner)} has challenged ${playerName(s.challenger)}") >>
-        console.println(s"${playerName(s.challenger)} has ${s.remainingTries} remaining tries") >>
+      console.println(s"Turn ${ctx.turnNumber}: ${playerName(s.challenger)} has challenged ${playerName(s.challenged)}") >>
+        console.println(s"${playerName(s.challenged)} has ${s.remainingTries} remaining tries") >>
         console.println(s"Played cards: ${s.pile.reverse.mkString_(" ")}") >>
         console.println(s"\n> $currentPlayerName this is your turn to $action.\n") >>
         console.println(s"Press 'Enter' to play your next card $nextCard ...") >>

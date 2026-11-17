@@ -11,8 +11,10 @@ import io.tyoras.cards.cli.remote.fakes.gameId
 import io.tyoras.cards.domain.card.Card
 import io.tyoras.cards.domain.card.Rank.Ace
 import io.tyoras.cards.domain.card.Suit.Heart
-import io.tyoras.cards.domain.game.GameTyp.War
+import io.tyoras.cards.domain.game.GameTyp.{EgyptianRatscrew, War}
+import io.tyoras.cards.domain.game.ers.model.ERsInput
 import io.tyoras.cards.domain.game.war.codecs.given
+import io.tyoras.cards.domain.game.ers.codecs.given
 import io.tyoras.cards.domain.game.war.model.WarInput
 import io.tyoras.cards.domain.game.war.model.WarInput.GameInput.{PlayCard, Ready}
 import io.tyoras.cards.shared.protocol.chat.{ChatUser, OutputMessage as ChatMessage}
@@ -85,6 +87,66 @@ class WebSocketClientsSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
       cmds shouldBe List(QuitCommand(gameId(1)))
   }
 
+  "ERsClient" should "authenticate to the game when created" in {
+    for
+      conn   <- FakeWsConnection.make(Nil)
+      client <- ERsClient.make[IO](gameId(1), conn, authProvider())
+      sent   <- conn.sentTexts
+    yield
+      client.gameId shouldBe gameId(1)
+      sent.map(decode[AuthCommand](_)) shouldBe List(Right(AuthCommand(gameId(1), EgyptianRatscrew, token.value)))
+  }
+
+  it should "fail when the user is not authenticated" in
+    FakeWsConnection.make(Nil).flatMap(conn => ERsClient.make[IO](gameId(1), conn, unauthenticated).attempt).asserting(_ shouldBe Left(UserNotAuthenticated))
+
+  it should "not send anything when the user is not authenticated" in {
+    for
+      conn <- FakeWsConnection.make(Nil)
+      _    <- ERsClient.make[IO](gameId(1), conn, unauthenticated).attempt
+      sent <- conn.sentTexts
+    yield sent shouldBe empty
+  }
+
+  it should "send the game inputs and commands" in {
+    for
+      conn   <- FakeWsConnection.make(Nil)
+      client <- ERsClient.make[IO](gameId(1), conn, authProvider())
+      _      <- client.ready >> client.playCard >> client.discard(card) >> client.slap >> client.getState
+      cmds   <- commands(conn)
+    yield cmds shouldBe List(
+      GameCommand(gameId(1), (ERsInput.GameInput.Ready(alice.id): ERsInput).asJson),
+      GameCommand(gameId(1), (ERsInput.GameInput.PlayCard(alice.id): ERsInput).asJson),
+      GameCommand(gameId(1), (ERsInput.GameInput.Discard(alice.id, card.id): ERsInput).asJson),
+      GameCommand(gameId(1), (ERsInput.GameInput.Slap(alice.id): ERsInput).asJson),
+      StateCommand(gameId(1))
+    )
+  }
+
+  it should "decode the server messages, skipping the invalid ones" in {
+    val messages = List[GameMessage](GameMessage.KeepAlive, GameMessage.GameEnded(gameId(1)))
+    for
+      conn <- FakeWsConnection.make(
+        List(text(messages.head.asJson), WSFrame.Text("not json"), WSFrame.Binary(ByteVector(1, 2)), text(messages(1).asJson))
+      )
+      client   <- ERsClient.make[IO](gameId(1), conn, authProvider())
+      received <- client.streamServerMessages.compile.toList.timeout(5.seconds)
+    yield received shouldBe messages
+  }
+
+  it should "quit the game and stop streaming the server messages" in {
+    for
+      conn   <- FakeWsConnection.make(Nil, terminated = false)
+      client <- ERsClient.make[IO](gameId(1), conn, authProvider())
+      fiber  <- client.streamServerMessages.compile.toList.start
+      _      <- client.quit
+      result <- fiber.joinWithNever.timeout(5.seconds)
+      cmds   <- commands(conn)
+    yield
+      result shouldBe empty
+      cmds shouldBe List(QuitCommand(gameId(1)))
+  }
+
   "GamesClient" should "connect to the war game websocket" in {
     for
       conn     <- FakeWsConnection.make(Nil)
@@ -97,6 +159,20 @@ class WebSocketClientsSpec extends AsyncFlatSpec with AsyncIOSpec with Matchers:
       id shouldBe gameId(2)
       reqs.map(_.uri) shouldBe List(uri"ws://cards.test/ws/games/war")
       sent should have size 1
+  }
+
+  it should "connect to the Egyptian ratscrew game websocket" in {
+    for
+      conn     <- FakeWsConnection.make(Nil)
+      requests <- Ref.of[IO, List[WSRequest]](Nil)
+      games    <- IO(GamesClient.make[IO](config, org.http4s.client.Client[IO](_ => cats.effect.Resource.never), wsClient(conn, requests), authProvider()))
+      id       <- games.connectERsGame(gameId(3)).use(c => IO.pure(c.gameId))
+      reqs     <- requests.get
+      sent     <- conn.sentTexts
+    yield
+      id shouldBe gameId(3)
+      reqs.map(_.uri) shouldBe List(uri"ws://cards.test/ws/games/ers")
+      sent.map(decode[AuthCommand](_)) shouldBe List(Right(AuthCommand(gameId(3), EgyptianRatscrew, token.value)))
   }
 
   "ChatClient" should "authenticate to the chat when connecting" in {

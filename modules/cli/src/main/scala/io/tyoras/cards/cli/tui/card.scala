@@ -25,6 +25,11 @@ def renderCardBack(size: Size = Size.Big, title: Option[String] = None): Element
     case Big   => renderBigCardBack(title)
     case Small => renderSmallCardBack(title)
 
+def renderCards(cards: List[Card], rowSize: Int, size: Size = Size.Big, title: Option[String] = None): Element =
+  layout(
+    cards.grouped(rowSize).map(rowCards => row(rowCards.map(renderCard(_, size, title))*)).toSeq*
+  )
+
 private def renderSmallCard(c: Card, title: Option[String] = None): Element =
   renderSmallCard(c.toString, title)
 

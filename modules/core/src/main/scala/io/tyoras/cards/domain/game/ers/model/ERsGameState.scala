@@ -23,14 +23,14 @@ object ERsGameState:
 
   final case class ChallengeTurn(
       override val context: GameContext,
-      owner: PlayerId,
       challenger: PlayerId,
+      challenged: PlayerId,
       totalTries: Int,
       remainingTries: Int,
       pile: NonEmptyList[Card]
   ) extends ERsGameState:
     override val code: String  = "challenge-turn"
-    override val label: String = s"Challenge turn for player [$owner] against player [$challenger] | Tries ${totalTries - remainingTries}/$totalTries"
+    override val label: String = s"Challenge turn for player [$challenger] against player [$challenged] | Tries ${totalTries - remainingTries}/$totalTries"
 
   final case class SlapPenalty(
       override val context: GameContext,

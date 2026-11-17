@@ -5,7 +5,7 @@ import io.tyoras.cards.domain.game.ers.model.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class ERSErrorSpec extends AnyFlatSpec with Matchers:
+class ERsErrorSpec extends AnyFlatSpec with Matchers:
 
   private def check(error: GameError, code: String, message: String) =
     error.code shouldBe code

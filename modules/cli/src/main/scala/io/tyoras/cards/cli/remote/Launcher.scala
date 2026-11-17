@@ -6,11 +6,12 @@ import com.monovore.decline.*
 import com.monovore.decline.effect.*
 import io.tyoras.cards.BuildInfo
 import io.tyoras.cards.cli.*
+import io.tyoras.cards.cli.remote.game.ers.ERsCli
 import io.tyoras.cards.cli.remote.game.war.WarCli
 import io.tyoras.cards.cli.remote.tui.LauncherTUI
 import io.tyoras.cards.cli.tui.TUI
-import io.tyoras.cards.domain.game.GameTyp
-import io.tyoras.cards.domain.game.GameTyp.War
+import io.tyoras.cards.domain.game.GameType
+import io.tyoras.cards.domain.game.GameTyp.*
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
 
@@ -31,10 +32,18 @@ object Launcher extends CommandIOApp(name = "cards", header = banner, version = 
       autoPlay.map(WarCli.Config.apply).map(WarCommand.apply)
     }
 
+  case object ERsCommand
+  val ersCommandOpts: Opts[ERsCommand.type] =
+    Opts.subcommand("egyptian_ratscrew", "Play a game of Egyptian Ratscrew") {
+      Opts(ERsCommand)
+    }
+
   override def main: Opts[IO[ExitCode]] =
     schnapsenCommandOpts
+      .orElse(ersCommandOpts)
       .orElse(warCommandOpts)
       .map {
+        case ERsCommand       => ERsCli.make[IO].flatMap(_.run)
         case SchnapsenCommand => IO.println("Not implemented yet").as(ExitCode.Success)
         case WarCommand(cfg)  => WarCli.make[IO](cfg).flatMap(_.run)
       }
@@ -43,13 +52,14 @@ object Launcher extends CommandIOApp(name = "cards", header = banner, version = 
 
   private def gameSelection: IO[ExitCode] =
     for
-      gameChoice <- IO.deferred[GameTyp[?, ?]]
+      gameChoice <- IO.deferred[GameType]
       _          <- TUI.runTUI(LauncherTUI.make(gameChoice))
       selected   <- gameChoice.get
       exitCode   <- launchGame(selected)
     yield exitCode
 
-  private def launchGame(gameChoice: GameTyp[?, ?]): IO[ExitCode] =
+  private def launchGame(gameChoice: GameType): IO[ExitCode] =
     gameChoice match
-      case War => WarCli.make[IO](WarCli.Config(false)).flatMap(_.run)
-      case _   => IO.println("Not implemented yet").as(ExitCode.Success)
+      case EgyptianRatscrew => ERsCli.make[IO].flatMap(_.run)
+      case War              => WarCli.make[IO](WarCli.Config(false)).flatMap(_.run)
+      case _                => IO.println("Not implemented yet").as(ExitCode.Success)

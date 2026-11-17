@@ -107,7 +107,7 @@ object ErsCli:
         state match
           case s: Init          => s.notReady.headOption.toRight("Init state with everyone ready")
           case s: PlayerTurn    => s.player.asRight
-          case s: ChallengeTurn => s.challenger.asRight
+          case s: ChallengeTurn => s.challenged.asRight
           case s: PlayerWinTurn => s.notAcked.headOption.toRight("Player turn win state with everyone acked")
           case s: SlapPenalty   => s.player.asRight
           case s: Finish        => s.winnerId.asRight
