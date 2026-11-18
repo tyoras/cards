@@ -642,29 +642,6 @@
       ]
     },
     {
-      "type": "io.circe.derivation.ConfiguredDecoder$$anon$4",
-      "fields": [
-        {
-          "name": "constructorNames$lzy4"
-        },
-        {
-          "name": "elemDecoders$lzy4"
-        },
-        {
-          "name": "elemDefaults$lzy4"
-        },
-        {
-          "name": "elemLabels$lzy4"
-        },
-        {
-          "name": "io$circe$derivation$ConfiguredDecoder$$decodersDict$lzy4"
-        },
-        {
-          "name": "io$circe$derivation$ConfiguredDecoder$$memberNames$lzy4"
-        }
-      ]
-    },
-    {
       "type": "io.circe.derivation.ConfiguredEncoder$$anon$3",
       "fields": [
         {
@@ -823,57 +800,6 @@
       ]
     },
     {
-      "type": "io.tyoras.cards.domain.card.Card$",
-      "fields": [
-        {
-          "name": "given_Order_Card$lzy1"
-        },
-        {
-          "name": "given_Show_Card$lzy1"
-        }
-      ]
-    },
-    {
-      "type": "io.tyoras.cards.domain.card.Suit",
-      "fields": [
-        {
-          "name": "toString$lzy1"
-        }
-      ]
-    },
-    {
-      "type": "io.tyoras.cards.domain.card.codecs$",
-      "fields": [
-        {
-          "name": "given_Codec_Card$lzy1"
-        },
-        {
-          "name": "given_Codec_Rank$lzy1"
-        },
-        {
-          "name": "given_Codec_Suit$lzy1"
-        },
-        {
-          "name": "given_Decoder_Count$lzy1"
-        },
-        {
-          "name": "given_Decoder_ID$lzy1"
-        },
-        {
-          "name": "given_Decoder_Value$lzy1"
-        },
-        {
-          "name": "given_Encoder_Count$lzy1"
-        },
-        {
-          "name": "given_Encoder_ID$lzy1"
-        },
-        {
-          "name": "given_Encoder_Value$lzy1"
-        }
-      ]
-    },
-    {
       "type": "io.tyoras.cards.domain.game.Game$ID$",
       "fields": [
         {
@@ -910,6 +836,38 @@
       ]
     },
     {
+      "type": "io.tyoras.cards.domain.game.ers.codecs$",
+      "fields": [
+        {
+          "name": "gameStateCodec$lzy1"
+        },
+        {
+          "name": "given_Codec_$bar$lzy1"
+        },
+        {
+          "name": "given_Codec_Elimination$lzy1"
+        },
+        {
+          "name": "given_Codec_GameContext$lzy1"
+        },
+        {
+          "name": "given_Codec_Player$lzy1"
+        },
+        {
+          "name": "given_ConfiguredCodec_ERsInput$lzy1"
+        },
+        {
+          "name": "given_ConfiguredCodec_PlayerGameState$lzy1"
+        },
+        {
+          "name": "given_KeyDecoder_PlayerId$lzy1"
+        },
+        {
+          "name": "given_KeyEncoder_PlayerId$lzy1"
+        }
+      ]
+    },
+    {
       "type": "io.tyoras.cards.domain.game.schnapsen.codecs$",
       "fields": [
         {
@@ -931,7 +889,7 @@
           "name": "given_Codec_Status$lzy1"
         },
         {
-          "name": "given_ConfiguredCodec_GameState$lzy1"
+          "name": "given_ConfiguredCodec_SchnapsenGameState$lzy1"
         },
         {
           "name": "given_ConfiguredCodec_SchnapsenInput$lzy1"
@@ -951,19 +909,19 @@
           "name": "given_Codec_BattleRound$lzy1"
         },
         {
+          "name": "given_Codec_Elimination$lzy1"
+        },
+        {
           "name": "given_Codec_GameContext$lzy1"
         },
         {
           "name": "given_Codec_Player$lzy1"
         },
         {
-          "name": "given_Codec_Turn$lzy1"
-        },
-        {
-          "name": "given_ConfiguredCodec_GameState$lzy1"
-        },
-        {
           "name": "given_ConfiguredCodec_PlayerGameState$lzy1"
+        },
+        {
+          "name": "given_ConfiguredCodec_WarGameState$lzy1"
         },
         {
           "name": "given_ConfiguredCodec_WarInput$lzy1"
@@ -973,60 +931,6 @@
         },
         {
           "name": "given_KeyEncoder_PlayerId$lzy1"
-        }
-      ]
-    },
-    {
-      "type": "io.tyoras.cards.domain.game.war.model.GameContext",
-      "fields": [
-        {
-          "name": "allEliminated$lzy1"
-        },
-        {
-          "name": "playersCardCount$lzy1"
-        }
-      ]
-    },
-    {
-      "type": "io.tyoras.cards.domain.game.war.model.GameState$BattleTurn",
-      "fields": [
-        {
-          "name": "missingPlays$lzy1"
-        }
-      ]
-    },
-    {
-      "type": "io.tyoras.cards.domain.game.war.model.GameState$PlayerWinTurn",
-      "fields": [
-        {
-          "name": "notAcked$lzy1"
-        }
-      ]
-    },
-    {
-      "type": "io.tyoras.cards.domain.game.war.model.Player",
-      "fields": [
-        {
-          "name": "eliminated$lzy1"
-        }
-      ]
-    },
-    {
-      "type": "io.tyoras.cards.domain.game.war.model.PlayerGameState$BattleTurn",
-      "fields": [
-        {
-          "name": "pickFirstCard$lzy1"
-        }
-      ]
-    },
-    {
-      "type": "io.tyoras.cards.domain.game.war.model.PlayerGameState$WarTurn",
-      "fields": [
-        {
-          "name": "currentRound$lzy1"
-        },
-        {
-          "name": "pickFirstCard$lzy2"
         }
       ]
     },
@@ -1098,17 +1002,6 @@
       "fields": [
         {
           "name": "given_Eq_GameReadDBModel$lzy1"
-        }
-      ]
-    },
-    {
-      "type": "io.tyoras.cards.persistence.game.stats.GameStatDAO$Data$",
-      "fields": [
-        {
-          "name": "given_PartialTransformer_Data_Data$lzy1"
-        },
-        {
-          "name": "given_Transformer_Data_Data$lzy1"
         }
       ]
     },
@@ -1202,6 +1095,9 @@
           "name": "FinishedParam$lzy1"
         },
         {
+          "name": "RawGameState$lzy1"
+        },
+        {
           "name": "UserIdParam$lzy1"
         },
         {
@@ -1209,6 +1105,25 @@
         },
         {
           "name": "given_EntityEncoder_F_Stream$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.server.endpoints.games.GameEndpoint$$anon$1$RawGameState$",
+      "fields": [
+        {
+          "name": "given_Decoder_RawGameState$lzy1"
+        }
+      ]
+    },
+    {
+      "type": "io.tyoras.cards.server.endpoints.games.ers.ERsEndpoint$$anon$1",
+      "fields": [
+        {
+          "name": "as$lzy1"
+        },
+        {
+          "name": "given_EntityDecoder_F_Creation$lzy1"
         }
       ]
     },
@@ -1326,6 +1241,14 @@
       ]
     },
     {
+      "type": "io.tyoras.cards.shared.endpoint.games.ers.Payloads$Request$Creation$",
+      "fields": [
+        {
+          "name": "derived$Codec$lzy1"
+        }
+      ]
+    },
+    {
       "type": "io.tyoras.cards.shared.endpoint.users.Payloads$Response$",
       "fields": [
         {
@@ -1351,25 +1274,6 @@
       ]
     },
     {
-      "type": "io.tyoras.cards.shared.endpoint.users.Payloads$Response$UserGameStats$",
-      "fields": [
-        {
-          "name": "derived$ConfiguredCodec$lzy2"
-        },
-        {
-          "name": "given_Transformer_Existing_UserGameStats$lzy1"
-        }
-      ]
-    },
-    {
-      "type": "io.tyoras.cards.shared.protocol.chat.ChatUser$",
-      "fields": [
-        {
-          "name": "derived$Codec$lzy1"
-        }
-      ]
-    },
-    {
       "type": "io.tyoras.cards.shared.protocol.chat.OutputMessage$",
       "fields": [
         {
@@ -1377,25 +1281,6 @@
         },
         {
           "name": "given_Encoder_OutputMessage$lzy1"
-        }
-      ]
-    },
-    {
-      "type": "io.tyoras.cards.shared.protocol.game.Commands$AuthCommand$",
-      "fields": [
-        {
-          "name": "derived$ConfiguredCodec$lzy1"
-        }
-      ]
-    },
-    {
-      "type": "io.tyoras.cards.shared.protocol.game.Commands$AuthenticatedCommand$",
-      "fields": [
-        {
-          "name": "given_Codec_AuthenticatedCommand$lzy1"
-        },
-        {
-          "name": "given_Configuration$lzy1"
         }
       ]
     },
@@ -1785,6 +1670,9 @@
     },
     {
       "type": "org.flywaydb.core.internal.proprietaryStubs.GenerateCommandExtensionStub"
+    },
+    {
+      "type": "org.flywaydb.core.internal.proprietaryStubs.InitCommandExtensionStub"
     },
     {
       "type": "org.flywaydb.core.internal.proprietaryStubs.LicenseSupportStub"
@@ -9007,14 +8895,6 @@
       ]
     },
     {
-      "type": "scala.io.Codec$",
-      "fields": [
-        {
-          "name": "fallbackSystemCodec$lzy1"
-        }
-      ]
-    },
-    {
       "type": "scala.math.BigDecimal$",
       "fields": [
         {
@@ -9157,14 +9037,6 @@
       "fields": [
         {
           "name": "twiddlesPrependOps$lzy1"
-        }
-      ]
-    },
-    {
-      "type": "skunk.Encoder$$anon$3",
-      "fields": [
-        {
-          "name": "empty$lzy3"
         }
       ]
     },
@@ -9531,55 +9403,6 @@
           "sun.misc.SignalHandler"
         ]
       }
-    },
-    {
-      "condition" : {
-        "typeReached" : "org.flywaydb.core.internal.exception.FlywaySqlException"
-      },
-      "type" : "org.flywaydb.core.internal.exception.sqlExceptions.FlywaySqlNoIntegratedAuthException",
-      "methods" : [
-        {
-          "name" : "<init>",
-          "parameterTypes" : [
-            "java.sql.SQLException",
-            "javax.sql.DataSource"
-          ]
-        },
-        {
-          "name" : "isFlywaySpecificVersionOf",
-          "parameterTypes" : [
-            "java.sql.SQLException"
-          ]
-        }
-      ]
-    },
-    {
-      "condition" : {
-        "typeReached" : "org.flywaydb.core.internal.exception.FlywaySqlException"
-      },
-      "type" : "org.flywaydb.core.internal.exception.sqlExceptions.FlywaySqlServerUntrustedCertificateSqlException",
-      "methods" : [
-        {
-          "name" : "isFlywaySpecificVersionOf",
-          "parameterTypes" : [
-            "java.sql.SQLException"
-          ]
-        }
-      ]
-    },
-    {
-      "condition" : {
-        "typeReached" : "org.flywaydb.core.internal.exception.FlywaySqlException"
-      },
-      "type" : "org.flywaydb.core.internal.exception.sqlExceptions.FlywaySqlNoDriversForInteractiveAuthException",
-      "methods" : [
-        {
-          "name" : "isFlywaySpecificVersionOf",
-          "parameterTypes" : [
-            "java.sql.SQLException"
-          ]
-        }
-      ]
     }
   ],
   "resources": [
