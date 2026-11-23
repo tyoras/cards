@@ -12,7 +12,6 @@ import cats.effect.IO
 import io.tyoras.cards.domain.user.model.User
 import pl.iterators.baklava.EmptyBody
 import cats.syntax.all.*
-import dev.profunktor.auth.jwt.JwtToken
 import io.tyoras.cards.server.endpoints.utils.{TestAuthService, TestData}
 import org.http4s.circe.*
 

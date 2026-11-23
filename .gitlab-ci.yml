@@ -1,4 +1,4 @@
-image: "sbtscala/scala-sbt:graalvm-community-25.0.2_1.13.0_3.9.0"
+image: "sbtscala/scala-sbt:graalvm-community-25.0.2_1.13.1_3.10.1"
 
 stages:
   - test
@@ -47,8 +47,8 @@ unit_test:
     - sbt coverage test coverageReport coverageAggregate
   artifacts:
     paths:
-      - target/scala-3.9.0/scoverage-report/
-      - target/scala-3.9.0/coverage-report/
+      - target/scala-3.10.1/scoverage-report/
+      - target/scala-3.10.1/coverage-report/
     when: always
     reports:
       junit:
@@ -111,7 +111,7 @@ pages:
   script:
     - rm -rf public/coverage
     - mkdir -p public/coverage
-    - mv target/scala-3.9.0/scoverage-report/* public/coverage/
+    - mv target/scala-3.10.1/scoverage-report/* public/coverage/
   artifacts:
     paths:
       - public

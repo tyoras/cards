@@ -5,7 +5,7 @@ object Dependencies {
   case object ch {
     case object qos {
       case object logback {
-        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.6.6"
+        val `logback-classic` = "ch.qos.logback" % "logback-classic" % "1.6.8"
       }
     }
   }
@@ -53,7 +53,7 @@ object Dependencies {
     }
 
     case object circe {
-      val circeVersion   = "0.14.16"
+      val circeVersion   = "0.14.17"
       val `circe-core`   = "io.circe" %% s"circe-core"   % circeVersion
       val `circe-golden` = "io.circe" %% s"circe-golden" % "0.5.1"
     }
@@ -70,7 +70,7 @@ object Dependencies {
     }
 
     case object scalaland {
-      val chimneyVersion = "2.1.0"
+      val chimneyVersion = "2.1.1"
       val chimney        = "io.scalaland" %% "chimney"      % chimneyVersion
       val `chimney-cats` = "io.scalaland" %% "chimney-cats" % chimneyVersion
     }
@@ -78,15 +78,15 @@ object Dependencies {
 
   case object org {
     case object bouncycastle {
-      val `bcpkix-jdk18on` = "org.bouncycastle" % "bcpkix-jdk18on" % "1.86"
+      val `bcpkix-jdk18on` = "org.bouncycastle" % "bcpkix-jdk18on" % "1.87"
     }
 
     case object flywaydb {
-      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "13.12.1"
+      val `flyway-database-postgresql` = "org.flywaydb" % "flyway-database-postgresql" % "13.13.0"
     }
 
     case object http4s {
-      val http4sVersion            = "0.23.38"
+      val http4sVersion            = "0.23.39"
       val `http4s-ember-server`    = dep("ember-server")
       val `http4s-circe`           = dep("circe")
       val `http4s-dsl`             = dep("dsl")
@@ -96,7 +96,7 @@ object Dependencies {
     }
 
     case object postgresql {
-      val postgresql = "org.postgresql" % "postgresql" % "42.7.14"
+      val postgresql = "org.postgresql" % "postgresql" % "42.7.15"
     }
 
     case object scalacheck {
@@ -133,8 +133,8 @@ object Dependencies {
 
   case object pl {
     case object iterators {
-      val baklavaVersion   = "2.3.0"
-      val kebsVersion      = "2.2.2"
+      val baklavaVersion   = "2.4.0"
+      val kebsVersion      = "2.3.0"
       val `baklava-http4s` = "pl.iterators" %% "baklava-http4s" % baklavaVersion
 //      val `baklava-http4s-routes` = "pl.iterators" %% "baklava-http4s-routes" % baklavaVersion
 //      val `baklava-openapi`       = "pl.iterators" %% "baklava-openapi"       % baklavaVersion

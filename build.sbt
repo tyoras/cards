@@ -1,9 +1,9 @@
 import Dependencies.*
 
 ThisBuild / organization := "io.tyoras"
-ThisBuild / scalaVersion := "3.9.0"
+ThisBuild / scalaVersion := "3.10.1"
 
-ThisBuild / tlBaseVersion    := "0.1"
+ThisBuild / tlBaseVersion    := "0.3"
 ThisBuild / tlFatalWarnings  := false // no need for fatal warnings in this project
 ThisBuild / tlJdkRelease     := Some(25)
 
