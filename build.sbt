@@ -125,5 +125,6 @@ lazy val graalVMPackagingSettings = Seq(
     "-march=compatibility" //so it is compatible with low end machines architecture
   ),
   nativeImageVersion := "25.0.2",
-  nativeImageJvm := "graalvm-java25"
+  nativeImageJvm := "graalvm-java25",
+  nativeImageReachabilityMetadata := true
 )
