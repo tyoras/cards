@@ -94,10 +94,18 @@ object fixtures:
     override def readById[State <: GameState : Decoder](id: Game.ID): IO[Option[Game.Existing[State]]] =
       store.get.map(_.get(id).map(_.asInstanceOf[Game.Existing[State]]))
 
-    override def readManyByUser[State <: GameState : Decoder](userId: User.ID, finished: Boolean): IO[List[Game.Existing[State]]] = IO.pure(Nil)
-    override def readAll[State <: GameState : Decoder](finished: Boolean): Stream[IO, Game.Existing[State]]                       = Stream.empty
-    override def deleteMany(games: List[Game.Existing[?]]): IO[Unit]                                                              = IO.unit
-    override val deleteAll: IO[Unit]                                                                                              = IO.unit
+    /** Same semantic as the database: only the finished games when `finished` is true, only the ongoing ones otherwise */
+    private def filtered[State <: GameState](finished: Boolean)(keep: Game.Existing[?] => Boolean): IO[List[Game.Existing[State]]] =
+      store.get.map(_.values.filter(g => g.data.finishedAt.isDefined == finished && keep(g)).map(_.asInstanceOf[Game.Existing[State]]).toList)
+
+    override def readManyByUser[State <: GameState : Decoder](userId: User.ID, finished: Boolean): IO[List[Game.Existing[State]]] =
+      filtered[State](finished)(_.players.exists(_ == userId))
+
+    override def readAll[State <: GameState : Decoder](finished: Boolean): Stream[IO, Game.Existing[State]] =
+      Stream.evalSeq(filtered[State](finished)(_ => true))
+
+    override def deleteMany(games: List[Game.Existing[?]]): IO[Unit] = store.update(_ -- games.map(_.id))
+    override val deleteAll: IO[Unit]                                 = store.set(Map.empty)
 
   object InMemoryGameService:
     def make(games: Game.Existing[?]*): IO[InMemoryGameService] =

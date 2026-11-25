@@ -137,8 +137,8 @@ object Dependencies {
       val kebsVersion      = "2.3.0"
       val `baklava-http4s` = "pl.iterators" %% "baklava-http4s" % baklavaVersion
 //      val `baklava-http4s-routes` = "pl.iterators" %% "baklava-http4s-routes" % baklavaVersion
-//      val `baklava-openapi`       = "pl.iterators" %% "baklava-openapi"       % baklavaVersion
-//      val `baklava-postman`       = "pl.iterators" %% "baklava-postman"       % baklavaVersion
+      val `baklava-openapi`   = "pl.iterators" %% "baklava-openapi"   % baklavaVersion
+      val `baklava-postman`   = "pl.iterators" %% "baklava-postman"   % baklavaVersion
       val `baklava-scalatest` = "pl.iterators" %% "baklava-scalatest" % baklavaVersion
       val `baklava-simple`    = "pl.iterators" %% "baklava-simple"    % baklavaVersion
       val `kebs-baklava`      = "pl.iterators" %% "kebs-baklava"      % kebsVersion
@@ -253,8 +253,8 @@ object Dependencies {
     org.scalatest.scalatest,
     pl.iterators.`baklava-http4s`,
 //    pl.iterators.`baklava-http4s-routes`,
-//    pl.iterators.`baklava-openapi`,
-//    pl.iterators.`baklava-postman`,
+    pl.iterators.`baklava-openapi`,
+    pl.iterators.`baklava-postman`,
     pl.iterators.`baklava-scalatest`,
     pl.iterators.`baklava-simple`,
     pl.iterators.`kebs-baklava`

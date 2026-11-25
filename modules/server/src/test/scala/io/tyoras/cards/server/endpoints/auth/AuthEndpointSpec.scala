@@ -24,7 +24,8 @@ class AuthEndpointSpec extends EndpointSpec:
       POST,
       pathParameters = (),
       description = "Login a user",
-      summary = "Authenticate a user"
+      summary = "Authenticate a user",
+      tags = Seq("auth")
     )(
       onRequest(body = Payloads.Request.Login(username = "test".some, password = "password".some))
         .respondsWith[Payloads.Response.SuccessfulLogin](Ok, description = "Return user ID and auth token")
