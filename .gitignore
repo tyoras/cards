@@ -24,3 +24,6 @@ project/metals.sbt
 project/project/*
 !project/project/sbt-updates.sbt
 
+
+# OpenAPI spec copied from target/baklava after the tests
+dev_env/openapi.yml

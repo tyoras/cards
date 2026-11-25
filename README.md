@@ -1,4 +1,4 @@
-# Card Games [![Pipeline](https://gitlab.com/tyoras/cards/badges/master/pipeline.svg)](https://gitlab.com/tyoras/cards/commits/master) [![Coverage](https://gitlab.com/tyoras/cards/badges/master/coverage.svg)](https://tyoras.gitlab.io/cards/coverage/) [![Docker](https://img.shields.io/badge/docker-image-blue.svg)](https://hub.docker.com/r/tyoras/cards)
+# Card Games [![Pipeline](https://gitlab.com/tyoras/cards/badges/master/pipeline.svg)](https://gitlab.com/tyoras/cards/commits/master) [![Coverage](https://gitlab.com/tyoras/cards/badges/master/coverage.svg)](https://tyoras.gitlab.io/cards/coverage/) [![Docker](https://img.shields.io/badge/docker-image-blue.svg)](https://hub.docker.com/r/tyoras/cards) [![API doc](https://img.shields.io/badge/API-documentation-green.svg)](https://tyoras.gitlab.io/cards/api/swagger/) [![Postman](https://img.shields.io/badge/postman-collection-orange.svg)](https://tyoras.gitlab.io/cards/api/postman_collection.json)
 
 Card game implementations using advanced [FP](https://en.wikipedia.org/wiki/Functional_programming) techniques
 in [Scala](https://www.scala-lang.org/).

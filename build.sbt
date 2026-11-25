@@ -37,7 +37,13 @@ lazy val baklavaSettings = inConfig(Test)(
            |}
            |""".stripMargin,
       "views" -> """[{ "name": "client", "filter": "path-excludes:^/admin/" }]"""
-    )
+    ),
+    // Baklava's output dir is hardcoded to target/baklava: once the plugin's own cleanup hook has generated the docs,
+    // copy the OpenAPI spec to dev_env so the local Swagger UI (dev_env/swagger-ui, which loads ../openapi.yml) can use it
+    Test / testOptions += Tests.Cleanup { () =>
+      val generated = new File("target/baklava/openapi/openapi.yml")
+      if (generated.exists()) IO.copyFile(generated, new File("dev_env/openapi.yml"))
+    }
   )
 )
 

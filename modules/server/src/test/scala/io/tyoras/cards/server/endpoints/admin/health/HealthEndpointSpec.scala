@@ -90,7 +90,7 @@ class HealthEndpointSpec extends EndpointSpec:
       GET,
       description = "Startup probe: UP once the server has finished starting (e.g. the database migration is done), then stays UP",
       summary = "Startup probe",
-      tags = Seq("admin", "health")
+      tags = Seq("admin")
     )(
       onRequest.respondsWith[Payloads.Response.HealthStatus](Status.Ok, description = "The server has started").assert { ctx =>
         withEnv { e =>
@@ -117,7 +117,7 @@ class HealthEndpointSpec extends EndpointSpec:
       GET,
       description = "Readiness probe: whether the server can handle requests (e.g. the database is reachable). DOWN while the server is starting",
       summary = "Readiness probe",
-      tags = Seq("admin", "health")
+      tags = Seq("admin")
     )(
       onRequest.respondsWith[Payloads.Response.HealthStatus](Status.Ok, description = "The server is ready").assert { ctx =>
         withEnv { e =>
@@ -153,7 +153,7 @@ class HealthEndpointSpec extends EndpointSpec:
       GET,
       description = "Liveness probe: whether the server is alive. DOWN while the server is starting",
       summary = "Liveness probe",
-      tags = Seq("admin", "health")
+      tags = Seq("admin")
     )(
       onRequest.respondsWith[Payloads.Response.HealthStatus](Status.Ok, description = "The server is alive").assert { ctx =>
         withEnv { e =>

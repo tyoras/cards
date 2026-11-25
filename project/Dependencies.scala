@@ -133,20 +133,20 @@ object Dependencies {
 
   case object pl {
     case object iterators {
-      val baklavaVersion   = "2.4.0"
-      val kebsVersion      = "2.3.0"
-      val `baklava-http4s` = "pl.iterators" %% "baklava-http4s" % baklavaVersion
-//      val `baklava-http4s-routes` = "pl.iterators" %% "baklava-http4s-routes" % baklavaVersion
-      val `baklava-openapi`   = "pl.iterators" %% "baklava-openapi"   % baklavaVersion
-      val `baklava-postman`   = "pl.iterators" %% "baklava-postman"   % baklavaVersion
-      val `baklava-scalatest` = "pl.iterators" %% "baklava-scalatest" % baklavaVersion
-      val `baklava-simple`    = "pl.iterators" %% "baklava-simple"    % baklavaVersion
-      val `kebs-baklava`      = "pl.iterators" %% "kebs-baklava"      % kebsVersion
-      val `kebs-circe`        = "pl.iterators" %% "kebs-circe"        % kebsVersion
-      val `kebs-enum`         = "pl.iterators" %% "kebs-enum"         % kebsVersion
-      val `kebs-http4s`       = "pl.iterators" %% "kebs-http4s"       % kebsVersion
-      val `kebs-instances`    = "pl.iterators" %% "kebs-instances"    % kebsVersion
-      val `kebs-opaque`       = "pl.iterators" %% "kebs-opaque"       % kebsVersion
+      val baklavaVersion          = "2.4.0"
+      val kebsVersion             = "2.3.0"
+      val `baklava-http4s`        = "pl.iterators" %% "baklava-http4s"        % baklavaVersion
+      val `baklava-http4s-routes` = "pl.iterators" %% "baklava-http4s-routes" % baklavaVersion
+      val `baklava-openapi`       = "pl.iterators" %% "baklava-openapi"       % baklavaVersion
+      val `baklava-postman`       = "pl.iterators" %% "baklava-postman"       % baklavaVersion
+      val `baklava-scalatest`     = "pl.iterators" %% "baklava-scalatest"     % baklavaVersion
+      val `baklava-simple`        = "pl.iterators" %% "baklava-simple"        % baklavaVersion
+      val `kebs-baklava`          = "pl.iterators" %% "kebs-baklava"          % kebsVersion
+      val `kebs-circe`            = "pl.iterators" %% "kebs-circe"            % kebsVersion
+      val `kebs-enum`             = "pl.iterators" %% "kebs-enum"             % kebsVersion
+      val `kebs-http4s`           = "pl.iterators" %% "kebs-http4s"           % kebsVersion
+      val `kebs-instances`        = "pl.iterators" %% "kebs-instances"        % kebsVersion
+      val `kebs-opaque`           = "pl.iterators" %% "kebs-opaque"           % kebsVersion
     }
   }
 
@@ -246,13 +246,13 @@ object Dependencies {
     org.http4s.`http4s-dsl`,
     org.typelevel.`cats-core`,
     org.typelevel.`cats-effect`
+    // pl.iterators.`baklava-http4s-routes`
   )
 
   lazy val serverTestDeps = Seq(
     org.scalacheck.scalacheck,
     org.scalatest.scalatest,
     pl.iterators.`baklava-http4s`,
-//    pl.iterators.`baklava-http4s-routes`,
     pl.iterators.`baklava-openapi`,
     pl.iterators.`baklava-postman`,
     pl.iterators.`baklava-scalatest`,
